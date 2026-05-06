@@ -1,0 +1,18 @@
+# Dependencias de Node
+node_modules/
+
+# Bases de datos
+*.sqlite
+*.sqlite3
+
+# Variables de entorno
+.env
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
