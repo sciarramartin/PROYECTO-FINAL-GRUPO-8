@@ -1,5 +1,5 @@
 // models/AuthService.js
-const { UsuarioDAO } = require('./UsuarioDAO');
+const { UsuarioDAO } = require('../modelos/UsuarioDAO');
 const { BcryptHelper } = require('../utils/bcryptHelper');
 
 class AuthService {

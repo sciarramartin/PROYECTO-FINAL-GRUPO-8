@@ -1,6 +1,6 @@
 // modelos/RecuperarContrasenaService.js
 const crypto = require('crypto');
-const { UsuarioDAO } = require('./UsuarioDAO');
+const { UsuarioDAO } = require('../modelos/UsuarioDAO');
 const { BcryptHelper } = require('../utils/bcryptHelper');
 const { MailHelper } = require('../utils/mailHelper');
 

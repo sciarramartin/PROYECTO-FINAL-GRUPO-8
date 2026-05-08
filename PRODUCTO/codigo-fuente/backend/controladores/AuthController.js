@@ -1,5 +1,5 @@
 // controllers/AuthController.js
-const { AuthService } = require('./AuthService');
+const { AuthService } = require('../servicios/AuthService');
 const { TokenManager } = require('../utils/tokenManager');
 
 class AuthController {

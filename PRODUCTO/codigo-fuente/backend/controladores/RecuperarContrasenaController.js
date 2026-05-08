@@ -1,5 +1,5 @@
 // controladores/RecuperarContrasenaController.js
-const { RecuperarContrasenaService } = require('./RecuperarContrasenaService');
+const { RecuperarContrasenaService } = require('../servicios/RecuperarContrasenaService');
 
 class RecuperarContrasenaController {
 
