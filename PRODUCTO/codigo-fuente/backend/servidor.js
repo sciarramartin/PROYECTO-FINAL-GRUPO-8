@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 const rutasEjemplo = require('./rutas/rutas-ejemplo');
+const rutasActividad = require('./rutas/actividades-personales.ruta.js');
 
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(express.json());
 
 // Rutas
 app.use('/api/ejemplos', rutasEjemplo);
+app.use('/api/actividad-personal', rutasActividad);
 
 
 // Ruta base
