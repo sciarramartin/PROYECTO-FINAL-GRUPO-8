@@ -17,7 +17,7 @@ const App = () => {
         <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
         <Route path="/resetear-contrasena" element={<ResetearContrasena />} />
 
-        {/* Rutas privadas — descomentá cuando el Dashboard esté listo */}
+        {/* Rutas privadas — esto hay que descomentarlo cuando este listo el Dashboard */}
         {/* <Route path="/dashboard" element={
           <RutaPrivada>
             <Dashboard />
