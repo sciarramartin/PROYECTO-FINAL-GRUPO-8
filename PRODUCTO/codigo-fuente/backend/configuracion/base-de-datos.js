@@ -1,20 +1,11 @@
-// config/database.js
 const { Sequelize } = require('sequelize');
 const path = require('path');
 
+// Configuración de la base de datos SQLite
 const baseDeDatos = new Sequelize({
     dialect: 'sqlite',
     storage: path.join(__dirname, '../base-de-datos.sqlite'),
-    logging: false
+    logging: false // Cambiar a true si deseas ver las consultas SQL en la consola
 });
 
-const conectarDB = async () => {
-    try {
-        await baseDeDatos.authenticate();
-        console.log('Conexión exitosa con SQLite.');
-    } catch (error) {
-        console.error('Error al conectar con la base de datos:', error.message);
-    }
-};
-
-module.exports = { baseDeDatos, conectarDB };
+module.exports = { baseDeDatos };

@@ -1,8 +1,8 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { baseDeDatos } = require('./configuracion/base-de-datos');
-const { router: authRoutes } = require('./rutas/authRoutes');
+const rutasEjemplo = require('./rutas/rutas-ejemplo');
+
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -12,7 +12,8 @@ app.use(cors());
 app.use(express.json());
 
 // Rutas
-app.use('/api/auth', authRoutes);
+app.use('/api/ejemplos', rutasEjemplo);
+
 
 // Ruta base
 app.get('/', (req, res) => {
@@ -22,29 +23,14 @@ app.get('/', (req, res) => {
 // Iniciar servidor y conectar a la base de datos
 const iniciarServidor = async () => {
     try {
-        await baseDeDatos.sync({ alter: true });
+        await baseDeDatos.sync({ force: false });
         console.log('Base de datos conectada correctamente.');
-        
-        const servidor = app.listen(PUERTO, () => {
+        app.listen(PUERTO, () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO}`);
         });
-
-        // Manejar errores del servidor
-        servidor.on('error', (error) => {
-            console.error('Error en el servidor:', error);
-            process.exit(1);
-        });
-
     } catch (error) {
         console.error('Error al iniciar el servidor:', error);
-        process.exit(1);
     }
 };
-
-// Manejar errores no capturados
-process.on('uncaughtException', (error) => {
-    console.error('Error no capturado:', error);
-    process.exit(1);
-});
 
 iniciarServidor();
