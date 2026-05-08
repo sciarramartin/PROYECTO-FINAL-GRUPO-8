@@ -1,0 +1,9 @@
+JWT_SECRET=campus_plataforma_academica_clave_secreta_2024
+
+MAIL_USER=
+MAIL_PASS=
+
+NOTA: Tienen que crear su .env en su proyecto y agregar estas 3 variables. en MAIL_PASS y en MAIL_USER tienen que poner
+los datos de la cuenta de Gmail de donde quieren enviar los mail para recuperar la contraseña. Tiene que ser una cuenta
+con el factor de dos pasos y tienen que generar una contraseña de aplicacion. Cuando sepamos bien el nombre de la
+app creamos un mail con ese nombre y ya lo dejamos ahi.
