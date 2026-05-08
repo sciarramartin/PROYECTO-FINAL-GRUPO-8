@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 const Login = () => {
@@ -8,6 +8,15 @@ const Login = () => {
   const [recordarme, setRecordarme] = useState(false);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+
+  // Al cargar el componente, verificar si hay un mail guardado
+  useEffect(() => {
+    const mailGuardado = localStorage.getItem("mail_recordado");
+    if (mailGuardado) {
+      setMail(mailGuardado);
+      setRecordarme(true);
+    }
+  }, []);
 
   const manejarLogin = async () => {
     setError("");
@@ -26,10 +35,16 @@ const Login = () => {
 
       const { token, usuario } = respuesta.data;
 
-      // Si recordarme está tildado, persiste aunque se cierre el navegador
-      const storage = recordarme ? localStorage : sessionStorage;
-      storage.setItem("token", token);
-      storage.setItem("usuario", JSON.stringify(usuario));
+      // Guardar o borrar el mail según el checkbox
+      if (recordarme) {
+        localStorage.setItem("mail_recordado", mail);
+      } else {
+        localStorage.removeItem("mail_recordado");
+      }
+
+      // El token siempre en sessionStorage
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("usuario", JSON.stringify(usuario));
 
       window.location.href = "/dashboard";
     } catch (err) {
