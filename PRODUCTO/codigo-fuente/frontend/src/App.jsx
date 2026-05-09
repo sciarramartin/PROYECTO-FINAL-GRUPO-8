@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import RecuperarContrasena from './components/RecuperarContrasena';
 import ResetearContrasena from './components/ResetearContrasena';
+import Layout from './components/Layout';
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -17,12 +18,13 @@ const App = () => {
         <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
         <Route path="/resetear-contrasena" element={<ResetearContrasena />} />
 
-        {/* Rutas privadas — esto hay que descomentarlo cuando este listo el Dashboard */}
-        {/* <Route path="/dashboard" element={
+        <Route path="/dashboard" element={
           <RutaPrivada>
-            <Dashboard />
+            <Layout>
+              <p className="text-gray-400">Bienvenido al Dashboard</p>
+            </Layout>
           </RutaPrivada>
-        } /> */}
+        } />
 
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
