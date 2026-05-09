@@ -1,33 +1,52 @@
-// models/AuthService.js
-const { UsuarioDAO } = require('../modelos/UsuarioDAO');
-const { BcryptHelper } = require('../utils/bcryptHelper');
+// servicios/AuthService.js
+const { Usuario } = require('../modelos/Usuario');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-class AuthService {
+const SECRET = process.env.JWT_SECRET || 'clave_secreta';
 
-    constructor() {
-        this.usuarioDAO = new UsuarioDAO();
-        this.bcryptHelper = new BcryptHelper();
+const login = async (req, res) => {
+    const { mail, contraseña } = req.body;
+
+    if (!mail || !contraseña) {
+        return res.status(400).json({ mensaje: 'Completá todos los campos' });
     }
 
-    async login(mail, contraseña) {
+    try {
         // 1. Buscar el usuario por mail
-        const usuario = await this.usuarioDAO.findByEmail(mail);
+        const usuario = await Usuario.findOne({ where: { mail } });
 
         if (!usuario) {
-            throw new Error('Credenciales inválidas');
+            return res.status(401).json({ mensaje: 'Credenciales inválidas' });
         }
 
         // 2. Comparar la contraseña
-        const contraseñaValida = await this.bcryptHelper.comparar(contraseña, usuario.contraseña);
+        const contraseñaValida = await bcrypt.compare(contraseña, usuario.contraseña);
 
         if (!contraseñaValida) {
-            throw new Error('Credenciales inválidas');
+            return res.status(401).json({ mensaje: 'Credenciales inválidas' });
         }
 
-        // 3. Retornar el usuario si todo está bien
-        return usuario;
+        // 3. Firmar el token
+        const token = jwt.sign(
+            { id: usuario.id, mail: usuario.mail, nombre: usuario.nombre },
+            SECRET,
+            { expiresIn: '8h' }
+        );
+
+        // 4. Responder con el token y datos del usuario
+        return res.status(200).json({
+            token,
+            usuario: {
+                id: usuario.id,
+                mail: usuario.mail,
+                nombre: usuario.nombre
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).json({ mensaje: 'Error interno del servidor' });
     }
+};
 
-}
-
-module.exports = { AuthService };
+module.exports = { login };
