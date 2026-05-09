@@ -1,6 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
+// Ir agregando los modelos
+require('./modelos/Usuario');
+require('./modelos/Carrera');
+require('./modelos/TipoUsuario');
+
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 const { router: authRoutes } = require('./rutas/authRoutes');
 
@@ -22,7 +28,7 @@ app.get('/', (req, res) => {
 // Iniciar servidor y conectar a la base de datos
 const iniciarServidor = async () => {
     try {
-        await baseDeDatos.sync({ alter: true });
+        await baseDeDatos.sync();
         console.log('Base de datos conectada correctamente.');
         
         const servidor = app.listen(PUERTO, () => {
