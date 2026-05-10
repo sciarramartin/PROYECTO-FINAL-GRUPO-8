@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import ActividadEditor from './ActividadEditor';
 
 const Horario = () => {
     const days = [
@@ -35,12 +36,15 @@ const Horario = () => {
             nombre: 'yoga',
             hora_inicio: '07:00',
             duracion: 60,
-            dias: 3, // Lunes + Martes
+            dias: 5, // Lunes + Martes
             color: '#FFE5B3',
             id_usuario: 1
         }
     ];
-
+     
+    const [showEditor, setShowEditor] = useState(false);
+    const [actividadEditando, setActividadEditando] = useState(null);
+    const [actividades, setActividades] = useState([]);
     const [columns, setColumns] = useState([]);
 
     const PIXELS_POR_HORA = 36;
@@ -210,6 +214,34 @@ const Horario = () => {
         );
     };
 
+    // seccion editor
+    const handleSaveActividad = (nuevaActividad) => {
+        if (nuevaActividad.id) {
+            // Actualizar actividad existente
+            setActividades(prev => 
+                prev.map(act => act.id === nuevaActividad.id ? nuevaActividad : act)
+            );
+        } else {
+            // Crear nueva actividad (el id lo asignará la base de datos)
+            // Por ahora asignamos un temporal
+            const tempId = Date.now();
+            setActividades(prev => [...prev, { ...nuevaActividad, id: tempId }]);
+        }
+        
+        // Aquí también podrías hacer una llamada a la API para guardar en la BD
+    };
+
+    const handleEditActividad = (actividad) => {
+        setActividadEditando(actividad);
+        setShowEditor(true);
+    };
+
+    const handleNewActividad = () => {
+        setActividadEditando(null);
+        setShowEditor(true);
+    };
+
+
     return (
         <>
             <div className="bg-white rounded-xl shadow-lg overflow-x-auto">
@@ -267,6 +299,7 @@ const Horario = () => {
                                         <div
                                             key={`${act.id}-${idx}`}
                                             className="absolute left-1 right-1 p-2 overflow-hidden shadow-md hover:scale-[1.02] transition-all duration-200"
+                                            onClick={() => handleEditActividad(act)}
                                             style={{
                                                 backgroundColor:
                                                     act.color,
@@ -353,6 +386,14 @@ const Horario = () => {
                     </div>
                 </div>
             )}
+            {/* Editor */}
+            <ActividadEditor
+                editor={showEditor}
+                setEditor={setShowEditor}
+                actividadActual={actividadEditando}
+                setActividadActual={setActividadEditando}
+                onSave={handleSaveActividad}
+            />
         </>
     );
 };
