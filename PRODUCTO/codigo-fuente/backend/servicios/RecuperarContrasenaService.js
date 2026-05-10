@@ -1,59 +1,86 @@
-// modelos/RecuperarContrasenaService.js
+// servicios/RecuperarContrasenaService.js
 const crypto = require('crypto');
-const { UsuarioDAO } = require('../modelos/UsuarioDAO');
-const { BcryptHelper } = require('../utils/bcryptHelper');
+const bcrypt = require('bcrypt');
+const { Usuario } = require('../modelos/Usuario');
 const { MailHelper } = require('../utils/mailHelper');
 
-class RecuperarContrasenaService {
+const mailHelper = new MailHelper();
 
-    constructor() {
-        this.usuarioDAO = new UsuarioDAO();
-        this.bcryptHelper = new BcryptHelper();
-        this.mailHelper = new MailHelper();
+const solicitarRecuperacion = async (req, res) => {
+    const { mail } = req.body;
+
+    if (!mail) {
+        return res.status(400).json({ mensaje: 'El correo es obligatorio.' });
     }
 
-    async solicitarRecuperacion(mail) {
-        // 1. Verificar que el mail existe
-        const usuario = await this.usuarioDAO.findByEmail(mail);
+    try {
+        const usuario = await Usuario.findOne({ where: { mail } });
 
-        if (!usuario) {
-            // No revelamos si el mail existe o no por seguridad
-            return;
+        if (usuario) {
+            // 1. Generar token único
+            const token = crypto.randomBytes(32).toString('hex');
+
+            // 2. Calcular expiración (1 hora)
+            const expiracion = new Date(Date.now() + 60 * 60 * 1000);
+
+            // 3. Guardar token en la BD
+            await Usuario.update(
+                { reset_token: token, reset_token_expira: expiracion },
+                { where: { mail } }
+            );
+
+            // 4. Mandar el mail
+            await mailHelper.enviarRecuperacion(mail, token);
         }
 
-        // 2. Generar token único
-        const token = crypto.randomBytes(32).toString('hex');
+        // Siempre respondemos lo mismo por seguridad
+        return res.status(200).json({
+            mensaje: 'Si el correo está registrado, vas a recibir un mail con las instrucciones.'
+        });
 
-        // 3. Calcular expiración (1 hora)
-        const expiracion = new Date(Date.now() + 60 * 60 * 1000);
+    } catch (error) {
+        return res.status(500).json({ mensaje: 'Error al procesar la solicitud.' });
+    }
+};
 
-        // 4. Guardar token en la BD
-        await this.usuarioDAO.guardarResetToken(mail, token, expiracion);
+const resetearContrasena = async (req, res) => {
+    const { token, nuevaContraseña } = req.body;
 
-        // 5. Mandar el mail
-        await this.mailHelper.enviarRecuperacion(mail, token);
+    if (!token || !nuevaContraseña) {
+        return res.status(400).json({ mensaje: 'Faltan datos obligatorios.' });
     }
 
-    async resetearContrasena(token, nuevaContraseña) {
+    if (nuevaContraseña.length < 6) {
+        return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres.' });
+    }
+
+    try {
         // 1. Buscar usuario por token
-        const usuario = await this.usuarioDAO.findByResetToken(token);
+        const usuario = await Usuario.findOne({ where: { reset_token: token } });
 
         if (!usuario) {
-            throw new Error('Token inválido');
+            return res.status(400).json({ mensaje: 'Token inválido.' });
         }
 
         // 2. Verificar que el token no expiró
         if (new Date() > new Date(usuario.reset_token_expira)) {
-            throw new Error('El token expiró');
+            return res.status(400).json({ mensaje: 'El token expiró.' });
         }
 
         // 3. Hashear la nueva contraseña
-        const hash = await this.bcryptHelper.hashear(nuevaContraseña);
+        const hash = await bcrypt.hash(nuevaContraseña, 10);
 
         // 4. Actualizar contraseña y limpiar token
-        await this.usuarioDAO.actualizarContrasena(usuario.id, hash);
+        await Usuario.update(
+            { contraseña: hash, reset_token: null, reset_token_expira: null },
+            { where: { id: usuario.id } }
+        );
+
+        return res.status(200).json({ mensaje: 'Contraseña actualizada correctamente.' });
+
+    } catch (error) {
+        return res.status(500).json({ mensaje: 'Error al procesar la solicitud.' });
     }
+};
 
-}
-
-module.exports = { RecuperarContrasenaService };
+module.exports = { solicitarRecuperacion, resetearContrasena };
