@@ -15,7 +15,7 @@ const Horario = () => {
         {
             id: 1,
             nombre: 'box',
-            hora_inicio: '08:40',
+            hora_inicio: '08:00',
             duracion: 260,
             dias: 31,
             color: '#FFB3BA',
@@ -26,7 +26,7 @@ const Horario = () => {
             nombre: 'natación',
             hora_inicio: '14:30',
             duracion: 90,
-            dias: 28, // Miércoles + Jueves + Viernes
+            dias: 15, // Miércoles + Jueves + Viernes
             color: '#BAFFC3',
             id_usuario: 1
         },
@@ -43,7 +43,7 @@ const Horario = () => {
 
     const [columns, setColumns] = useState([]);
 
-    const PIXELS_POR_HORA = 32;
+    const PIXELS_POR_HORA = 36;
     const PIXELS_POR_MINUTO = PIXELS_POR_HORA / 60;
 
     const getDayNamesFromBitmask = (bitmask) => {
@@ -211,15 +211,11 @@ const Horario = () => {
     };
 
     return (
-        <div className="p-6 font-sans overflow-x-auto bg-gray-50 min-h-screen">
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-                Mi Horario Semanal
-            </h2>
-
+        <>
             <div className="bg-white rounded-xl shadow-lg overflow-x-auto">
-                <div className="flex min-w-[900px]">
+                <div className="flex min-w-[800px]">
                     {/* Columna horas */}
-                    <div className="flex-shrink-0 w-24 bg-gray-50 border-r-2 border-gray-200">
+                    <div className="flex-shrink-0 w-15 md:w-24 bg-gray-50 border-r-2 border-gray-200">
                         <div className="h-16 flex items-center justify-center font-bold bg-gray-100 border-b-2 border-gray-200 text-gray-700">
                             Hora
                         </div>
@@ -238,7 +234,7 @@ const Horario = () => {
                     {columns.map((column) => (
                         <div
                             key={column.id}
-                            className="flex-1 min-w-[140px] relative border-r border-gray-100"
+                            className="flex-1 min-w-[100px] relative border-r border-gray-100"
                         >
                             <div
                                 className="h-16 flex items-center justify-center font-semibold text-sm border-b-2 border-gray-200"
@@ -270,7 +266,7 @@ const Horario = () => {
                                     (act, idx) => (
                                         <div
                                             key={`${act.id}-${idx}`}
-                                            className="absolute left-1 right-1 rounded-lg p-2 overflow-hidden shadow-md hover:scale-[1.02] transition-all duration-200"
+                                            className="absolute left-1 right-1 p-2 overflow-hidden shadow-md hover:scale-[1.02] transition-all duration-200"
                                             style={{
                                                 backgroundColor:
                                                     act.color,
@@ -357,7 +353,7 @@ const Horario = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 
