@@ -46,7 +46,7 @@ const Actividad = baseDeDatos.define('actividad', {
             is: /^#[0-9A-F]{6}$/i // Validar color hexadecimal
         }
     },
-    /*
+    
     id_usuario: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -56,18 +56,18 @@ const Actividad = baseDeDatos.define('actividad', {
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
-    }*/
+    }
 }, {
     tableName: 'actividad',
     timestamps: false,
-    /*
+
     indexes: [
             {
                 fields: ['id_usuario'] // Índice para búsquedas por usuario
             }
-    ]*/
+    ]
 });
-/*
+
 Actividad.associate = () => {
     Actividad.belongsTo(baseDeDatos.Usuario, {
         foreignKey: 'id_usuario',
@@ -75,5 +75,4 @@ Actividad.associate = () => {
     });
 };
 
-*/
 module.exports = Actividad;

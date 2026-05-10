@@ -49,7 +49,6 @@ const crearActividad = async (req, res) => {
             color = generarColorRandom();
         }
 
-        console.log(nombre, horaInicio, duracion, dias, color,)
         
         const nuevoRegistro = await Actividad.create({ 
             nombre, 
@@ -57,7 +56,7 @@ const crearActividad = async (req, res) => {
             duracion, 
             dias, 
             color,
-            //id_usuario: req.user.id || 1 // O como manejes la autenticación
+            id_usuario: req.id || 1 // O como manejes la autenticación
         });
         
         res.status(201).json(nuevoRegistro);
