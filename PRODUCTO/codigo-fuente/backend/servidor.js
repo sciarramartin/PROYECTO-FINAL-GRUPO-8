@@ -7,6 +7,8 @@ require('./modelos/Usuario');
 require('./modelos/Carrera');
 require('./modelos/TipoUsuario');
 
+require('./modelos/asociaciones');
+
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 const { router: authRoutes } = require('./rutas/authRoutes');
 

@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const { baseDeDatos } = require('../configuracion/base-de-datos');
 
 const TipoUsuario = baseDeDatos.define('TipoUsuario', {
-    id_tipo_usuario: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
@@ -13,7 +13,7 @@ const TipoUsuario = baseDeDatos.define('TipoUsuario', {
         unique: true
     }
 }, {
-    tableName: 'tipo_usuarios',
+    tableName: 'tipos_usuarios',
     timestamps: false
 });
 
