@@ -24,7 +24,8 @@ app.get('/', (req, res) => {
 // Iniciar servidor y conectar a la base de datos
 const iniciarServidor = async () => {
     try {
-        await baseDeDatos.sync({ alter: true });
+        // Quitamos { alter: true } para que SQLite no borre las relaciones M:N al reiniciar
+        await baseDeDatos.sync();
         console.log('Base de datos conectada correctamente.');
         
         const servidor = app.listen(PUERTO, () => {
