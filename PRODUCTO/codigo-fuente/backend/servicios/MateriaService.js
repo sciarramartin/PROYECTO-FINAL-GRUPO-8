@@ -76,8 +76,7 @@ const actualizarMateria = async (id, datos) => {
         codigo: codigo || materia.codigo,
         nombre: nombre || materia.nombre,
         nivel_anio: nivel_anio || materia.nivel_anio,
-        cuatrimestre: cuatrimestre || materia.cuatrimestre,
-        activa: (datos.activa !== undefined) ? datos.activa : materia.activa
+        cuatrimestre: cuatrimestre || materia.cuatrimestre
     });
 
     // Actualizar correlativas si se envían
@@ -98,8 +97,8 @@ const eliminarMateria = async (id) => {
     const materia = await Materia.findByPk(id);
     if (!materia) throw new Error('Materia no encontrada');
 
-    // Borrado lógico: cambiamos el estado activa a false
-    await materia.update({ activa: false });
+    // Al eliminar, Sequelize debería limpiar automáticamente las relaciones en la tabla intermedia
+    await materia.destroy();
     return true;
 };
 

@@ -19,14 +19,12 @@ const GrafoCorrelativas = ({ materias }) => {
         label: `${materia.codigo}\n${materia.nombre}`,
         level: parseInt(materia.nivel_anio) || 1, // Nivel explícito convertido a entero
         color: {
-          background: materia.activa === false ? '#f1f5f9' : '#ffffff',
-          border: materia.activa === false ? '#cbd5e1' : '#cbd5e1',
+          background: '#ffffff',
+          border: '#cbd5e1',
           highlight: { background: '#f8fafc', border: '#64748b' }
         },
-        font: { face: 'Inter, sans-serif', size: 14, color: materia.activa === false ? '#94a3b8' : '#1e293b' },
+        font: { face: 'Inter, sans-serif', size: 14, color: '#1e293b' },
         shape: 'box',
-        borderDashes: materia.activa === false, // Borde punteado si está inactiva
-        opacity: materia.activa === false ? 0.6 : 1,
         widthConstraint: { maximum: 200 }, // Evita que se recorten los textos o se hagan minúsculos
         borderWidth: 2,
         borderRadius: 8,
@@ -59,7 +57,7 @@ const GrafoCorrelativas = ({ materias }) => {
           direction: 'LR',
           levelSeparation: levelSeparation,
           nodeSpacing: 80,
-          treeSpacing: 50
+          treeSpacing: 150
         }
       },
       physics: false,
