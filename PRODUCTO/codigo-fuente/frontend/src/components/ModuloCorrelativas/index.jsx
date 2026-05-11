@@ -73,13 +73,17 @@ export default function ModuloCorrelativas() {
     });
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta materia?')) return;
     try {
-      await api.delete(`/materias/${id}`);
+      if (id.activa === false) {
+        // Restaurar
+        await api.put(`/materias/${id.id}`, { activa: true });
+      } else {
+        // Desactivar
+        await api.delete(`/materias/${id.id}`);
+      }
       cargarMaterias();
     } catch (err) {
-      alert('Error al eliminar la materia');
+      alert('Error al cambiar el estado de la materia');
     }
   };
 
@@ -120,10 +124,17 @@ export default function ModuloCorrelativas() {
                     {materias.map((materia) => (
                       <tr key={materia.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-4 py-3 whitespace-nowrap text-slate-900 font-medium">{materia.codigo}</td>
-                        <td className="px-4 py-3 text-slate-600 truncate max-w-[200px]" title={materia.nombre}>{materia.nombre}</td>
+                        <td className="px-4 py-3 text-slate-600 truncate max-w-[200px]" title={materia.nombre}>
+                          {materia.nombre}
+                          {materia.activa === false && (
+                            <span className="ml-2 px-2 py-0.5 text-[10px] font-bold bg-red-100 text-red-600 rounded uppercase">Inactiva</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                           <button onClick={() => handleEdit(materia)} className="text-indigo-600 hover:text-indigo-900 mr-4 font-semibold">Editar</button>
-                          <button onClick={() => handleDelete(materia.id)} className="text-red-500 hover:text-red-700 font-semibold">Eliminar</button>
+                          <button onClick={() => handleDelete(materia)} className={`${materia.activa === false ? 'text-green-600 hover:text-green-800' : 'text-red-500 hover:text-red-700'} font-semibold`}>
+                            {materia.activa === false ? 'Restaurar' : 'Eliminar'}
+                          </button>
                         </td>
                       </tr>
                     ))}

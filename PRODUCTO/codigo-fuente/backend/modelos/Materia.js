@@ -24,6 +24,11 @@ const Materia = baseDeDatos.define('Materia', {
     cuatrimestre: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    activa: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
     }
 }, {
     tableName: 'materias',
