@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 const { router: authRoutes } = require('./rutas/authRoutes');
+const { router: materiasRoutes } = require('./rutas/materiasRoutes');
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -13,6 +14,7 @@ app.use(express.json());
 
 // Rutas
 app.use('/api/auth', authRoutes);
+app.use('/api/materias', materiasRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {
