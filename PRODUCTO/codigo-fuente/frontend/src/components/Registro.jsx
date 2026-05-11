@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import registro from "../assets/registro.png";
 
 const Registro = () => {
     const [nombre, setNombre] =
@@ -366,3 +367,4 @@ const Registro = () => {
 };
 
 export default Registro;
+
