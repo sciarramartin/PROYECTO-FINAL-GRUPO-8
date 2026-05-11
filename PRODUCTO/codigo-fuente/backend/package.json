@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "iniciar": "node servidor.js"
+    "iniciar": "node servidor.js",
+    "seed": "node scripts/seed-materias.js"
   },
   "keywords": [],
   "author": "",

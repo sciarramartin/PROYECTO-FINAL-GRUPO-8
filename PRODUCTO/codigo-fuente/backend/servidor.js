@@ -11,6 +11,7 @@ require('./modelos/asociaciones');
 
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 const { router: authRoutes } = require('./rutas/authRoutes');
+const { router: materiasRoutes } = require('./rutas/materiasRoutes');
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.use(express.json());
 
 // Rutas
 app.use('/api/auth', authRoutes);
+app.use('/api/materias', materiasRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {
@@ -30,6 +32,7 @@ app.get('/', (req, res) => {
 // Iniciar servidor y conectar a la base de datos
 const iniciarServidor = async () => {
     try {
+        // Quitamos { alter: true } para que SQLite no borre las relaciones M:N al reiniciar
         await baseDeDatos.sync();
         console.log('Base de datos conectada correctamente.');
         
