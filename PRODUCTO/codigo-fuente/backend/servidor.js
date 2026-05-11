@@ -1,6 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
+// Ir agregando los modelos
+require('./modelos/Usuario');
+require('./modelos/Carrera');
+require('./modelos/TipoUsuario');
+
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 const { router: authRoutes } = require('./rutas/authRoutes');
 const { router: materiasRoutes } = require('./rutas/materiasRoutes');
