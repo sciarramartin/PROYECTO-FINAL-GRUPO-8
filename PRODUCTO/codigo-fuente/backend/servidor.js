@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 
-const rutasActividad = require('./rutas/actividades-personales.ruta.js');
+const rutasActividad = require('./controladores/actividades-personales.controlador.js');
 
 const { router: authRoutes } = require('./rutas/authRoutes');
 
