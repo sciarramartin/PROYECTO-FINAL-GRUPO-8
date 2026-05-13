@@ -1,36 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ActividadEditor from './ActividadEditor';
 import {getActividades, PostActividad} from './services';
 
-/*[
-        {
-            id: 1,
-            nombre: 'box',
-            hora_inicio: '08:00',
-            duracion: 260,
-            dias: 31,
-            color: '#FFB3BA',
-            id_usuario: 1
-        },
-        {
-            id: 2,
-            nombre: 'natación',
-            hora_inicio: '14:30',
-            duracion: 90,
-            dias: 15, // Miércoles + Jueves + Viernes
-            color: '#BAFFC3',
-            id_usuario: 1
-        },
-        {
-            id: 3,
-            nombre: 'yoga',
-            hora_inicio: '07:00',
-            duracion: 60,
-            dias: 5, // Lunes + Martes
-            color: '#FFE5B3',
-            id_usuario: 1
-        }
-    ];*/
+
 
 const Horario = () => {
     const days = [
@@ -43,17 +15,24 @@ const Horario = () => {
         ['Domingo', 64]
     ];
 
-    const actividadesIniciales = getActividades(1).then(data => {
-        console.log('Actividades obtenidas:', data);
-        return data;
-    }).catch(error => {
-        console.error('Error al cargar actividades:', error);
-        return [];
-    });
-     
+
     const [showEditor, setShowEditor] = useState(false);
     const [actividadEditando, setActividadEditando] = useState(null);
-    const [actividades, setActividades] = useState(actividadesIniciales);
+    const [actividades, setActividades] = useState([]);
+    const actividadesOriginales = useRef([]);
+
+    useEffect(() => {
+        const cargarActividades = async () => {
+            try {
+                const data = await getActividades(1);
+                setActividades(data);
+                actividadesOriginales.current = data; // guardar copia
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        cargarActividades();
+    }, []);
 
 
     const PIXELS_POR_HORA = 32;
@@ -108,21 +87,21 @@ const Horario = () => {
                 }
 
                 const horaFin = calcularHoraFin(
-                    actividad.hora_inicio,
+                    actividad.horaInicio,
                     actividad.duracion
                 );
 
                 columna.data.push({
                     ...actividad,
-                    hora_fin: horaFin
+                    horaFin: horaFin
                 });
             });
         });
 
         nuevasColumnas.forEach((col) => {
             col.data.sort((a, b) =>
-                a.hora_inicio.localeCompare(
-                    b.hora_inicio
+                a.horaInicio.localeCompare(
+                    b.horaInicio
                 )
             );
         });
@@ -147,11 +126,11 @@ const Horario = () => {
         columns.forEach((column) => {
             column.data.forEach((actividad) => {
                 const horaInicioNum = parseInt(
-                    actividad.hora_inicio.split(':')[0]
+                    actividad.horaInicio.split(':')[0]
                 );
 
                 const [horaFinNum] =
-                    actividad.hora_fin
+                    actividad.horaFin
                         .split(':')
                         .map(Number);
 
@@ -227,34 +206,49 @@ const Horario = () => {
 
     // seccion editor
     const handleSaveActividad = (actividadActualizada) => {
+        if(actividadActualizada?.id){
+            //PutActividad(actividadActualizada);
+            setActividades(prev => 
+                prev.map(act => act.id === actividadActualizada.id ? actividadActualizada : act)
+            );
+        } else {
+            console.log(actividadActualizada);
+            PostActividad(actividadActualizada);
+        }
+
         
+
     };
 
     const handlePreviewActividad = (nuevaActividad) => {
         if (nuevaActividad.id) {
-            // Actualizar actividad existente
-            console.log('Actualizando actividad:', nuevaActividad);
-            setActividades(prev => 
-                prev.map(act => act.id === nuevaActividad.id ? nuevaActividad : act)
+            setActividades(prev =>
+                prev.some(act => act.id === nuevaActividad.id)
+                    ? prev.map(act => act.id === nuevaActividad.id ? nuevaActividad : act)
+                    : [...prev, nuevaActividad]  // es nueva, no estaba aún
             );
-        } else {
-            // Crear nueva actividad (el id lo asignará la base de datos)
-            // Por ahora asignamos un temporal
-
-            setActividades(prev => [...prev, { ...nuevaActividad, id: Date.now() }]);
         }
-        
-        // Aquí también podrías hacer una llamada a la API para guardar en la BD
     };
-
     const handleEditActividad = (actividad) => {
         setActividadEditando(actividad);
         setShowEditor(true);
     };
 
-    const handleNewActividad = () => {
-        setActividadEditando(null);
+    const handleNewActividad = (horaInicio, days) => {
+        handleCancel();
+        setActividadEditando({
+            nombre: '',
+            horaInicio: horaInicio,  // ya viene como "08:00"
+            duracion: 60,
+            dias: days,
+            idUsuario: 1
+        });
         setShowEditor(true);
+    };
+
+    const handleCancel = () => {
+        setActividades(actividadesOriginales.current); // revertir
+        setShowEditor(false);
     };
 
 
@@ -305,7 +299,11 @@ const Horario = () => {
                                 {horas.map((hora) => (
                                     <div
                                         key={hora}
-                                        className="h-[32px] border-b border-gray-100"
+                                        role="button"
+                                        onKeyDown={(e) => e.key === 'Enter' && handleNewActividad(hora, column.id)}
+                                        tabIndex={0}
+                                        className="h-[32px] border-b border-gray-100 w-full text-left"
+                                        onClick={() => handleNewActividad(hora, column.id)}
                                     />
                                 ))}
 
@@ -315,20 +313,22 @@ const Horario = () => {
                                         <div
                                             key={`${act.id}-${idx}`}
                                             className="absolute left-1 right-1 p-2 overflow-hidden shadow-md hover:scale-[1.02] transition-all duration-200"
-                                            onClick={() => handleEditActividad(act)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditActividad(act);}}
                                             style={{
                                                 backgroundColor:
                                                     act.color,
 
                                                 top: `${calcularPosicionY(
-                                                    act.hora_inicio
+                                                    act.horaInicio
                                                 )}px`,
 
                                                 height: `${calcularAltura(
                                                     act.duracion
                                                 )}px`
                                             }}
-                                            title={`${act.nombre}\n${act.hora_inicio} - ${act.hora_fin}`}
+                                            title={`${act.nombre}\n${act.horaInicio} - ${act.horaFin}`}
                                         >
                                             <div className="font-bold text-xs capitalize truncate">
                                                 {
@@ -338,11 +338,11 @@ const Horario = () => {
 
                                             <div className="text-[10px] text-gray-700 mt-1">
                                                 {
-                                                    act.hora_inicio
+                                                    act.horaInicio
                                                 }{' '}
                                                 -{' '}
                                                 {
-                                                    act.hora_fin
+                                                    act.horaFin
                                                 }
                                             </div>
 
@@ -409,7 +409,8 @@ const Horario = () => {
                 actividadActual={actividadEditando}
                 setActividadActual={setActividadEditando}
                 preview={handlePreviewActividad}
-                onSave={handleSaveActividades}
+                onSave={handleSaveActividad}
+                onCancel={handleCancel}
             />
         </>
     );

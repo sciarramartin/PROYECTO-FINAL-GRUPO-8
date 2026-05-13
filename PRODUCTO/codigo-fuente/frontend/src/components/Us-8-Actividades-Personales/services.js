@@ -1,23 +1,98 @@
-import axios from "axios";
+import axios from 'axios';
 
-const getActividades = async (idUsuario) => {
+const API_URL =
+    'http://localhost:3000/api/actividad-personal';
+
+export const getActividades = async (
+    idUsuario
+) => {
+
     try {
-        const respuesta = await axios.get(`http://localhost:3000/api/actividad-personal/${idUsuario}`);
-        return respuesta.data;
+
+        const response = await axios.get(
+            `${API_URL}/${idUsuario}`
+        );
+
+        return response.data;
+
     } catch (error) {
-        console.error("Error al obtener las actividades:", error);
+
+        console.error(
+            'Error obteniendo actividades:',
+            error
+        );
+
         throw error;
     }
 };
 
-const PostActividad = async (actividad) => {
+export const PostActividad = async (
+    actividad
+) => {
+
     try {
-        const respuesta = await axios.post(`http://localhost:3000/api/actividad-personal`, actividad);
-        return respuesta.data;
+
+        const response = await axios.post(
+            API_URL,
+            actividad
+        );
+
+        return response.data;
+
     } catch (error) {
-        console.error("Error al crear la actividad:", error);
+
+        console.error(
+            'Error creando actividad:',
+            error
+        );
+
         throw error;
     }
 };
 
-export { getActividades, PostActividad };
+export const PutActividad = async (
+    actividad
+) => {
+
+    try {
+
+        const response = await axios.put(
+            `${API_URL}/${actividad.id}`,
+            actividad
+        );
+
+        return response.data;
+
+    } catch (error) {
+
+        console.error(
+            'Error actualizando actividad:',
+            error
+        );
+
+        throw error;
+    }
+};
+
+export const DeleteActividad = async (
+    id
+) => {
+
+    try {
+
+        const response = await axios.delete(
+            `${API_URL}/${id}`
+        );
+
+        return response.data;
+
+    } catch (error) {
+
+        console.error(
+            'Error eliminando actividad:',
+            error
+        );
+
+        throw error;
+    }
+};

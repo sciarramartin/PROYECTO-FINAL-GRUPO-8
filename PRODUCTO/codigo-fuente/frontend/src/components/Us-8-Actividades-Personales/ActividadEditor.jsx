@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActual, preview, onSave }) => {
+const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActual, preview, onSave, onCancel }) => {
     const days = [
         ['Lunes', 1],
         ['Martes', 2],
@@ -14,47 +14,47 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
     // Estado local para el formulario
     const [formData, setFormData] = useState({
         nombre: '',
-        hora_inicio: '08:00',
-        hora_fin: '09:00',
+        horaInicio: '08:00',
+        horaFin: '09:00',
         duracion: 60,
         color: '#3b82f6', // Color por defecto (azul)
         dias: 0,
-        id_usuario: 1 // Esto debería venir del contexto/usuario actual
+        idUsuario: 1 // Esto debería venir del contexto/usuario actual
     });
 
     const duracion = useMemo(() => {
 
         const [hInicio, mInicio] =
-            formData.hora_inicio.split(':').map(Number);
+            formData.horaInicio.split(':').map(Number);
 
         const [hFin, mFin] =
-            formData.hora_fin.split(':').map(Number);
+            formData.horaFin.split(':').map(Number);
 
         return (hFin - hInicio) * 60 + (mFin - mInicio);
 
-    }, [formData.hora_inicio, formData.hora_fin]);
+    }, [formData.horaInicio, formData.horaFin]);
 
     // Cargar datos de la actividad si estamos editando
     useEffect(() => {
-        if (actividadActual && actividadActual.id) {
+        if (actividadActual) {
             setFormData({
                 nombre: actividadActual.nombre || '',
-                hora_inicio: actividadActual.hora_inicio || '08:00',
-                hora_fin: actividadActual.hora_fin || '09:00',
+                horaInicio: actividadActual.horaInicio || '08:00',
+                horaFin: actividadActual.horaFin || '09:00',
                 duracion: actividadActual.duracion || 60,
                 dias: actividadActual.dias || 0,
                 color: actividadActual.color,
-                id_usuario: actividadActual.id_usuario || 1
+                idUsuario: actividadActual.idUsuario || 1
             });
         } else {
             // Resetear para nueva actividad
             setFormData({
                 nombre: '',
-                hora_inicio: '08:00',
-                hora_fin: '09:00',
+                horaInicio: '08:00',
+                horaFin: '09:00',
                 duracion: 60,
                 dias: 0,
-                id_usuario: 1
+                idUsuario: 1
             });
         }
     }, [actividadActual, editor]);
@@ -77,12 +77,12 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         const nuevaActividad = {
             ...(actividadActual?.id && { id: actividadActual.id }), // Solo incluir id si existe
             nombre: formData.nombre,
-            hora_inicio: formData.hora_inicio,
+            horaInicio: formData.horaInicio,
             duracion: duracion,
-            hora_fin: formData.hora_fin,
+            horaFin: formData.horaFin,
             dias: formData.dias,
             color: formData.color, // Mantener color existente o usar default
-            id_usuario: formData.id_usuario
+            idUsuario: formData.idUsuario
         };
 
         // Notificar al padre
@@ -114,9 +114,9 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
             return;
         }
 
-        if (formData.hora_inicio !== formData.hora_fin) {
-            let minInicio = formData.hora_inicio.split(':').map(Number);
-            let minFin = formData.hora_fin.split(':').map(Number);
+        if (formData.horaInicio !== formData.horaFin) {
+            let minInicio = formData.horaInicio.split(':').map(Number);
+            let minFin = formData.horaFin.split(':').map(Number);
             formData.duracion = (minFin[0] - minInicio[0]) * 60 + (minFin[1] - minInicio[1]);
         }
 
@@ -158,11 +158,11 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                 {/* Hora inicio con selector numérico */}
                 <div className="flex items-center gap-1">
                     <select
-                        name="hora_inicio"
-                        value={formData.hora_inicio.split(':')[0]}
+                        name="horaInicio"
+                        value={formData.horaInicio.split(':')[0]}
                         onChange={(e) => {
-                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.hora_inicio.split(':')[1]}`;
-                            setFormData(prev => ({ ...prev, hora_inicio: nuevaHora }));
+                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.horaInicio.split(':')[1]}`;
+                            setFormData(prev => ({ ...prev, horaInicio: nuevaHora }));
 
                         }}
                         className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
@@ -175,10 +175,10 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                     </select>
                     <span className="text-gray-400">:</span>
                     <select
-                        value={formData.hora_inicio.split(':')[1]}
+                        value={formData.horaInicio.split(':')[1]}
                         onChange={(e) => {
-                            const nuevaHora = `${formData.hora_inicio.split(':')[0]}:${e.target.value}`;
-                            setFormData(prev => ({ ...prev, hora_inicio: nuevaHora }));
+                            const nuevaHora = `${formData.horaInicio.split(':')[0]}:${e.target.value}`;
+                            setFormData(prev => ({ ...prev, horaInicio: nuevaHora }));
 
                         }}
                         className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
@@ -196,10 +196,10 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                 <div className="flex items-center gap-1">
                     <select
                         name="hora_fin"
-                        value={formData.hora_fin.split(':')[0]}
+                        value={formData.horaFin.split(':')[0]}
                         onChange={(e) => {
-                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.hora_fin.split(':')[1]}`;
-                            setFormData(prev => ({ ...prev, hora_fin: nuevaHora }));
+                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.horaFin.split(':')[1]}`;
+                            setFormData(prev => ({ ...prev, horaFin: nuevaHora }));
 
                         }}
                         className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
@@ -212,10 +212,10 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                     </select>
                     <span className="text-gray-400">:</span>
                     <select
-                        value={formData.hora_fin.split(':')[1]}
+                        value={formData.horaFin.split(':')[1]}
                         onChange={(e) => {
-                            const nuevaHora = `${formData.hora_fin.split(':')[0]}:${e.target.value}`;
-                            setFormData(prev => ({ ...prev, hora_fin: nuevaHora }));
+                            const nuevaHora = `${formData.horaFin.split(':')[0]}:${e.target.value}`;
+                            setFormData(prev => ({ ...prev, horaFin: nuevaHora }));
 
                         }}
                         className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
@@ -256,7 +256,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                         ✓
                     </button>
                     <button
-                        onClick={handleCancel}
+                        onClick={onCancel}
                         className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded hover:bg-gray-200 transition"
                     >
                         ✗
