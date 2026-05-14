@@ -24,12 +24,12 @@ router.post("/", async (req, res) => {
     }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:idUsuario/:id", async (req, res) => {
     try {
-        const { id } = req.params;
+        const { idUsuario, id } = req.params;
         const datosActualizados = req.body;
         
-        const actividadActualizada = await Actividad.updateById(id, datosActualizados);
+        const actividadActualizada = await Actividad.update(idUsuario, id, datosActualizados);
         
         if (!actividadActualizada) {
             return res.status(404).json({ error: 'Registro no encontrado.' });

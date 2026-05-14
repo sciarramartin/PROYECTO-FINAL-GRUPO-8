@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ActividadEditor from './ActividadEditor';
-import {getActividades, PostActividad} from './services';
-
-
+import {getActividades, PostActividad, PutActividad, DeleteActividad} from './services';
 
 const Horario = () => {
     const days = [
@@ -19,18 +17,18 @@ const Horario = () => {
     const [showEditor, setShowEditor] = useState(false);
     const [actividadEditando, setActividadEditando] = useState(null);
     const [actividades, setActividades] = useState([]);
-    const actividadesOriginales = useRef([]);
+
+
+    const cargarActividades = async () => {
+        try {
+            const data = await getActividades(1);
+            setActividades(data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
-        const cargarActividades = async () => {
-            try {
-                const data = await getActividades(1);
-                setActividades(data);
-                actividadesOriginales.current = data; // guardar copia
-            } catch (error) {
-                console.error(error);
-            }
-        };
         cargarActividades();
     }, []);
 
@@ -67,6 +65,7 @@ const Horario = () => {
         const nuevasColumnas = [];
 
         actividades.forEach((actividad) => {
+
             const activeDays =
                 getDayNamesFromBitmask(actividad.dias);
 
@@ -113,7 +112,7 @@ const Horario = () => {
     }, [actividades]);
 
     const { minHora, maxHora } = useMemo(() => {
-        if (columns.length === 0) {
+        if (!columns || columns.length === 0) {
             return {
                 minHora: 6,
                 maxHora: 17
@@ -206,48 +205,66 @@ const Horario = () => {
 
     // seccion editor
     const handleSaveActividad = (actividadActualizada) => {
-        if(actividadActualizada?.id){
-            //PutActividad(actividadActualizada);
-            setActividades(prev => 
-                prev.map(act => act.id === actividadActualizada.id ? actividadActualizada : act)
-            );
+        if(actividadActualizada.id !== "preview"){
+            PutActividad(actividadActualizada);
+
         } else {
             console.log(actividadActualizada);
-            PostActividad(actividadActualizada);
+            const nuevaActividad = {
+                nombre: actividadActualizada.nombre,
+                horaInicio: actividadActualizada.horaInicio,
+                duracion: actividadActualizada.duracion,
+                dias: actividadActualizada.dias,
+                color: actividadActualizada.color, // Mantener color existente o usar default
+                idUsuario: actividadActualizada.idUsuario
+            };
+            PostActividad(nuevaActividad);
+
         }
-
-        
-
     };
 
     const handlePreviewActividad = (nuevaActividad) => {
-        if (nuevaActividad.id) {
-            setActividades(prev =>
-                prev.some(act => act.id === nuevaActividad.id)
-                    ? prev.map(act => act.id === nuevaActividad.id ? nuevaActividad : act)
-                    : [...prev, nuevaActividad]  // es nueva, no estaba aún
+        if (nuevaActividad.id !== "preview") {
+            setActividades(prev => prev.map(act => act.id === nuevaActividad.id ? nuevaActividad : act)
             );
+        } else { 
+            setActividades(prev =>
+                prev.filter(act => act.id !== "preview")
+            );
+            nuevaActividad.id = "preview";
+            setActividades(prev => [...prev, nuevaActividad]);
         }
     };
+
     const handleEditActividad = (actividad) => {
         setActividadEditando(actividad);
         setShowEditor(true);
     };
 
     const handleNewActividad = (horaInicio, days) => {
-        handleCancel();
-        setActividadEditando({
+
+        const nuevaActividad = {
+            id: "preview",
             nombre: '',
-            horaInicio: horaInicio,  // ya viene como "08:00"
+            horaInicio: horaInicio,
             duracion: 60,
+            horaFin: calcularHoraFin(horaInicio, 60),
+            color:'#FFB3BA',
             dias: days,
             idUsuario: 1
-        });
+        };
+
+        setActividadEditando(nuevaActividad);
+
         setShowEditor(true);
     };
 
     const handleCancel = () => {
-        setActividades(actividadesOriginales.current); // revertir
+        setActividades(prev =>
+            prev.filter(act => act.id !== "preview")
+        );
+        setActividadEditando(null); // revertir
+
         setShowEditor(false);
     };
 
@@ -311,7 +328,7 @@ const Horario = () => {
                                 {column.data.map(
                                     (act, idx) => (
                                         <div
-                                            key={`${act.id}-${idx}`}
+                                            key={`${act.horaInicio}-${idx}`}
                                             className="absolute left-1 right-1 p-2 overflow-hidden shadow-md hover:scale-[1.02] transition-all duration-200"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -354,7 +371,9 @@ const Horario = () => {
                                             </div>
                                         </div>
                                     )
+
                                 )}
+                                
                             </div>
                         </div>
                     ))}

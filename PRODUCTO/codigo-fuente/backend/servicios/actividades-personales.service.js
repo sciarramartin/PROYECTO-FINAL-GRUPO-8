@@ -81,10 +81,15 @@ const create = async (actividadData) => {
     }
 };
 // PUT - Actualizar una actividad por ID
-const update = async (id, actividadData) => {
+const update = async (idUsuario, id, actividadData) => {
     try {
         // Primero verificamos si la actividad existe
-        const actividadExistente = await Actividad.findByPk(id);
+        const actividadExistente = await Actividad.findOne({
+            where: {
+                id_usuario: idUsuario,
+                id: id
+            }
+        });
         
         if (!actividadExistente) {
             throw new Error('Actividad no encontrada');
@@ -123,7 +128,10 @@ const update = async (id, actividadData) => {
         
         // Realizar actualización
         await Actividad.update(datosActualizar, {
-            where: { id: id }
+            where: {
+                id_usuario: idUsuario,
+                id: id
+            }
         });
         
         // Obtener actividad actualizada

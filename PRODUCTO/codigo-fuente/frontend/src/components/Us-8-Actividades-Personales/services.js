@@ -57,7 +57,7 @@ export const PutActividad = async (
     try {
 
         const response = await axios.put(
-            `${API_URL}/${actividad.id}`,
+            `${API_URL}/${actividad.idUsuario}/${actividad.id}`,
             actividad
         );
 

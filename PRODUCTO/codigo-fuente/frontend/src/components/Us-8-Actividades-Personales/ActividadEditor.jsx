@@ -17,7 +17,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         horaInicio: '08:00',
         horaFin: '09:00',
         duracion: 60,
-        color: '#3b82f6', // Color por defecto (azul)
+        color: '#FFB3BA', // Color por defecto (azul)
         dias: 0,
         idUsuario: 1 // Esto debería venir del contexto/usuario actual
     });
@@ -38,6 +38,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
     useEffect(() => {
         if (actividadActual) {
             setFormData({
+                id: actividadActual.id || '1000',
                 nombre: actividadActual.nombre || '',
                 horaInicio: actividadActual.horaInicio || '08:00',
                 horaFin: actividadActual.horaFin || '09:00',
@@ -45,16 +46,6 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                 dias: actividadActual.dias || 0,
                 color: actividadActual.color,
                 idUsuario: actividadActual.idUsuario || 1
-            });
-        } else {
-            // Resetear para nueva actividad
-            setFormData({
-                nombre: '',
-                horaInicio: '08:00',
-                horaFin: '09:00',
-                duracion: 60,
-                dias: 0,
-                idUsuario: 1
             });
         }
     }, [actividadActual, editor]);
@@ -99,6 +90,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         if (setActividadActual) {
             setActividadActual(null);
         }
+        onCancel();
     };
 
     // guardar edición
@@ -114,17 +106,24 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
             return;
         }
 
+
+
         if (formData.horaInicio !== formData.horaFin) {
             let minInicio = formData.horaInicio.split(':').map(Number);
             let minFin = formData.horaFin.split(':').map(Number);
-            formData.duracion = (minFin[0] - minInicio[0]) * 60 + (minFin[1] - minInicio[1]);
+            const nuevaDuracion =
+                (minFin[0] - minInicio[0]) * 60 +
+                (minFin[1] - minInicio[1]);
+            if (nuevaDuracion <= 0) {
+                alert('La duración debe ser mayor a 0 minutos');
+                return;
+            }
+            const actividadFinal = {
+                ...formData,
+                duracion: nuevaDuracion
+            };
+            onSave(actividadFinal);
         }
-
-        if (formData.duracion <= 0) {
-            alert('La duración debe ser mayor a 0 minutos');
-            return;
-        }
-        onSave(formData);
         setEditor(false);
         if (setActividadActual) {
             setActividadActual(null);
@@ -247,6 +246,35 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                     ))}
                 </div>
 
+                {/* Separador */}
+                <span className="text-gray-300">|</span>
+
+                {/* Colores */}
+                <div className="flex gap-1">
+                {[
+                    { name: 'Rojo', value: '#FFB3BA' },
+                    { name: 'Azul', value: '#C5E99B' },
+                    { name: 'Verde', value: '#B5E3FF' },
+                    { name: 'Amarillo', value: '#FFD1B3' },
+                    { name: 'Violeta', value: '#E0BBE4' },
+                    { name: 'Rosa', value: '#B5F5E3' },
+                    { name: 'Rosa', value: '#FFCCD9' }
+                ].map((color) => (
+                    <button
+                    key={color.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
+                    className={`w-4 h-4 rounded-xs border-2 transition ${
+                        formData.color === color.value
+                        ? 'border-gray-800 scale-110 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                    style={{ backgroundColor: color.value }}
+                    title={color.name}
+                    />
+                ))}
+                </div>
+
                 {/* Botones */}
                 <div className="flex gap-1 ml-2">
                     <button
@@ -256,7 +284,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                         ✓
                     </button>
                     <button
-                        onClick={onCancel}
+                        onClick={handleCancel}
                         className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded hover:bg-gray-200 transition"
                     >
                         ✗
