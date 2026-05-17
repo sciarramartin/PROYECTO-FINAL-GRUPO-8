@@ -11,7 +11,7 @@ require('./modelos/asociaciones');
 
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 const { router: authRoutes } = require('./rutas/authRoutes');
-const { router: materiasRoutes } = require('./rutas/materiasRoutes');
+const rutasMateria = require('./controladores/materia.controlador');
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -22,7 +22,7 @@ app.use(express.json());
 
 // Rutas
 app.use('/api/auth', authRoutes);
-app.use('/api/materias', materiasRoutes);
+app.use('/api/materias', rutasMateria);
 
 // Ruta base
 app.get('/', (req, res) => {

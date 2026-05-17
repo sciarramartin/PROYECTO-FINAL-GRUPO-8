@@ -1,7 +1,8 @@
-// controladores/controlador-materias.js
-const MateriaService = require('../servicios/MateriaService');
+const MateriaService = require('../servicios/materia.servicio');
+const express = require('express');
+const router = express.Router();
 
-const obtenerMaterias = async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const materias = await MateriaService.obtenerTodas();
         res.json(materias);
@@ -9,9 +10,9 @@ const obtenerMaterias = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Hubo un error al obtener las materias.' });
     }
-};
+});
 
-const obtenerMateriaPorId = async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const materia = await MateriaService.obtenerPorId(id);
@@ -20,9 +21,9 @@ const obtenerMateriaPorId = async (req, res) => {
         console.error(error);
         res.status(404).json({ error: error.message });
     }
-};
+});
 
-const crearMateria = async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { codigo, nombre, nivel_anio, cuatrimestre, correlativas } = req.body;
 
@@ -43,9 +44,9 @@ const crearMateria = async (req, res) => {
         }
         res.status(500).json({ error: 'Hubo un error al crear la materia.' });
     }
-};
+});
 
-const actualizarMateria = async (req, res) => {
+router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const datos = req.body;
@@ -59,9 +60,9 @@ const actualizarMateria = async (req, res) => {
         }
         res.status(500).json({ error: 'Hubo un error al actualizar la materia.' });
     }
-};
+});
 
-const eliminarMateria = async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         await MateriaService.eliminarMateria(id);
@@ -70,12 +71,6 @@ const eliminarMateria = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Hubo un error al eliminar la materia.' });
     }
-};
+});
 
-module.exports = {
-    obtenerMaterias,
-    obtenerMateriaPorId,
-    crearMateria,
-    actualizarMateria,
-    eliminarMateria
-};
+module.exports = router;

@@ -1,5 +1,5 @@
 // servicios/MateriaService.js
-const { Materia } = require('../modelos/Materia');
+const { Materia } = require('../modelos/materia.modelo');
 
 // Algoritmo recursivo DFS para buscar ciclos.
 // Verifica si 'materiaRequisitoId' requiere en algún punto a 'materiaDestinoId'
