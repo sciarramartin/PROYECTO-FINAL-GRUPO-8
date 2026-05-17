@@ -30,20 +30,17 @@ const Usuario = baseDeDatos.define('Usuario', {
         allowNull: false,
         unique: true
     },
-    id_carrera: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
     anio_ingreso: {
         type: DataTypes.INTEGER,
         allowNull: true
     },
-    tipo_usuario: {
-        type: DataTypes.ENUM(
-            'estudiante',
-            'administrador'
-        ),
-        defaultValue: 'estudiante'
+    id_carrera: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    id_tipo_usuario: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     },
     reset_token: {
         type: DataTypes.STRING,
