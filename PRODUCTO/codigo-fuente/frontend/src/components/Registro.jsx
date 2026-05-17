@@ -55,7 +55,7 @@ const Registro = () => {
         setCargando(true);
         try {
             await axios.post(
-                "http://localhost:3000/api/auth/registro",
+                `${import.meta.env.VITE_API_URL}/auth/registro`,
                 {
                     nombre,
                     apellido,
