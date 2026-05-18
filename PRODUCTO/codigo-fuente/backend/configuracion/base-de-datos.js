@@ -5,7 +5,7 @@ const path = require('path');
 const baseDeDatos = new Sequelize({
     dialect: 'sqlite',
     storage: path.join(__dirname, '../base-de-datos.sqlite'),
-    logging: false
+    logging: true // Cambiar a true si deseas ver las consultas SQL en la consola
 });
 
 const conectarDB = async () => {

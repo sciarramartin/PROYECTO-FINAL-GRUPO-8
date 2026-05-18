@@ -1,8 +1,8 @@
 const { baseDeDatos, conectarDB } = require('../configuracion/base-de-datos');
-const { Materia } = require('../modelos/Materia');
+const { Materia } = require('../modelos/materia.modelo');
 
 // Sincronizar modelos antes del seed (por si acaso no corrieron el servidor aún)
-require('../modelos/Materia'); // Asegurarnos de que el modelo esté registrado con sus relaciones
+require('../modelos/materia.modelo'); // Asegurarnos de que el modelo esté registrado con sus relaciones
 
 const materiasSistemas = [
     // Primer Año

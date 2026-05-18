@@ -17,7 +17,7 @@ const RecuperarContrasena = () => {
 
     setCargando(true);
     try {
-      await axios.post("http://localhost:3000/api/auth/recuperar-contrasena", { mail });
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/recuperar-contrasena`, { mail });
       setEnviado(true);
     } catch (err) {
       setError("Error al procesar la solicitud. Intentá de nuevo.");
