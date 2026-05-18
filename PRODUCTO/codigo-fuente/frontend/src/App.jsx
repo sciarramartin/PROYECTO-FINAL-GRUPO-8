@@ -1,9 +1,9 @@
 // frontend/src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Login';
+import Login from './components/ModuloSesion/Login';
 import RecuperarContrasena from './components/RecuperarContrasena';
 import ResetearContrasena from './components/ResetearContrasena';
-import Registro from './components/Registro';
+import Registro from './components/ModuloSesion/Registro';
 import Layout from './components/Layout';
 import ModuloCorrelativas from './components/ModuloCorrelativas';
 

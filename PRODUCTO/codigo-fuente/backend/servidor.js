@@ -6,12 +6,15 @@ const cors = require('cors');
 require('./modelos/Usuario');
 require('./modelos/Carrera');
 require('./modelos/TipoUsuario');
-
 require('./modelos/asociaciones');
 
 const { baseDeDatos } = require('./configuracion/base-de-datos');
-const { router: authRoutes } = require('./rutas/authRoutes');
-const { router: materiasRoutes } = require('./rutas/materiasRoutes');
+
+// Controladores
+const rutasActividad = require('./controladores/actividades-personales.controlador.js');
+const rutasMateria = require('./controladores/materia.controlador');
+const rutasAuth = require('./controladores/auth.controlador');       
+const rutasUsuarios = require('./controladores/usuarios.controlador'); 
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -21,8 +24,10 @@ app.use(cors());
 app.use(express.json());
 
 // Rutas
-app.use('/api/auth', authRoutes);
-app.use('/api/materias', materiasRoutes);
+app.use('/api/auth', rutasAuth);                
+app.use('/api/usuarios', rutasUsuarios);         
+app.use('/api/materias', rutasMateria);
+app.use('/api/actividad-personal', rutasActividad);
 
 // Ruta base
 app.get('/', (req, res) => {

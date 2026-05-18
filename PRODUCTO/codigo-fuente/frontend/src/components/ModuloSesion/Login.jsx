@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useMostrarContraseña } from "./mostrarContrasena";
 
 const Login = () => {
   const [mail, setMail] = useState("");
   const [contraseña, setContraseña] = useState("");
-  const [mostrarContraseña, setMostrarContraseña] = useState(false);
   const [recordarme, setRecordarme] = useState(false);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+
+  // y traemos el estado y la función directamente desde mostrarContrasena.js
+  const { mostrarContraseña, alternarVisibilidad } = useMostrarContraseña();
 
   // Al cargar el componente, verificar si hay un mail guardado
   useEffect(() => {
@@ -93,6 +96,7 @@ const Login = () => {
           <div className="login-input-contenedor flex items-center border border-gray-200 rounded-lg px-3.5 py-2.5 bg-gray-50">
             <span className="text-gray-400 mr-2.5">🔒</span>
             <input
+              // 3. Sigue leyendo 'mostrarContraseña', pero ahora proviene de tu hook
               type={mostrarContraseña ? "text" : "password"}
               placeholder="Ingresá tu contraseña"
               value={contraseña}
@@ -101,7 +105,8 @@ const Login = () => {
             />
             <span
               className="text-gray-400 ml-2 cursor-pointer select-none"
-              onClick={() => setMostrarContraseña(!mostrarContraseña)}
+              // 4. CAMBIO AQUÍ: Ahora llama a la función reutilizable 'alternarVisibilidad'
+              onClick={alternarVisibilidad}
             >
               {mostrarContraseña ? "🙈" : "👁"}
             </span>
