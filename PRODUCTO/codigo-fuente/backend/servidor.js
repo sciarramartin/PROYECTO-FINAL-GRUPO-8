@@ -12,9 +12,8 @@ require('./modelos/asociaciones');
 const { baseDeDatos } = require('./configuracion/base-de-datos');
 
 const rutasActividad = require('./controladores/actividades-personales.controlador.js');
-const rutasUsuarios = require('./controladores/controlador-usuarios.js')
-
-//const { router: authRoutes } = require('./rutas/authRoutes');
+const rutasUsuarios = require('./controladores/controlador-usuarios.js');
+const rutasAuth = require('./controladores/auth.controller');       
 const rutasMateria = require('./controladores/materia.controlador');
 
 const app = express();
@@ -25,7 +24,7 @@ app.use(cors());
 app.use(express.json());
 
 // Rutas
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', rutasAuth);                                  
 app.use('/api/materias', rutasMateria);
 app.use('/api/actividad-personal', rutasActividad);
 app.use('/api/usuarios', rutasUsuarios);
@@ -38,7 +37,6 @@ app.get('/', (req, res) => {
 // Iniciar servidor y conectar a la base de datos
 const iniciarServidor = async () => {
     try {
-        // Quitamos { alter: true } para que SQLite no borre las relaciones M:N al reiniciar
         await baseDeDatos.sync();
         console.log('Base de datos conectada correctamente.');
         
@@ -46,7 +44,6 @@ const iniciarServidor = async () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO}`);
         });
 
-        // Manejar errores del servidor
         servidor.on('error', (error) => {
             console.error('Error en el servidor:', error);
             process.exit(1);
@@ -58,7 +55,6 @@ const iniciarServidor = async () => {
     }
 };
 
-// Manejar errores no capturados
 process.on('uncaughtException', (error) => {
     console.error('Error no capturado:', error);
     process.exit(1);

@@ -1,4 +1,3 @@
-// controladores/usuarios.controlador.js
 const UsuarioService = require('../servicios/UsuarioService');
 const AuthService = require('../servicios/AuthService'); 
 const express = require('express');
