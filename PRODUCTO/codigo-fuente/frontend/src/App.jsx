@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import RecuperarContrasena from './components/RecuperarContrasena';
 import ResetearContrasena from './components/ResetearContrasena';
-import Registro from './components/Registro';
+import Horario from './components/Horario';
+
 import Layout from './components/Layout';
 import ModuloCorrelativas from './components/ModuloCorrelativas';
 
@@ -31,6 +32,14 @@ const App = () => {
         
         {/* Ruta temporal para probar tu User Story */}
         <Route path="/correlativas" element={<ModuloCorrelativas />} />
+
+        <Route path="/Horario" element={
+          <RutaPrivada>
+            <Layout>
+              <Horario/>
+            </Layout>
+          </RutaPrivada>
+        } />
 
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>

@@ -10,6 +10,9 @@ require('./modelos/TipoUsuario');
 require('./modelos/asociaciones');
 
 const { baseDeDatos } = require('./configuracion/base-de-datos');
+
+const rutasActividad = require('./controladores/actividades-personales.controlador.js');
+
 const { router: authRoutes } = require('./rutas/authRoutes');
 const rutasMateria = require('./controladores/materia.controlador');
 
@@ -23,6 +26,7 @@ app.use(express.json());
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/materias', rutasMateria);
+app.use('/api/actividad-personal', rutasActividad);
 
 // Ruta base
 app.get('/', (req, res) => {
