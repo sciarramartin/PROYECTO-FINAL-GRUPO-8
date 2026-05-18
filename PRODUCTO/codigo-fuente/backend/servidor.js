@@ -14,7 +14,7 @@ const { baseDeDatos } = require('./configuracion/base-de-datos');
 const rutasActividad = require('./controladores/actividades-personales.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js')
 
-const { router: authRoutes } = require('./rutas/authRoutes');
+//const { router: authRoutes } = require('./rutas/authRoutes');
 const rutasMateria = require('./controladores/materia.controlador');
 
 const app = express();
@@ -25,7 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 // Rutas
-app.use('/api/auth', authRoutes);
+// app.use('/api/auth', authRoutes);
 app.use('/api/materias', rutasMateria);
 app.use('/api/actividad-personal', rutasActividad);
 app.use('/api/usuarios', rutasUsuarios);
