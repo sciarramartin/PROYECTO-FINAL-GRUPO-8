@@ -13,7 +13,7 @@ const { baseDeDatos } = require('./configuracion/base-de-datos');
 
 const rutasActividad = require('./controladores/actividades-personales.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js');
-const rutasAuth = require('./controladores/auth.controller');       
+const rutasAuth = require('./controladores/auth.controller.js');       
 const rutasMateria = require('./controladores/materia.controlador');
 
 const app = express();
