@@ -3,10 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import RecuperarContrasena from './components/RecuperarContrasena';
 import ResetearContrasena from './components/ResetearContrasena';
+import Registro from './components/Registro';
 import Horario from './components/Us-8-Actividades-Personales/Horario';
 
 import Layout from './components/Layout';
-import ModuloCorrelativas from './components/ModuloCorrelativas';
+import ModuloCorrelativas from './components/Us-9-Registrar-Correlativas';
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
