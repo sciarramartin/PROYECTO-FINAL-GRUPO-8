@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import RecuperarContrasena from './components/RecuperarContrasena';
 import ResetearContrasena from './components/ResetearContrasena';
-import Horario from './components/Horario';
+import Horario from './components/Us-8-Actividades-Personales/Horario';
 
 import Layout from './components/Layout';
 import ModuloCorrelativas from './components/ModuloCorrelativas';
