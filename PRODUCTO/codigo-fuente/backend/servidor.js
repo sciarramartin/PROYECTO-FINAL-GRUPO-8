@@ -6,6 +6,7 @@ const cors = require('cors');
 require('./modelos/Usuario');
 require('./modelos/Carrera');
 require('./modelos/TipoUsuario');
+require('./modelos/Carrera.js')
 
 require('./modelos/asociaciones');
 
@@ -16,6 +17,8 @@ const rutasUsuarios = require('./controladores/controlador-usuarios.js')
 
 //const { router: authRoutes } = require('./rutas/authRoutes');
 const rutasMateria = require('./controladores/materia.controlador');
+const rutasCarreras = require('./controladores/controlador-carreras.js'); // para probar resgitro
+
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -29,6 +32,7 @@ app.use(express.json());
 app.use('/api/materias', rutasMateria);
 app.use('/api/actividad-personal', rutasActividad);
 app.use('/api/usuarios', rutasUsuarios);
+app.use('/api/carreras', rutasCarreras); // para probar registro
 
 // Ruta base
 app.get('/', (req, res) => {
