@@ -41,7 +41,7 @@ const Registro = () => {
         }
         setCargando(true);
         try { 
-            await axios.post("http://localhost:3000/api/auth/registro", {
+            await axios.post("http://localhost:3000/api/usuarios/registro", {
                 nombre,
                 apellido,
                 nombre_usuario,
