@@ -232,9 +232,9 @@ const Horario = () => {
     };
 
     // seccion editor
-    const handleSaveActividad = (actividadActualizada) => {
+    const handleSaveActividad = async (actividadActualizada) => {
         if(actividadActualizada.id !== "preview"){
-            PutActividad(actividadActualizada);
+            await PutActividad(actividadActualizada);
 
         } else {
             console.log(actividadActualizada);
@@ -246,7 +246,7 @@ const Horario = () => {
                 color: actividadActualizada.color, // Mantener color existente o usar default
                 idUsuario: actividadActualizada.idUsuario
             };
-            const actResp = PostActividad(nuevaActividad);
+            const actResp = await PostActividad(nuevaActividad);
             setActividades(prev => [...prev, actResp]);
         }
     };

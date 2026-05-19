@@ -124,10 +124,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
             };
             onSave(actividadFinal);
         }
-        setEditor(false);
-        if (setActividadActual) {
-            setActividadActual(null);
-        }
+
     };
 
 
