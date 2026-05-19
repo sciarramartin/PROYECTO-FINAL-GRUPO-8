@@ -20,12 +20,25 @@ const cargarDatosSemilla = async () => {
         });
         console.log('✅ Tipos de Usuario verificados.');
 
-        // 3. Crear Carrera de Sistemas (id: 1) si no existe
-        await Carrera.findOrCreate({
-            where: { id: 1 },
-            defaults: { nombre: 'Ingeniería en Sistemas de Información', facultad: 'FRSN' }
-        });
-        console.log('✅ Carreras verificadas.');
+        // 3. Crear todas las carreras disponibles si no existen
+        const carreras = [
+            { id: 1, nombre: 'Ingeniería en Sistemas', facultad: 'FRSN' },
+            { id: 2, nombre: 'Ingeniería Electrónica', facultad: 'FRSN' },
+            { id: 3, nombre: 'Ingeniería Industrial', facultad: 'FRSN' },
+            { id: 4, nombre: 'Ingeniería Mecánica', facultad: 'FRSN' },
+            { id: 5, nombre: 'Ingeniería Civil', facultad: 'FRSN' },
+            { id: 6, nombre: 'Ingeniería Química', facultad: 'FRSN' },
+            { id: 7, nombre: 'Ingeniería Eléctrica', facultad: 'FRSN' },
+            { id: 8, nombre: 'Ingeniería Metalúrgica', facultad: 'FRSN' }
+        ];
+
+        for (const carrera of carreras) {
+            await Carrera.findOrCreate({
+                where: { id: carrera.id },
+                defaults: { nombre: carrera.nombre, facultad: carrera.facultad }
+            });
+        }
+        console.log('✅ Carreras verificadas e insertadas.');
 
         console.log('--- Proceso de datos semilla finalizado ---');
     } catch (error) {
