@@ -23,7 +23,7 @@ const cargarDatosSemilla = async () => {
         // 3. Crear Carrera de Sistemas (id: 1) si no existe
         await Carrera.findOrCreate({
             where: { id: 1 },
-            defaults: { nombre: 'Ingeniería en Sistemas de Información' }
+            defaults: { nombre: 'Ingeniería en Sistemas de Información', facultad: 'FRSN' }
         });
         console.log('✅ Carreras verificadas.');
 
@@ -34,3 +34,8 @@ const cargarDatosSemilla = async () => {
 };
 
 module.exports = { cargarDatosSemilla };
+
+// Si el script se ejecuta directamente desde la terminal (ej: node scripts/seed-usuario.js)
+if (require.main === module) {
+    cargarDatosSemilla();
+}
