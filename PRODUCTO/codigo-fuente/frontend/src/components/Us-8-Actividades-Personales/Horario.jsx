@@ -61,7 +61,7 @@ const Horario = () => {
         return horas * 60 + minutos;
     };
 
-    const columns = useMemo(() => {
+    const diasActividades = useMemo(() => {
         const nuevasColumnas = [];
 
         actividades.forEach((actividad) => {
@@ -111,8 +111,36 @@ const Horario = () => {
 
     }, [actividades]);
 
+    const columns = useMemo(() => {
+        if (diasActividades.length > 2) {
+            return diasActividades;
+        }
+
+        const nuevasColumnas = [...diasActividades];
+
+        getDayNamesFromBitmask(31).forEach(([name, value]) => {
+            let columna = diasActividades.find(
+                (c) => c.id === value
+            );
+
+            if (!columna) {
+                columna = {
+                    id: value,
+                    title: name,
+                    data: []
+                };
+
+                nuevasColumnas.push(columna);
+            }
+
+        });
+        nuevasColumnas.sort((a, b) => a.id - b.id);
+        return nuevasColumnas
+
+    }, [diasActividades]);
+
     const { minHora, maxHora } = useMemo(() => {
-        if (!columns || columns.length === 0) {
+        if (actividades.length === 0 ) {
             return {
                 minHora: 6,
                 maxHora: 17
@@ -218,8 +246,8 @@ const Horario = () => {
                 color: actividadActualizada.color, // Mantener color existente o usar default
                 idUsuario: actividadActualizada.idUsuario
             };
-            PostActividad(nuevaActividad);
-
+            const actResp = PostActividad(nuevaActividad);
+            setActividades(prev => [...prev, actResp]);
         }
     };
 

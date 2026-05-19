@@ -29,11 +29,11 @@ const App = () => {
         } />
 
         <Route path="/Horario" element={
-          <RutaPrivada>
+          //<RutaPrivada>
             <Layout>
               <Horario/>
             </Layout>
-          </RutaPrivada>
+          //</RutaPrivada>
         } />
 
         <Route path="/" element={<Navigate to="/login" />} />
