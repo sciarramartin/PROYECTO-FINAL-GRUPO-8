@@ -24,6 +24,7 @@
 - **Reconocimiento antes que recuerdo**: Mantener visible el historial del chat para que el usuario no necesite recordar la respuesta anterior.
 - **Flexibilidad y eficiencia**: Atajos de teclado (Ej: presionar `Enter` para enviar mensajes de chat sin usar siempre el ratón).
 - **Estética minimalista**: Prohibido recargar de información inútil, diseño oscuro y limpio estilo Netflix.
+- **Ayudar a los usuarios a reconocer, diagnosticar y recuperarse de errores (Recuperación Visible)**: Los fallos de red o caídas del servidor jamás deben dejar una "pantalla en blanco". El sistema debe atrapar el error (Catch) y mostrar un cartel/alerta visual, expresado en lenguaje plano y amigable (ej: "Error al cargar las materias desde el servidor"), permitiendo al usuario entender qué falló sin ver códigos técnicos puros.
 
 ---
 

@@ -1,8 +1,12 @@
 // frontend/src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Login';
+import Login from './components/ModuloSesion/Login';
 import RecuperarContrasena from './components/RecuperarContrasena';
 import ResetearContrasena from './components/ResetearContrasena';
+import Registro from './components/ModuloSesion/Registro';
+import Horario from './components/Us-8-Actividades-Personales/Horario';
+import Layout from './components/Layout';
+import ModuloCorrelativas from './components/Us-9-Registrar-Correlativas';
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -14,15 +18,28 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
         <Route path="/resetear-contrasena" element={<ResetearContrasena />} />
 
-        {/* Rutas privadas — descomentá cuando el Dashboard esté listo */}
-        {/* <Route path="/dashboard" element={
+        <Route path="/dashboard" element={
           <RutaPrivada>
-            <Dashboard />
+            <Layout>
+              <p className="text-gray-400">Bienvenido al Dashboard</p>
+            </Layout>
           </RutaPrivada>
-        } /> */}
+        } />
+        
+        {/* Ruta temporal para probar tu User Story */}
+        <Route path="/correlativas" element={<ModuloCorrelativas />} />
+
+        <Route path="/Horario" element={
+          //<RutaPrivada>
+            <Layout>
+              <Horario/>
+            </Layout>
+          //</RutaPrivada>
+        } />
 
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>

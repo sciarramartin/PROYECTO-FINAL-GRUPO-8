@@ -1,33 +1,40 @@
-// models/AuthService.js
-const { UsuarioDAO } = require('../modelos/UsuarioDAO');
-const { BcryptHelper } = require('../utils/bcryptHelper');
+const { Usuario } = require('../modelos/Usuario');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-class AuthService {
+const SECRET = process.env.JWT_SECRET || 'clave_secreta';
 
-    constructor() {
-        this.usuarioDAO = new UsuarioDAO();
-        this.bcryptHelper = new BcryptHelper();
+const login = async (mail, contraseña) => {
+    // 1. Buscar el usuario por mail
+    const usuario = await Usuario.findOne({ where: { mail } });
+
+    if (!usuario) {
+        throw new Error('Credenciales inválidas');
     }
 
-    async login(mail, contraseña) {
-        // 1. Buscar el usuario por mail
-        const usuario = await this.usuarioDAO.findByEmail(mail);
+    // 2. Comparar la contraseña
+    const contraseñaValida = await bcrypt.compare(contraseña, usuario.contraseña);
 
-        if (!usuario) {
-            throw new Error('Credenciales inválidas');
-        }
-
-        // 2. Comparar la contraseña
-        const contraseñaValida = await this.bcryptHelper.comparar(contraseña, usuario.contraseña);
-
-        if (!contraseñaValida) {
-            throw new Error('Credenciales inválidas');
-        }
-
-        // 3. Retornar el usuario si todo está bien
-        return usuario;
+    if (!contraseñaValida) {
+        throw new Error('Credenciales inválidas');
     }
 
-}
+    // 3. Firmar el token
+    const token = jwt.sign(
+        { id: usuario.id, mail: usuario.mail, nombre: usuario.nombre, id_tipo_usuario: usuario.id_tipo_usuario },
+        SECRET,
+        { expiresIn: '8h' }
+    );
 
-module.exports = { AuthService };
+    return {
+        token,
+        usuario: {
+            id: usuario.id,
+            mail: usuario.mail,
+            nombre: usuario.nombre,
+            id_tipo_usuario: usuario.id_tipo_usuario
+        }
+    };
+};
+
+module.exports = { login };

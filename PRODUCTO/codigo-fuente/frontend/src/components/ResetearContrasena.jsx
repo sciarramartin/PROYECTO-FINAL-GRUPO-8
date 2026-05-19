@@ -37,7 +37,7 @@ const ResetearContrasena = () => {
 
     setCargando(true);
     try {
-      await axios.post("http://localhost:3000/api/auth/resetear-contrasena", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/resetear-contrasena`, {
         token,
         nuevaContraseña,
       });

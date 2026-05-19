@@ -21,6 +21,27 @@ const Usuario = baseDeDatos.define('Usuario', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    apellido: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    nombre_usuario: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
+    anio_ingreso: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    id_carrera: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    id_tipo_usuario: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     reset_token: {
         type: DataTypes.STRING,
         allowNull: true
