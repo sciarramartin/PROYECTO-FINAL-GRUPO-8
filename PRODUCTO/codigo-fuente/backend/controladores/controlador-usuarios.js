@@ -1,5 +1,6 @@
 const UsuarioService = require('../servicios/UsuarioService');
 const AuthService = require('../servicios/AuthService'); 
+const { verificarToken } = require('../middleware/authMiddleware');
 const express = require('express');
 const router = express.Router();
 
@@ -14,6 +15,20 @@ router.post('/registro', async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(error.status || 500).json({ error: error.message || 'Error interno del servidor' });
+    }
+});
+
+// GET /api/usuarios/buscar
+// Búsqueda de personas ignorando comas, acentos y mayúsculas
+router.get('/buscar', verificarToken, async (req, res) => {
+    try {
+        const { q } = req.query;
+        const excluirId = req.usuario.id; // Excluir automáticamente al usuario logueado
+        const usuarios = await UsuarioService.buscarUsuarios(q, excluirId);
+        return res.status(200).json(usuarios);
+    } catch (error) {
+        console.error("Error al buscar usuarios:", error);
+        return res.status(error.status || 500).json({ error: error.message || 'Error al realizar la búsqueda' });
     }
 });
 
