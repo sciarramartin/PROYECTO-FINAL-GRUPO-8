@@ -77,18 +77,18 @@ const obtenerUsuarioPorId = async (id) => {
     const usuario = await Usuario.findByPk(id, {
         attributes: { exclude: ['contraseña'] } // Por seguridad, nunca enviamos la contraseña
     });
-    
+
     if (!usuario) {
         throw { status: 404, message: 'Usuario no encontrado' };
     }
-    
+
     return usuario;
 };
 
 
 const actualizarPerfilAlumno = async (id, datosPermitidos) => {
     const usuario = await Usuario.findByPk(id);
-    
+
     if (!usuario) {
         throw { status: 404, message: 'Usuario no encontrado' };
     }
@@ -107,7 +107,7 @@ const actualizarPerfilAlumno = async (id, datosPermitidos) => {
 
 const eliminarUsuario = async (id) => {
     const usuario = await Usuario.findByPk(id);
-    
+
     if (!usuario) {
         throw { status: 404, message: 'El usuario que intentás eliminar no existe.' };
     }
@@ -139,7 +139,7 @@ const buscarUsuarios = async (terminoBusqueda, idUsuarioActual) => {
 
     // 2. Traer todos los usuarios (excluyendo al usuario actual si se pasa)
     const whereClause = idUsuarioActual ? { id: { [Op.ne]: Number(idUsuarioActual) } } : {};
-    
+
     const todosLosUsuarios = await Usuario.findAll({
         where: whereClause,
         attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso']
@@ -163,20 +163,20 @@ const buscarUsuarios = async (terminoBusqueda, idUsuarioActual) => {
         const nombreCompletoInversoNorm = `${apellidoNorm} ${nombreNorm}`;
 
         return nombreNorm.includes(terminoNormalizado) ||
-               apellidoNorm.includes(terminoNormalizado) ||
-               nombreUsuarioNorm.includes(terminoNormalizado) ||
-               nombreCompletoNorm.includes(terminoNormalizado) ||
-               nombreCompletoInversoNorm.includes(terminoNormalizado);
+            apellidoNorm.includes(terminoNormalizado) ||
+            nombreUsuarioNorm.includes(terminoNormalizado) ||
+            nombreCompletoNorm.includes(terminoNormalizado) ||
+            nombreCompletoInversoNorm.includes(terminoNormalizado);
     });
 
     // Devolver los primeros 15 resultados
     return resultados.slice(0, 15);
 };
 
-module.exports = { 
-    crearUsuario, 
-    obtenerUsuarioPorId, 
-    actualizarPerfilAlumno, 
+module.exports = {
+    crearUsuario,
+    obtenerUsuarioPorId,
+    actualizarPerfilAlumno,
     eliminarUsuario,
     buscarUsuarios
 };

@@ -1,14 +1,14 @@
 // frontend/src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/ModuloSesion/Login';
-import RecuperarContrasena from './components/RecuperarContrasena';
-import ResetearContrasena from './components/ResetearContrasena';
+import RecuperarContrasena from './components/ModuloSesion/RecuperarContrasena';
+import ResetearContrasena from './components/ModuloSesion/ResetearContrasena';
 import Registro from './components/ModuloSesion/Registro';
 import Horario from './components/Us-8-Actividades-Personales/Horario';
 import Layout from './components/Layout';
 import ModuloCorrelativas from './components/Us-9-Registrar-Correlativas';
-import PerfilPublico from './components/PerfilPublico';
-import MisConexiones from './components/MisConexiones';
+import PerfilPublico from './components/MoludoPerfil-Amigos/PerfilPublico';
+import MisConexiones from './components/MoludoPerfil-Amigos/MisConexiones';
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -31,7 +31,7 @@ const App = () => {
             </Layout>
           </RutaPrivada>
         } />
-        
+
         {/* Ruta temporal para probar tu User Story */}
         <Route path="/correlativas" element={<ModuloCorrelativas />} />
 
@@ -53,9 +53,9 @@ const App = () => {
 
         <Route path="/Horario" element={
           //<RutaPrivada>
-            <Layout>
-              <Horario/>
-            </Layout>
+          <Layout>
+            <Horario />
+          </Layout>
           //</RutaPrivada>
         } />
 

@@ -17,7 +17,7 @@ const CARRERAS = {
 const PerfilPublico = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [estudiante, setEstudiante] = useState(null);
   const [relacion, setRelacion] = useState("ninguno"); // ninguno, pendiente_enviada, pendiente_recibida, aceptado, mismo_usuario
   const [cargando, setCargando] = useState(true);
@@ -69,9 +69,9 @@ const PerfilPublico = () => {
         data: body,
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       setMensaje(response.data.mensaje || "Operación realizada con éxito");
-      
+
       // Volver a cargar el estado de la relación para actualizar el botón
       const relacionRes = await axios.get(`${apiUrl}/amistades/estado/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -131,7 +131,7 @@ const PerfilPublico = () => {
     <div className="max-w-xl mx-auto mt-6 px-4">
       {/* Contenedor Principal con Glassmorphism sutil */}
       <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg">
-        
+
         {/* Banner Superior Estético */}
         <div className="h-32 bg-gradient-to-r from-indigo-500 to-purple-600 flex items-end justify-center pb-4 relative">
           {/* Círculo de Avatar en Solapamiento */}

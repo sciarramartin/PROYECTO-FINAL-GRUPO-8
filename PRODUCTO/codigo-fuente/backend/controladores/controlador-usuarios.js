@@ -1,5 +1,5 @@
 const UsuarioService = require('../servicios/UsuarioService');
-const AuthService = require('../servicios/AuthService'); 
+const AuthService = require('../servicios/AuthService');
 const { verificarToken } = require('../middleware/authMiddleware');
 const express = require('express');
 const router = express.Router();
@@ -51,16 +51,16 @@ router.put('/perfil-alumno', async (req, res) => {
     try {
         // En el futuro, req.usuario.id vendrá del middleware de autenticación (JWT)
         // Por ahora, para probar en Postman, puedes simular un ID fijo (ej: 1)
-        const idUsuarioLogueado = req.usuario?.id || 1; 
-        
+        const idUsuarioLogueado = req.usuario?.id || 1;
+
         // Solo le pasamos al servicio los campos que el alumno TIENE PERMITIDO cambiar
         const { nombre_usuario /**, foto_perfil */ } = req.body;
-        
-        const usuarioActualizado = await UsuarioService.actualizarPerfilAlumno(idUsuarioLogueado, { 
-            nombre_usuario, 
+
+        const usuarioActualizado = await UsuarioService.actualizarPerfilAlumno(idUsuarioLogueado, {
+            nombre_usuario,
             /**foto_perfil */
         });
-        
+
         return res.status(200).json({
             mensaje: 'Perfil actualizado correctamente',
             usuario: usuarioActualizado
@@ -74,12 +74,12 @@ router.put('/perfil-alumno', async (req, res) => {
 // DELETE /api/usuarios/:id
 router.delete('/:id', async (req, res) => {
     try {
-        const { id } = req.params; 
-        
+        const { id } = req.params;
+
         await UsuarioService.eliminarUsuario(id);
-        
-        return res.status(200).json({ 
-            mensaje: `Usuario con ID ${id} eliminado correctamente.` 
+
+        return res.status(200).json({
+            mensaje: `Usuario con ID ${id} eliminado correctamente.`
         });
     } catch (error) {
         console.error("Error al eliminar usuario manualmente:", error);
