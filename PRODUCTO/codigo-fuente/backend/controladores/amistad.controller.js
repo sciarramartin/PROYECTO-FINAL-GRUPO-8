@@ -1,5 +1,5 @@
-// controladores/amistad.controlador.js
-const AmistadService = require('../servicios/AmistadService');
+// controladores/amistad.controller.js
+const AmistadService = require('../servicios/amistad.service');
 const { verificarToken } = require('../middleware/authMiddleware');
 const express = require('express');
 const router = express.Router();
@@ -137,4 +137,5 @@ router.get('/estado/:idOtroUsuario', verificarToken, async (req, res) => {
     }
 });
 
-module.exports = router;
+const AmistadController = router;
+module.exports = AmistadController;

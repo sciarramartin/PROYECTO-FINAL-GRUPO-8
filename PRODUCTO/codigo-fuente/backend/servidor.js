@@ -22,9 +22,9 @@ const rutasUsuarios = require('./controladores/controlador-usuarios.js');
 const rutasAuth = require('./controladores/auth.controller.js');       
 const rutasMateria = require('./controladores/materia.controlador');
 const rutasCarreras = require('./controladores/controlador-carreras.js'); // para probar resgitro
-const rutasAmistades = require('./controladores/amistad.controlador.js');
-const rutasGrupos = require('./controladores/grupo.controlador.js');
-const rutasChatPrivado = require('./controladores/chat-privado.controlador.js');
+const rutasAmistades = require('./controladores/amistad.controller.js');
+const rutasGrupos = require('./controladores/grupo.controller.js');
+const rutasChatPrivado = require('./controladores/chat-privado.controller.js');
 
 
 const http = require('http');

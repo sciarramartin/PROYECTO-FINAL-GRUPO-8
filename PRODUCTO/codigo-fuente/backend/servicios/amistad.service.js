@@ -1,4 +1,4 @@
-// servicios/AmistadService.js
+// servicios/amistad.service.js
 const { Amistad } = require('../modelos/Amistad');
 const { Usuario } = require('../modelos/Usuario');
 const { Op } = require('sequelize');

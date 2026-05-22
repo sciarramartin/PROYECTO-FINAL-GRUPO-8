@@ -1,4 +1,4 @@
-// components/Us-11-Chat-Privado/ChatPrivado.jsx
+// components/us-11-chat-privado/chat-privado.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";

@@ -1,8 +1,8 @@
-// controladores/chat-privado.controlador.js
+// controladores/chat-privado.controller.js
 const { MensajePrivado } = require('../modelos/MensajePrivado');
 const { Usuario } = require('../modelos/Usuario');
 const { verificarToken } = require('../middleware/authMiddleware');
-const AmistadService = require('../servicios/AmistadService');
+const AmistadService = require('../servicios/amistad.service');
 const { Op } = require('sequelize');
 const express = require('express');
 const router = express.Router();
@@ -154,4 +154,5 @@ router.post('/:amigoId', verificarToken, async (req, res) => {
     }
 });
 
-module.exports = router;
+const ChatPrivadoController = router;
+module.exports = ChatPrivadoController;

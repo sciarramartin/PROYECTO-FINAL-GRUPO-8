@@ -1,4 +1,4 @@
-// controladores/grupo.controlador.js
+// controladores/grupo.controller.js
 const express = require('express');
 const router = express.Router();
 const { verificarToken } = require('../middleware/authMiddleware');
@@ -650,4 +650,5 @@ router.post('/invitaciones/:id/rechazar', verificarToken, async (req, res) => {
     }
 });
 
-module.exports = router;
+const GrupoController = router;
+module.exports = GrupoController;

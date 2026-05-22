@@ -7,11 +7,11 @@ import Registro from './components/ModuloSesion/Registro';
 import Horario from './components/Us-8-Actividades-Personales/Horario';
 import Layout from './components/Layout';
 import ModuloCorrelativas from './components/Us-9-Registrar-Correlativas';
-import PerfilPublico from './components/MoludoPerfil-Amigos/PerfilPublico';
-import MisConexiones from './components/MoludoPerfil-Amigos/MisConexiones';
-import ListaGrupos from './components/Us-10-Grupos/ListaGrupos';
-import MuroGrupo from './components/Us-10-Grupos/MuroGrupo';
-import ChatPrivado from './components/Us-11-Chat-Privado/ChatPrivado';
+import PerfilPublico from './components/modulo-perfil-amigos/perfil-publico';
+import MisConexiones from './components/modulo-perfil-amigos/mis-conexiones';
+import ListaGrupos from './components/us-10-grupos/lista-grupos';
+import MuroGrupo from './components/us-10-grupos/muro-grupo';
+import ChatPrivado from './components/us-11-chat-privado/chat-privado';
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
