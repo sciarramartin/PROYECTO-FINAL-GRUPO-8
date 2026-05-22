@@ -43,8 +43,9 @@ router.post('/resetear-contrasena', async (req, res) => {
         return res.status(400).json({ mensaje: 'Faltan datos obligatorios.' });
     }
 
-    if (nuevaContraseña.length < 6) {
-        return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres.' });
+    const regexContrasena = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+    if (!regexContrasena.test(nuevaContraseña)) {
+        return res.status(400).json({ mensaje: 'La contraseña no cumple con los requisitos mínimos: debe tener al menos 6 caracteres, una letra mayúscula, un número y un carácter especial.' });
     }
 
     try {
