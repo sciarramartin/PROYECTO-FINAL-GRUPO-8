@@ -19,6 +19,13 @@ router.post('/solicitar', verificarToken, async (req, res) => {
 
         const nuevaSolicitud = await AmistadService.enviarSolicitud(id_usuario_origen, id_usuario_destino);
         
+        // Emitir notificación por socket en tiempo real al destinatario
+        const socketDestino = req.usuariosConectados?.get(parseInt(id_usuario_destino, 10));
+        if (socketDestino) {
+            req.io.to(socketDestino).emit('nueva_solicitud_amistad');
+            console.log(`[Socket.io] Solicitud de amistad emitida al socket del usuario ${id_usuario_destino}`);
+        }
+
         return res.status(201).json({
             mensaje: 'Solicitud de amistad enviada correctamente',
             solicitud: nuevaSolicitud

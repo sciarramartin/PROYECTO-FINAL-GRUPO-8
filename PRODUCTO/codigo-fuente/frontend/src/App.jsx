@@ -9,6 +9,8 @@ import Layout from './components/Layout';
 import ModuloCorrelativas from './components/Us-9-Registrar-Correlativas';
 import PerfilPublico from './components/MoludoPerfil-Amigos/PerfilPublico';
 import MisConexiones from './components/MoludoPerfil-Amigos/MisConexiones';
+import ListaGrupos from './components/Us-10-Grupos/ListaGrupos';
+import MuroGrupo from './components/Us-10-Grupos/MuroGrupo';
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -57,6 +59,22 @@ const App = () => {
             <Horario />
           </Layout>
           //</RutaPrivada>
+        } />
+
+        <Route path="/grupos" element={
+          <RutaPrivada>
+            <Layout>
+              <ListaGrupos />
+            </Layout>
+          </RutaPrivada>
+        } />
+
+        <Route path="/grupos/:id" element={
+          <RutaPrivada>
+            <Layout>
+              <MuroGrupo />
+            </Layout>
+          </RutaPrivada>
         } />
 
         <Route path="/" element={<Navigate to="/login" />} />
