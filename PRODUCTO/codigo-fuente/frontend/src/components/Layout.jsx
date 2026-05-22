@@ -36,6 +36,10 @@ const Layout = ({ children }) => {
   const [invitacionesPendientes, setInvitacionesPendientes] = useState([]);
   const [mostrarCampanitaDropdown, setMostrarCampanitaDropdown] = useState(false);
 
+  // Estados para Mensajes Privados no leídos y Dropdown
+  const [cantMensajesPendientes, setCantMensajesPendientes] = useState(0);
+  const [mensajesPendientes, setMensajesPendientes] = useState([]);
+
   const usuario = JSON.parse(
     localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || "{}"
   );
@@ -103,10 +107,43 @@ const Layout = ({ children }) => {
     }
   };
 
+  // Cargar Mensajes Privados no leídos
+  const cargarMensajesPendientes = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) return;
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.get(`${apiUrl}/chat-privado/notificaciones/pendientes`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // FILTRADO LOCAL INSTANTÁNEO SI ESTAMOS EN EL CHAT DE ESTE AMIGO
+      const pathParts = window.location.pathname.split("/");
+      const esChat = pathParts[1] === "chat-privado";
+      const amigoIdChat = esChat ? parseInt(pathParts[2], 10) : null;
+
+      let filtrados = response.data;
+      if (esChat && amigoIdChat) {
+        filtrados = response.data.filter(m => m.id_remitente !== amigoIdChat);
+      }
+
+      setMensajesPendientes(filtrados);
+      setCantMensajesPendientes(filtrados.length);
+    } catch (error) {
+      console.error("Error al obtener notificaciones de mensajes privados:", error);
+    }
+  };
+
   useEffect(() => {
     cargarPendientes();
     cargarInvitacionesGrupo();
+    cargarMensajesPendientes();
   }, []);
+
+  // Sincronizar notificaciones de chat al cambiar de ruta
+  useEffect(() => {
+    cargarMensajesPendientes();
+  }, [location.pathname]);
 
   // Handlers para Aceptar / Rechazar Solicitudes de Amistad desde la campana
   const aceptarSolicitudAmistad = async (idUsuarioOrigen) => {
@@ -194,10 +231,22 @@ const Layout = ({ children }) => {
         cargarInvitacionesGrupo();
       });
 
+      window.socket.on("mensaje_privado", (mensajeNuevo) => {
+        console.log("[Socket.io] Recibido nuevo mensaje privado en tiempo real");
+        // Solo notificar si no estamos chateando con esa misma persona actualmente
+        const pathParts = window.location.pathname.split("/");
+        const esChatConRemitente = pathParts[1] === "chat-privado" && parseInt(pathParts[2], 10) === mensajeNuevo.id_remitente;
+        
+        if (!esChatConRemitente) {
+          cargarMensajesPendientes();
+        }
+      });
+
       return () => {
         window.socket.off("connect");
         window.socket.off("nueva_solicitud_amistad");
         window.socket.off("nueva_invitacion_grupo");
+        window.socket.off("mensaje_privado");
       };
     }
   }, [usuario?.id]);
@@ -320,9 +369,9 @@ const Layout = ({ children }) => {
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
-              {cantPendientes + cantInvitacionesPendientes > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px] font-bold animate-pulse">
-                  {cantPendientes + cantInvitacionesPendientes}
+              {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px] font-bold">
+                  {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes}
                 </span>
               )}
             </button>
@@ -337,9 +386,9 @@ const Layout = ({ children }) => {
                 <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 py-3.5 px-4 animate-fade-in">
                   <h3 className="text-xs font-bold text-gray-900 border-b border-gray-100 pb-2 flex items-center justify-between">
                     <span>Notificaciones</span>
-                    {(cantPendientes + cantInvitacionesPendientes > 0) && (
+                    {(cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes > 0) && (
                       <span className="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold">
-                        {cantPendientes + cantInvitacionesPendientes} pendientes
+                        {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes} pendientes
                       </span>
                     )}
                   </h3>
@@ -350,7 +399,7 @@ const Layout = ({ children }) => {
                       solicitudesAmistadPendientes.map((sol) => {
                         const inicialesAmigo = `${sol.usuario?.nombre?.[0] || ""}${sol.usuario?.apellido?.[0] || ""}`.toUpperCase() || "US";
                         return (
-                          <div key={sol.id_solicitud} className="p-2.5 bg-indigo-50/30 border border-indigo-100 rounded-xl flex flex-col gap-2">
+                          <div key={sol.id_solicitud} className="p-2.5 bg-indigo-50/30 border border-indigo-100 rounded-xl flex flex-col gap-2 text-left">
                             <div className="flex items-start gap-2.5">
                               <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-[10px] font-bold shrink-0">
                                 {inicialesAmigo}
@@ -387,7 +436,7 @@ const Layout = ({ children }) => {
                     {/* Invitaciones a Grupos */}
                     {invitacionesPendientes.length > 0 ? (
                       invitacionesPendientes.map((inv) => (
-                        <div key={inv.id} className="p-2.5 bg-gray-50 border border-gray-150 rounded-xl flex flex-col gap-2.5">
+                        <div key={inv.id} className="p-2.5 bg-gray-50 border border-gray-150 rounded-xl flex flex-col gap-2.5 text-left">
                           <div className="flex items-start gap-2.5">
                             <span className="text-sm shrink-0">👥</span>
                             <div className="min-w-0">
@@ -423,14 +472,63 @@ const Layout = ({ children }) => {
                       ))
                     ) : null}
 
-                    {cantPendientes === 0 && invitacionesPendientes.length === 0 && (
+                    {/* Mensajes Privados no leídos */}
+                    {mensajesPendientes.length > 0 ? (
+                      (() => {
+                        // Agrupar por id_remitente
+                        const agrupados = {};
+                        mensajesPendientes.forEach((msg) => {
+                          const idRem = msg.id_remitente;
+                          if (!agrupados[idRem]) {
+                            agrupados[idRem] = {
+                              id_remitente: idRem,
+                              Remitente: msg.Remitente,
+                              cantidad: 0,
+                              id: msg.id
+                            };
+                          }
+                          agrupados[idRem].cantidad += 1;
+                        });
+                        
+                        return Object.values(agrupados).map((grupo) => {
+                          const inicialesRemitente = `${grupo.Remitente?.nombre?.[0] || ""}${grupo.Remitente?.apellido?.[0] || ""}`.toUpperCase() || "US";
+                          return (
+                            <div 
+                              key={grupo.id} 
+                              onClick={() => {
+                                setMostrarCampanitaDropdown(false);
+                                setCantMensajesPendientes(prev => Math.max(0, prev - grupo.cantidad));
+                                setMensajesPendientes(prev => prev.filter(m => m.id_remitente !== grupo.id_remitente));
+                                navigate(`/chat-privado/${grupo.id_remitente}`);
+                              }}
+                              className="p-2.5 bg-green-50/40 hover:bg-green-50/70 border border-green-100 rounded-xl flex items-start gap-2.5 cursor-pointer transition text-left"
+                              title="Haz clic para chatear"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-green-100 border border-green-200 flex items-center justify-center text-green-700 text-[10px] font-bold shrink-0">
+                                {inicialesRemitente}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[10.5px] font-bold text-gray-800 leading-tight">
+                                  Mensajes nuevos de <span className="text-green-700">{grupo.Remitente?.nombre} {grupo.Remitente?.apellido}</span>
+                                </p>
+                                <p className="text-[9.5px] text-gray-500 mt-1 font-semibold leading-none flex items-center gap-1">
+                                  <span>💬 Tienes {grupo.cantidad} {grupo.cantidad === 1 ? "mensaje pendiente" : "mensajes pendientes"}</span>
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()
+                    ) : null}
+
+                    {cantPendientes === 0 && invitacionesPendientes.length === 0 && mensajesPendientes.length === 0 && (
                       <p className="text-[10px] text-gray-400 text-center py-6 select-none">
                         No tienes notificaciones pendientes.
                       </p>
                     )}
                   </div>
 
-                  {(cantPendientes > 0 || invitacionesPendientes.length > 0) && (
+                  {(cantPendientes > 0 || invitacionesPendientes.length > 0 || mensajesPendientes.length > 0) && (
                     <div className="border-t border-gray-100 mt-3 pt-2.5 flex justify-center">
                       <button
                         onClick={() => {
@@ -518,9 +616,9 @@ const Layout = ({ children }) => {
                   </div>
 
                   {/* GLOBITO DE SOLICITUDES PENDIENTES */}
-                  {esConexiones && cantPendientes > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold animate-pulse shrink-0">
-                      {cantPendientes}
+                  {esConexiones && cantPendientes + cantMensajesPendientes > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                      {cantPendientes + cantMensajesPendientes}
                     </span>
                   )}
                 </button>

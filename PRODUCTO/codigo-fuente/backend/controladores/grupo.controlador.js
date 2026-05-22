@@ -46,6 +46,11 @@ router.post('/', verificarToken, async (req, res) => {
             ]
         });
 
+        // Notificar por WebSocket que se ha creado un nuevo grupo
+        if (req.io) {
+            req.io.emit('grupo_creado', grupoCompleto);
+        }
+
         return res.status(201).json(grupoCompleto);
     } catch (error) {
         console.error("Error al crear grupo:", error);
@@ -259,6 +264,11 @@ router.post('/:id/unirse', verificarToken, async (req, res) => {
             estado: 'aceptado'
         });
 
+        // Notificar en tiempo real a los miembros de la sala
+        if (req.io) {
+            req.io.to(`grupo_${id_grupo}`).emit('miembros_actualizados');
+        }
+
         return res.status(200).json({ mensaje: '¡Te has unido al grupo con éxito!' });
     } catch (error) {
         console.error("Error al unirse al grupo:", error);
@@ -289,6 +299,11 @@ router.post('/:id/salir', verificarToken, async (req, res) => {
 
         // Salir del grupo eliminando la membresía
         await membresia.destroy();
+
+        // Notificar en tiempo real a los miembros de la sala
+        if (req.io) {
+            req.io.to(`grupo_${id_grupo}`).emit('miembros_actualizados');
+        }
 
         return res.status(200).json({ mensaje: 'Has salido del grupo con éxito.' });
     } catch (error) {
@@ -433,6 +448,11 @@ router.post('/:id/miembros', verificarToken, async (req, res) => {
             attributes: ['id', 'nombre', 'apellido', 'nombre_usuario']
         });
 
+        // Notificar en tiempo real a los miembros de la sala
+        if (req.io) {
+            req.io.to(`grupo_${id_grupo}`).emit('miembros_actualizados');
+        }
+
         return res.status(201).json({
             mensaje: 'Miembro añadido correctamente.',
             miembro: {
@@ -482,6 +502,11 @@ router.delete('/:id/miembros/:id_usuario', verificarToken, async (req, res) => {
         // Eliminar
         await membresiaEliminar.destroy();
 
+        // Notificar en tiempo real a los miembros de la sala
+        if (req.io) {
+            req.io.to(`grupo_${id_grupo}`).emit('miembros_actualizados');
+        }
+
         return res.status(200).json({ mensaje: 'Miembro eliminado del grupo correctamente.' });
     } catch (error) {
         console.error("Error al eliminar miembro del grupo:", error);
@@ -527,6 +552,11 @@ router.put('/:id/miembros/:id_usuario/rol', verificarToken, async (req, res) => 
         // Actualizar rol
         membresiaActualizar.rol = rol;
         await membresiaActualizar.save();
+
+        // Notificar en tiempo real a los miembros de la sala
+        if (req.io) {
+            req.io.to(`grupo_${id_grupo}`).emit('miembros_actualizados');
+        }
 
         return res.status(200).json({
             mensaje: `Rol actualizado correctamente a ${rol}.`,
@@ -583,6 +613,11 @@ router.post('/invitaciones/:id/aceptar', verificarToken, async (req, res) => {
 
         membresia.estado = 'aceptado';
         await membresia.save();
+
+        // Notificar en tiempo real a los miembros de la sala
+        if (req.io) {
+            req.io.to(`grupo_${id_grupo}`).emit('miembros_actualizados');
+        }
 
         return res.status(200).json({ mensaje: 'Invitación aceptada con éxito.', membresia });
     } catch (error) {

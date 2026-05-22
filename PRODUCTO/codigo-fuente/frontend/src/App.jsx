@@ -11,6 +11,7 @@ import PerfilPublico from './components/MoludoPerfil-Amigos/PerfilPublico';
 import MisConexiones from './components/MoludoPerfil-Amigos/MisConexiones';
 import ListaGrupos from './components/Us-10-Grupos/ListaGrupos';
 import MuroGrupo from './components/Us-10-Grupos/MuroGrupo';
+import ChatPrivado from './components/Us-11-Chat-Privado/ChatPrivado';
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -73,6 +74,14 @@ const App = () => {
           <RutaPrivada>
             <Layout>
               <MuroGrupo />
+            </Layout>
+          </RutaPrivada>
+        } />
+
+        <Route path="/chat-privado/:amigoId" element={
+          <RutaPrivada>
+            <Layout>
+              <ChatPrivado />
             </Layout>
           </RutaPrivada>
         } />

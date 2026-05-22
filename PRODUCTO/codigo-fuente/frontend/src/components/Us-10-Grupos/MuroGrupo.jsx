@@ -126,12 +126,20 @@ const MuroGrupo = () => {
         });
       };
 
+      // Escuchar actualización de lista de miembros en tiempo real
+      const manejarActualizacionMiembros = () => {
+        console.log("[Socket.io] Recibida actualización de lista de miembros en tiempo real");
+        cargarDatosGrupo();
+      };
+
       window.socket.on("nuevo_mensaje_grupo", manejarNuevoMensaje);
+      window.socket.on("miembros_actualizados", manejarActualizacionMiembros);
 
       return () => {
         // Limpiar escuchador y abandonar sala al salir
         window.socket.emit("salir_grupo", id);
         window.socket.off("nuevo_mensaje_grupo", manejarNuevoMensaje);
+        window.socket.off("miembros_actualizados", manejarActualizacionMiembros);
         console.log(`[Socket.io] Conexiones y escuchas limpiadas para grupo_${id}`);
       };
     }

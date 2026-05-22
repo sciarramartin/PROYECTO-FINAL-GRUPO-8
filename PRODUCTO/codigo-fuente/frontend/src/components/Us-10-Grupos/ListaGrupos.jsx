@@ -52,6 +52,20 @@ const ListaGrupos = () => {
     } else {
       navigate("/login");
     }
+
+    // Escuchar la creación de grupos en tiempo real
+    if (window.socket) {
+      const manejarGrupoCreado = (nuevoGrupo) => {
+        console.log("[Socket.io] Nuevo grupo creado detectado:", nuevoGrupo);
+        cargarDatos();
+      };
+
+      window.socket.on("grupo_creado", manejarGrupoCreado);
+
+      return () => {
+        window.socket.off("grupo_creado", manejarGrupoCreado);
+      };
+    }
   }, []);
 
   const handleCrearGrupo = async (e) => {

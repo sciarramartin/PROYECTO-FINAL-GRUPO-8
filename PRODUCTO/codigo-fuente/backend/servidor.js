@@ -11,6 +11,7 @@ require('./modelos/Amistad');
 require('./modelos/Grupo');
 require('./modelos/GrupoMiembro');
 require('./modelos/GrupoMensaje');
+require('./modelos/MensajePrivado');
 
 require('./modelos/asociaciones');
 
@@ -23,6 +24,7 @@ const rutasMateria = require('./controladores/materia.controlador');
 const rutasCarreras = require('./controladores/controlador-carreras.js'); // para probar resgitro
 const rutasAmistades = require('./controladores/amistad.controlador.js');
 const rutasGrupos = require('./controladores/grupo.controlador.js');
+const rutasChatPrivado = require('./controladores/chat-privado.controlador.js');
 
 
 const http = require('http');
@@ -89,6 +91,7 @@ app.use('/api/usuarios', rutasUsuarios);
 app.use('/api/carreras', rutasCarreras); // para probar registro
 app.use('/api/amistades', rutasAmistades);
 app.use('/api/grupos', rutasGrupos);
+app.use('/api/chat-privado', rutasChatPrivado);
 
 // Ruta base
 app.get('/', (req, res) => {

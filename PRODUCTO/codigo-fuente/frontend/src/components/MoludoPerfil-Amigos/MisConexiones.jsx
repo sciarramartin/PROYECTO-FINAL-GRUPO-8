@@ -20,6 +20,7 @@ const MisConexiones = () => {
   
   const [amigos, setAmigos] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
+  const [mensajesPendientes, setMensajesPendientes] = useState([]);
   const [cargando, setCargando] = useState(true);
   
   const [error, setError] = useState("");
@@ -35,13 +36,15 @@ const MisConexiones = () => {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
       
       // Consultas en paralelo para optimizar tiempos de carga
-      const [amigosRes, solicitudesRes] = await Promise.all([
+      const [amigosRes, solicitudesRes, notifRes] = await Promise.all([
         axios.get(`${apiUrl}/amistades/lista`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${apiUrl}/amistades/pendientes`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${apiUrl}/amistades/pendientes`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${apiUrl}/chat-privado/notificaciones/pendientes`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
       setAmigos(amigosRes.data);
       setSolicitudes(solicitudesRes.data);
+      setMensajesPendientes(notifRes.data);
     } catch (err) {
       console.error("Error al cargar conexiones:", err);
       setError("Ocurrió un error al obtener tus conexiones.");
@@ -199,12 +202,24 @@ const MisConexiones = () => {
 
                   {/* Acciones */}
                   <div className="flex flex-col gap-2 mt-2">
-                    <a
-                      href={`mailto:${amigo.mail}`}
-                      className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold text-center transition flex items-center justify-center gap-1.5"
-                    >
-                      ✉ Enviar Correo
-                    </a>
+                    {(() => {
+                      const cantMensajesAmigo = mensajesPendientes.filter(m => m.id_remitente === amigo.id).length;
+                      return (
+                        <div className="relative w-full">
+                          <button
+                            onClick={() => navigate(`/chat-privado/${amigo.id}`)}
+                            className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold text-center transition flex items-center justify-center gap-1.5 cursor-pointer border-none"
+                          >
+                            💬 Enviar Mensaje
+                          </button>
+                          {cantMensajesAmigo > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center shadow-md pointer-events-none">
+                              {cantMensajesAmigo}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <div className="flex gap-2">
                       <button
                         onClick={() => navigate(`/perfil/${amigo.id}`)}
