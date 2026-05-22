@@ -26,9 +26,27 @@ const MuroGrupo = () => {
 
   // Estados para filtrar miembros y menú de 3 puntos
   const [filtroMiembros, setFiltroMiembros] = useState("");
+  const [busquedaAmigos, setBusquedaAmigos] = useState("");
   const [menuAbiertoMiembroId, setMenuAbiertoMiembroId] = useState(null);
   const [posicionPopupY, setPosicionPopupY] = useState(0);
   const [miembroPopup, setMiembroPopup] = useState(null);
+
+  // Estados para Modal de Configuración (solo Admin)
+  const [modalConfiguracionAbierto, setModalConfiguracionAbierto] = useState(false);
+  const [nombreConfig, setNombreConfig] = useState("");
+  const [descripcionConfig, setDescripcionConfig] = useState("");
+  const [estadoConfig, setEstadoConfig] = useState("publico");
+  const [guardandoConfig, setGuardandoConfig] = useState(false);
+  const [errorConfig, setErrorConfig] = useState("");
+
+  const abrirModalConfiguracion = () => {
+    if (!grupo) return;
+    setNombreConfig(grupo.nombre || "");
+    setDescripcionConfig(grupo.descripcion || "");
+    setEstadoConfig(grupo.estado || "publico");
+    setErrorConfig("");
+    setModalConfiguracionAbierto(true);
+  };
 
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
@@ -211,6 +229,47 @@ const MuroGrupo = () => {
     }
   };
 
+  const handleGuardarConfiguracion = async (e) => {
+    e.preventDefault();
+    if (!nombreConfig.trim()) {
+      setErrorConfig("El nombre del grupo es obligatorio.");
+      return;
+    }
+
+    setGuardandoConfig(true);
+    setErrorConfig("");
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const response = await axios.put(`${apiUrl}/grupos/${id}`, {
+        nombre: nombreConfig.trim(),
+        descripcion: descripcionConfig.trim(),
+        estado: estadoConfig
+      }, { headers });
+
+      // Actualizar el estado local del grupo reactivamente
+      setGrupo((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          nombre: response.data.nombre,
+          descripcion: response.data.descripcion,
+          estado: response.data.estado
+        };
+      });
+
+      setModalConfiguracionAbierto(false);
+      setMensajeExito("¡Configuración del grupo actualizada correctamente!");
+      setTimeout(() => setMensajeExito(""), 3000);
+    } catch (err) {
+      console.error("Error al actualizar la configuración del grupo:", err);
+      setErrorConfig(err.response?.data?.error || "Error al actualizar la configuración del grupo.");
+    } finally {
+      setGuardandoConfig(false);
+    }
+  };
+
   const unirseAlGrupo = async () => {
     setUniendose(true);
     setError("");
@@ -312,10 +371,18 @@ const MuroGrupo = () => {
     );
   }
 
-  // Filtrar amigos que aún NO son miembros del grupo ni tienen invitaciones pendientes
   const miembroIds = grupo ? grupo.Miembros.map(m => m.id) : [];
   const pendienteIds = grupo && grupo.MiembrosPendientes ? grupo.MiembrosPendientes.map(m => m.id) : [];
-  const amigosNoMiembros = amigos.filter(amigo => !miembroIds.includes(amigo.id) && !pendienteIds.includes(amigo.id));
+
+  const amigosNoMiembros = amigos.filter(amigo => {
+    const yaMiembro = miembroIds.includes(amigo.id) || pendienteIds.includes(amigo.id);
+    if (yaMiembro) return false;
+    
+    const nombreCompleto = `${amigo.nombre} ${amigo.apellido}`.toLowerCase();
+    const usuario = amigo.nombre_usuario.toLowerCase();
+    const query = busquedaAmigos.toLowerCase();
+    return nombreCompleto.includes(query) || usuario.includes(query);
+  });
 
   // Obtener rol del usuario logueado en este grupo
   const miMiembro = grupo?.Miembros?.find((m) => m.id === miUsuarioId);
@@ -471,6 +538,19 @@ const MuroGrupo = () => {
                   </p>
                 </div>
               </div>
+
+              {soyAdmin && (
+                <button
+                  onClick={abrirModalConfiguracion}
+                  className="p-1.5 hover:bg-gray-200 rounded-lg text-gray-500 hover:text-indigo-650 transition cursor-pointer border-none bg-transparent flex items-center justify-center"
+                  title="Configurar Grupo"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             {/* WhatsApp Scroll Area (Middle Messages Feed) */}
@@ -715,6 +795,30 @@ const MuroGrupo = () => {
                 <h2 className="text-xs font-bold text-gray-900">Invitar Amigos</h2>
                 <p className="text-[9px] text-gray-400 mt-0.5">Suma a tus amigos a este grupo de estudio.</p>
               </div>
+
+              {/* Lupita de búsqueda de amigos */}
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  placeholder="Buscar amigos por nombre..."
+                  value={busquedaAmigos}
+                  onChange={(e) => setBusquedaAmigos(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-[10px] text-gray-850 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                />
+                {busquedaAmigos && (
+                  <button
+                    onClick={() => setBusquedaAmigos("")}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-450 hover:text-gray-650 transition cursor-pointer border-none bg-transparent text-[10px]"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
               
               <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
                 {amigosNoMiembros.length > 0 ? (
@@ -746,7 +850,6 @@ const MuroGrupo = () => {
                   <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-250">
                     <span className="text-2xl block mb-1">👋</span>
                     <h4 className="text-[10px] font-bold text-gray-700">Sin amigos para invitar</h4>
-                    <p className="text-[8.5px] text-gray-400 mt-0.5 max-w-[160px] mx-auto leading-normal">Todos tus amigos ya forman parte del grupo de estudio.</p>
                   </div>
                 )}
               </div>
@@ -757,6 +860,135 @@ const MuroGrupo = () => {
         </div>
       )}
 
+      {/* Modal de Configuración (Solo Administradores) */}
+      {modalConfiguracionAbierto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-2xl border border-gray-150 w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+            {/* Cabecera */}
+            <div className="bg-gray-50 border-b border-gray-150 px-5 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base">⚙️</span>
+                <h3 className="text-xs font-bold text-gray-800">Configuración del Grupo</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalConfiguracionAbierto(false)}
+                className="text-gray-400 hover:text-gray-600 transition cursor-pointer border-none bg-transparent text-sm font-bold animate-pulse"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Formulario */}
+            <form onSubmit={handleGuardarConfiguracion} className="p-5 space-y-4">
+              {errorConfig && (
+                <div className="bg-red-50 border border-red-200 text-red-500 rounded-xl px-4 py-2.5 text-[10px] animate-fade-in flex items-center gap-2">
+                  <span>⚠️</span> {errorConfig}
+                </div>
+              )}
+
+              {/* Nombre */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-gray-700">Nombre del Grupo</label>
+                <input
+                  type="text"
+                  value={nombreConfig}
+                  onChange={(e) => setNombreConfig(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-850 focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                  placeholder="Ej: Grupo de Álgebra I"
+                  required
+                />
+              </div>
+
+              {/* Descripción */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-gray-700">Descripción</label>
+                <textarea
+                  value={descripcionConfig}
+                  onChange={(e) => setDescripcionConfig(e.target.value)}
+                  rows="3"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-850 focus:outline-none focus:border-indigo-500 focus:bg-white transition resize-none"
+                  placeholder="Describí los temas o metas del grupo..."
+                />
+              </div>
+
+              {/* Visibilidad (Estado) */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-gray-700 mb-1">Privacidad / Visibilidad</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Opción Público */}
+                  <label
+                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition select-none ${
+                      estadoConfig === "publico"
+                        ? "border-indigo-500 bg-indigo-50/30 text-indigo-750"
+                        : "border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-650"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="estadoConfig"
+                        value="publico"
+                        checked={estadoConfig === "publico"}
+                        onChange={() => setEstadoConfig("publico")}
+                        className="hidden"
+                      />
+                      <span className="text-xs">🌐</span>
+                      <span className="text-[10px] font-bold">Público</span>
+                    </div>
+                    <span className="text-[8.5px] text-gray-400 mt-1 leading-tight">
+                      Cualquier estudiante puede buscarlo e ingresar.
+                    </span>
+                  </label>
+
+                  {/* Opción Privado */}
+                  <label
+                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition select-none ${
+                      estadoConfig === "privado"
+                        ? "border-indigo-500 bg-indigo-50/30 text-indigo-750"
+                        : "border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-650"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="estadoConfig"
+                        value="privado"
+                        checked={estadoConfig === "privado"}
+                        onChange={() => setEstadoConfig("privado")}
+                        className="hidden"
+                      />
+                      <span className="text-xs">🔒</span>
+                      <span className="text-[10px] font-bold">Privado</span>
+                    </div>
+                    <span className="text-[8.5px] text-gray-400 mt-1 leading-tight">
+                      Solo personas invitadas pueden verlo y unirse.
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Botones de acción */}
+              <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setModalConfiguracionAbierto(false)}
+                  className="flex-1 text-center py-2 bg-gray-100 hover:bg-gray-200 text-gray-650 text-xs font-bold rounded-xl transition border-none cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardandoConfig}
+                  className="flex-1 text-center py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition border-none cursor-pointer disabled:opacity-50"
+                >
+                  {guardandoConfig ? "Guardando..." : "Guardar Cambios"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

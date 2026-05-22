@@ -174,7 +174,58 @@ router.get('/:id', verificarToken, async (req, res) => {
     }
 });
 
-// 5. POST /api/grupos/:id/unirse
+// 5. PUT /api/grupos/:id
+// Actualizar información del grupo (nombre, descripción, visibilidad). Solo administradores.
+router.put('/:id', verificarToken, async (req, res) => {
+    try {
+        const id_grupo = parseInt(req.params.id, 10);
+        const id_usuario = parseInt(req.usuario.id, 10);
+        const { nombre, descripcion, estado } = req.body;
+
+        // 1. Validar que el grupo exista
+        const grupo = await Grupo.findByPk(id_grupo);
+        if (!grupo) {
+            return res.status(404).json({ error: 'Grupo no encontrado.' });
+        }
+
+        // 2. Verificar que el usuario sea administrador del grupo
+        const membresia = await GrupoMiembro.findOne({
+            where: { id_grupo, id_usuario, rol: 'administrador', estado: 'aceptado' }
+        });
+        if (!membresia) {
+            return res.status(403).json({ error: 'No tienes permisos para configurar este grupo.' });
+        }
+
+        // 3. Validaciones de datos
+        if (nombre !== undefined && !nombre.trim()) {
+            return res.status(400).json({ error: 'El nombre del grupo no puede estar vacío.' });
+        }
+        if (estado !== undefined && estado !== 'publico' && estado !== 'privado') {
+            return res.status(400).json({ error: "El estado de visibilidad debe ser 'publico' o 'privado'." });
+        }
+
+        // 4. Actualizar campos
+        if (nombre !== undefined) grupo.nombre = nombre.trim();
+        if (descripcion !== undefined) grupo.descripcion = descripcion.trim();
+        if (estado !== undefined) grupo.estado = estado;
+
+        await grupo.save();
+
+        // 5. Obtener el grupo completo actualizado con información del creador
+        const grupoActualizado = await Grupo.findByPk(id_grupo, {
+            include: [
+                { model: Usuario, as: 'Creador', attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'] }
+            ]
+        });
+
+        return res.status(200).json(grupoActualizado);
+    } catch (error) {
+        console.error("Error al actualizar grupo:", error);
+        return res.status(500).json({ error: 'Error interno del servidor al actualizar el grupo.' });
+    }
+});
+
+// 6. POST /api/grupos/:id/unirse
 // Unirse de forma directa a un grupo público
 router.post('/:id/unirse', verificarToken, async (req, res) => {
     try {
