@@ -132,160 +132,188 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
     if (!editor) return null;
 
     return (
-        <div className="fixed bottom-0 right-0 w-[calc(100vw-14rem)] bg-white border-t border-gray-200 shadow-lg z-50">
-            <div className="px-4 py-2 flex items-center gap-2 flex-wrap">
-                {/* Nombre */}
-                <input
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={(e) => {
-                            setFormData(prev => ({ ...prev, nombre: e.target.value }));
-
-                        }}
-                    className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300"
-                    placeholder="Nombre"
-                    style={{ width: '120px' }}
-                />
-
-                {/* Separador */}
-                <span className="text-gray-300">|</span>
-
-                {/* Hora inicio con selector numérico */}
-                <div className="flex items-center gap-1">
-                    <select
-                        name="horaInicio"
-                        value={formData.horaInicio.split(':')[0]}
-                        onChange={(e) => {
-                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.horaInicio.split(':')[1]}`;
-                            setFormData(prev => ({ ...prev, horaInicio: nuevaHora }));
-
-                        }}
-                        className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
-                    >
-                        {Array.from({ length: 24 }, (_, i) => (
-                            <option key={i} value={i.toString().padStart(2, '0')}>
-                                {i.toString().padStart(2, '0')}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="text-gray-400">:</span>
-                    <select
-                        value={formData.horaInicio.split(':')[1]}
-                        onChange={(e) => {
-                            const nuevaHora = `${formData.horaInicio.split(':')[0]}:${e.target.value}`;
-                            setFormData(prev => ({ ...prev, horaInicio: nuevaHora }));
-
-                        }}
-                        className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
-                    >
-                        <option value="00">00</option>
-                        <option value="30">30</option>
-                    </select>
-                </div>
-
-                {/* Separador */}
-                <span className="text-gray-300">|</span>
-
-                {/* Duración */}
-                {/* Hora fin con selector numérico */}
-                <div className="flex items-center gap-1">
-                    <select
-                        name="hora_fin"
-                        value={formData.horaFin.split(':')[0]}
-                        onChange={(e) => {
-                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.horaFin.split(':')[1]}`;
-                            setFormData(prev => ({ ...prev, horaFin: nuevaHora }));
-
-                        }}
-                        className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
-                    >
-                        {Array.from({ length: 24 }, (_, i) => (
-                            <option key={i} value={i.toString().padStart(2, '0')}>
-                                {i.toString().padStart(2, '0')}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="text-gray-400">:</span>
-                    <select
-                        value={formData.horaFin.split(':')[1]}
-                        onChange={(e) => {
-                            const nuevaHora = `${formData.horaFin.split(':')[0]}:${e.target.value}`;
-                            setFormData(prev => ({ ...prev, horaFin: nuevaHora }));
-
-                        }}
-                        className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
-                    >
-                        <option value="00">00</option>
-                        <option value="30">30</option>
-                    </select>
-                </div>
-
-                {/* Separador */}
-                <span className="text-gray-300">|</span>
-
-                {/* Días */}
-                <div className="flex gap-1">
-                    {days.map(([dayName, dayValue]) => (
-                        <button
-                            key={dayName}
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full border border-gray-150 overflow-hidden transform scale-100 transition-all duration-200">
+                <div className="p-5">
+                    {/* Encabezado */}
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                        <h3 className="text-base font-bold text-gray-800">
+                            {actividadActual?.id === 'preview' ? 'Nueva Actividad' : 'Editar Actividad'}
+                        </h3>
+                        <button 
                             type="button"
-                            onClick={() => toggleDay(dayValue)}
-                            className={`w-7 h-7 rounded text-xs font-medium transition
-                                ${(formData.dias & dayValue) !== 0
-                                    ? 'bg-indigo-500 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                            title={dayName}
+                            onClick={handleCancel}
+                            className="text-gray-400 hover:text-gray-650 transition cursor-pointer text-lg font-bold"
                         >
-                            {dayName.charAt(0)}
+                            ✕
                         </button>
-                    ))}
-                </div>
+                    </div>
 
-                {/* Separador */}
-                <span className="text-gray-300">|</span>
+                    {/* Contenido del Formulario */}
+                    <div className="space-y-4">
+                        {/* Nombre */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Nombre de la actividad
+                            </label>
+                            <input
+                                type="text"
+                                name="nombre"
+                                value={formData.nombre}
+                                onChange={(e) => {
+                                    setFormData(prev => ({ ...prev, nombre: e.target.value }));
+                                }}
+                                className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-300"
+                                placeholder="Ej. Estudiar, Entrenar..."
+                            />
+                        </div>
 
-                {/* Colores */}
-                <div className="flex gap-1">
-                {[
-                    { name: 'Rojo', value: '#FFB3BA' },
-                    { name: 'Azul', value: '#C5E99B' },
-                    { name: 'Verde', value: '#B5E3FF' },
-                    { name: 'Amarillo', value: '#FFD1B3' },
-                    { name: 'Violeta', value: '#E0BBE4' },
-                    { name: 'Rosa', value: '#B5F5E3' },
-                    { name: 'Rosa', value: '#FFCCD9' }
-                ].map((color) => (
-                    <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
-                    className={`w-4 h-4 rounded-xs border-2 transition ${
-                        formData.color === color.value
-                        ? 'border-gray-800 scale-110 shadow-sm'
-                        : 'border-gray-200 hover:border-gray-400'
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.name}
-                    />
-                ))}
-                </div>
+                        {/* Horas */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Hora Inicio
+                                </label>
+                                <div className="flex items-center gap-1">
+                                    <select
+                                        name="horaInicio"
+                                        value={formData.horaInicio.split(':')[0]}
+                                        onChange={(e) => {
+                                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.horaInicio.split(':')[1]}`;
+                                            setFormData(prev => ({ ...prev, horaInicio: nuevaHora }));
+                                        }}
+                                        className="w-full px-2 py-1 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-300 bg-white"
+                                    >
+                                        {Array.from({ length: 24 }, (_, i) => (
+                                            <option key={i} value={i.toString().padStart(2, '0')}>
+                                                {i.toString().padStart(2, '0')}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <span className="text-gray-400">:</span>
+                                    <select
+                                        value={formData.horaInicio.split(':')[1]}
+                                        onChange={(e) => {
+                                            const nuevaHora = `${formData.horaInicio.split(':')[0]}:${e.target.value}`;
+                                            setFormData(prev => ({ ...prev, horaInicio: nuevaHora }));
+                                        }}
+                                        className="w-full px-2 py-1 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-300 bg-white"
+                                    >
+                                        <option value="00">00</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                {/* Botones */}
-                <div className="flex gap-1 ml-2">
-                    <button
-                        onClick={handleSave}
-                        className="px-3 py-1 bg-indigo-500 text-white text-sm rounded hover:bg-indigo-600 transition"
-                    >
-                        ✓
-                    </button>
-                    <button
-                        onClick={handleCancel}
-                        className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded hover:bg-gray-200 transition"
-                    >
-                        ✗
-                    </button>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Hora Fin
+                                </label>
+                                <div className="flex items-center gap-1">
+                                    <select
+                                        name="hora_fin"
+                                        value={formData.horaFin.split(':')[0]}
+                                        onChange={(e) => {
+                                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.horaFin.split(':')[1]}`;
+                                            setFormData(prev => ({ ...prev, horaFin: nuevaHora }));
+                                        }}
+                                        className="w-full px-2 py-1 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-300 bg-white"
+                                    >
+                                        {Array.from({ length: 24 }, (_, i) => (
+                                            <option key={i} value={i.toString().padStart(2, '0')}>
+                                                {i.toString().padStart(2, '0')}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <span className="text-gray-400">:</span>
+                                    <select
+                                        value={formData.horaFin.split(':')[1]}
+                                        onChange={(e) => {
+                                            const nuevaHora = `${formData.horaFin.split(':')[0]}:${e.target.value}`;
+                                            setFormData(prev => ({ ...prev, horaFin: nuevaHora }));
+                                        }}
+                                        className="w-full px-2 py-1 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-300 bg-white"
+                                    >
+                                        <option value="00">00</option>
+                                        <option value="30">30</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Días */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Días
+                            </label>
+                            <div className="flex justify-between gap-1">
+                                {days.map(([dayName, dayValue]) => (
+                                    <button
+                                        key={dayName}
+                                        type="button"
+                                        onClick={() => toggleDay(dayValue)}
+                                        className={`w-8 h-8 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center justify-center
+                                            ${(formData.dias & dayValue) !== 0
+                                                ? 'bg-indigo-500 text-white shadow-sm'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                        title={dayName}
+                                    >
+                                        {dayName.charAt(0)}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Colores */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Color de Actividad
+                            </label>
+                            <div className="flex justify-between gap-1">
+                                {[
+                                    { name: 'Rojo', value: '#FFB3BA' },
+                                    { name: 'Azul', value: '#C5E99B' },
+                                    { name: 'Verde', value: '#B5E3FF' },
+                                    { name: 'Amarillo', value: '#FFD1B3' },
+                                    { name: 'Violeta', value: '#E0BBE4' },
+                                    { name: 'Rosa', value: '#B5F5E3' },
+                                    { name: 'Rosa', value: '#FFCCD9' }
+                                ].map((color) => (
+                                    <button
+                                        key={color.value}
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
+                                        className={`w-6 h-6 rounded-full border-2 transition cursor-pointer ${
+                                            formData.color === color.value
+                                            ? 'border-gray-800 scale-110 shadow-md'
+                                            : 'border-gray-200 hover:border-gray-400'
+                                        }`}
+                                        style={{ backgroundColor: color.value }}
+                                        title={color.name}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Botones de Acción */}
+                    <div className="flex items-center justify-end gap-2 mt-6 pt-3 border-t border-gray-100">
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            className="px-4 py-2 bg-gray-100 text-gray-600 hover:text-gray-800 text-sm font-semibold rounded-lg hover:bg-gray-200 transition cursor-pointer"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSave}
+                            className="px-4 py-2 bg-indigo-500 text-white text-sm font-semibold rounded-lg hover:bg-indigo-600 transition cursor-pointer shadow-sm"
+                        >
+                            Guardar Actividad
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -423,6 +423,12 @@ const Horario = () => {
                                         (col) =>
                                             col.data
                                     )
+                                    .filter(
+                                        (act) =>
+                                            act.nombre &&
+                                            act.nombre.trim() !== '' &&
+                                            act.id !== 'preview'
+                                    )
                                     .map((act) => [
                                         act.nombre,
                                         act
