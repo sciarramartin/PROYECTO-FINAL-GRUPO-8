@@ -1,8 +1,8 @@
 // modelos/Usuario.js
 const { DataTypes } = require('sequelize');
-const { baseDeDatos } = require('../configuracion/base-de-datos');
+const { baseDeDatos } = require('../database/base-de-datos');
 
-const Usuario = baseDeDatos.define('Usuario', {
+const Usuario = baseDeDatos.define('usuario', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

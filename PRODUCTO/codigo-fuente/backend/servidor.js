@@ -10,7 +10,7 @@ require('./modelos/Carrera.js')
 
 require('./modelos/asociaciones');
 
-const { baseDeDatos } = require('./configuracion/base-de-datos');
+const { inicializarDB } = require('./database/base-de-datos');
 
 const rutasActividad = require('./controladores/actividades-personales.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js');
@@ -41,7 +41,8 @@ app.get('/', (req, res) => {
 // Iniciar servidor y conectar a la base de datos
 const iniciarServidor = async () => {
     try {
-        await baseDeDatos.sync();
+
+        await inicializarDB();
         console.log('Base de datos conectada correctamente.');
         
         const servidor = app.listen(PUERTO, () => {

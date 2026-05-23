@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { baseDeDatos } = require('../configuracion/base-de-datos');
+const { baseDeDatos } = require('../database/base-de-datos');
 
 const Actividad = baseDeDatos.define('actividad', {
     id: {
@@ -68,11 +68,5 @@ const Actividad = baseDeDatos.define('actividad', {
     ]
 });
 
-Actividad.associate = () => {
-    Actividad.belongsTo(baseDeDatos.Usuario, {
-        foreignKey: 'id_usuario',
-        as: 'usuario'
-    });
-};
 
 module.exports = Actividad;

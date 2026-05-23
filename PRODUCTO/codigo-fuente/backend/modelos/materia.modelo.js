@@ -1,8 +1,8 @@
 // modelos/Materia.js
 const { DataTypes } = require('sequelize');
-const { baseDeDatos } = require('../configuracion/base-de-datos');
+const { baseDeDatos } = require('../database/base-de-datos');
 
-const Materia = baseDeDatos.define('Materia', {
+const Materia = baseDeDatos.define('materia', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
