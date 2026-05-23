@@ -17,6 +17,7 @@ const Horario = () => {
     const [showEditor, setShowEditor] = useState(false);
     const [actividadEditando, setActividadEditando] = useState(null);
     const [actividades, setActividades] = useState([]);
+    const [selectedDayTab, setSelectedDayTab] = useState(1);
 
 
     const cargarActividades = async () => {
@@ -138,6 +139,23 @@ const Horario = () => {
         return nuevasColumnas
 
     }, [diasActividades]);
+
+    const activeColumns = useMemo(() => {
+        let nuevasColumnas = [...columns];
+        const dayExists = nuevasColumnas.some(c => c.id === selectedDayTab);
+        if (!dayExists) {
+            const dayInfo = days.find(([_, val]) => val === selectedDayTab);
+            if (dayInfo) {
+                nuevasColumnas.push({
+                    id: dayInfo[1],
+                    title: dayInfo[0],
+                    data: []
+                });
+                nuevasColumnas.sort((a, b) => a.id - b.id);
+            }
+        }
+        return nuevasColumnas;
+    }, [columns, selectedDayTab]);
 
     const { minHora, maxHora } = useMemo(() => {
         if (actividades.length === 0 ) {
@@ -310,8 +328,29 @@ const Horario = () => {
 
     return (
         <>
-            <div className="bg-white rounded-xl shadow-lg overflow-x-auto">
-                <div className="flex min-w-[800px]">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden md:overflow-x-auto w-full">
+                {/* Selector de día para móviles */}
+                <div className="flex md:hidden justify-between gap-1 p-2.5 bg-gray-50 border-b border-gray-200">
+                    {days.map(([name, value]) => {
+                        const isActive = selectedDayTab === value;
+                        return (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => setSelectedDayTab(value)}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer text-center ${
+                                    isActive
+                                        ? 'bg-indigo-500 text-white shadow-sm scale-105'
+                                        : 'text-gray-655 hover:bg-gray-100'
+                                }`}
+                            >
+                                {name.slice(0, 3)}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="flex w-full md:min-w-[800px]">
                     {/* Columna horas */}
                     <div className="flex-shrink-0 w-15 md:w-24 bg-gray-50 border-r-2 border-gray-200">
                         <div className="h-[64px] flex items-center justify-center font-bold bg-gray-100 border-b-2 border-gray-200 text-gray-700">
@@ -329,93 +368,99 @@ const Horario = () => {
                     </div>
 
                     {/* Columnas días */}
-                    {columns.map((column) => (
-                        <div
-                            key={column.id}
-                            className="flex-1 min-w-[100px] relative border-r border-gray-100"
-                        >
+                    {activeColumns.map((column) => {
+                        const isVisible = column.id === selectedDayTab;
+                        return (
                             <div
-                                className="h-[64px] flex items-center justify-center font-semibold text-sm border-b-2 border-gray-200"
+                                key={column.id}
+                                className={`flex-1 min-w-[100px] md:min-w-0 relative border-r border-gray-100 ${
+                                    isVisible ? 'flex' : 'hidden md:flex'
+                                } flex-col`}
                             >
-                                {column.title}
-                            </div>
+                                <div
+                                    className="h-[64px] flex items-center justify-center font-semibold text-sm border-b-2 border-gray-200"
+                                >
+                                    {column.title}
+                                </div>
 
-                            <div
-                                className="relative"
-                                style={{
-                                    minHeight: `${
-                                        (maxHora -
-                                            minHora +
-                                            1) *
-                                        PIXELS_POR_HORA
-                                    }px`
-                                }}
-                            >
-                                {/* Líneas fondo */}
-                                {horas.map((hora) => (
-                                    <div
-                                        key={hora}
-                                        role="button"
-                                        onKeyDown={(e) => e.key === 'Enter' && handleNewActividad(hora, column.id)}
-                                        tabIndex={0}
-                                        className="h-[32px] border-b border-gray-100 w-full text-left"
-                                        onClick={() => handleNewActividad(hora, column.id)}
-                                    />
-                                ))}
-
-                                {/* Actividades */}
-                                {column.data.map(
-                                    (act, idx) => (
+                                <div
+                                    className="relative"
+                                    style={{
+                                        minHeight: `${
+                                            (maxHora -
+                                                minHora +
+                                                1) *
+                                            PIXELS_POR_HORA
+                                        }px`
+                                    }}
+                                >
+                                    {/* Líneas fondo */}
+                                    {horas.map((hora) => (
                                         <div
-                                            key={`${act.horaInicio}-${idx}`}
-                                            className="absolute left-1 right-1 p-2 overflow-hidden shadow-md hover:scale-[1.02] transition-all duration-200"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleEditActividad(act);}}
-                                            style={{
-                                                backgroundColor:
-                                                    act.color,
+                                            key={hora}
+                                            role="button"
+                                            onKeyDown={(e) => e.key === 'Enter' && handleNewActividad(hora, column.id)}
+                                            tabIndex={0}
+                                            className="h-[32px] border-b border-gray-100 w-full text-left transition-all cursor-pointer hover:bg-gray-50/70"
+                                            onClick={() => handleNewActividad(hora, column.id)}
+                                        />
+                                    ))}
 
-                                                top: `${calcularPosicionY(
-                                                    act.horaInicio
-                                                )}px`,
+                                    {/* Actividades */}
+                                    {column.data.map(
+                                        (act, idx) => (
+                                            <div
+                                                key={`${act.horaInicio}-${idx}`}
+                                                className="absolute left-1 right-1 p-2 overflow-hidden shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02]"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEditActividad(act);
+                                                }}
+                                                style={{
+                                                    backgroundColor:
+                                                        act.color,
 
-                                                height: `${calcularAltura(
-                                                    act.duracion
-                                                )}px`
-                                            }}
-                                            title={`${act.nombre}\n${act.horaInicio} - ${act.horaFin}`}
-                                        >
-                                            <div className="font-bold text-xs capitalize truncate">
-                                                {
-                                                    act.nombre
-                                                }
+                                                    top: `${calcularPosicionY(
+                                                        act.horaInicio
+                                                    )}px`,
+
+                                                    height: `${calcularAltura(
+                                                        act.duracion
+                                                    )}px`
+                                                }}
+                                                title={`${act.nombre}\n${act.horaInicio} - ${act.horaFin}`}
+                                            >
+                                                <div className="font-bold text-xs capitalize truncate">
+                                                    {
+                                                        act.nombre
+                                                    }
+                                                </div>
+
+                                                <div className="text-[10px] text-gray-700 mt-1">
+                                                    {
+                                                        act.horaInicio
+                                                    }{' '}
+                                                    -{' '}
+                                                    {
+                                                        act.horaFin
+                                                    }
+                                                </div>
+
+                                                <div className="text-[9px] text-gray-600 mt-1">
+                                                    {
+                                                        act.duracion
+                                                    }
+                                                    min
+                                                </div>
                                             </div>
+                                        )
 
-                                            <div className="text-[10px] text-gray-700 mt-1">
-                                                {
-                                                    act.horaInicio
-                                                }{' '}
-                                                -{' '}
-                                                {
-                                                    act.horaFin
-                                                }
-                                            </div>
-
-                                            <div className="text-[9px] text-gray-600 mt-1">
-                                                {
-                                                    act.duracion
-                                                }
-                                                min
-                                            </div>
-                                        </div>
-                                    )
-
-                                )}
-                                
+                                    )}
+                                    
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
