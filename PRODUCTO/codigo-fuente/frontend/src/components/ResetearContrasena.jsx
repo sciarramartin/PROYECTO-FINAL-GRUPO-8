@@ -25,8 +25,9 @@ const ResetearContrasena = () => {
       return;
     }
 
-    if (nuevaContraseña.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+    if (!regex.test(nuevaContraseña)) {
+      setError("La contraseña no cumple con los requisitos mínimos: debe tener al menos 6 caracteres, una letra mayúscula, un número y un carácter especial.");
       return;
     }
 
@@ -78,7 +79,7 @@ const ResetearContrasena = () => {
                 <span className="text-gray-400 mr-2.5">🔒</span>
                 <input
                   type={mostrarContraseña ? "text" : "password"}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Al menos 6 caracteres, 1 mayúscula, 1 número y 1 especial"
                   value={nuevaContraseña}
                   onChange={(e) => setNuevaContraseña(e.target.value)}
                   className="flex-1 bg-transparent outline-none text-sm text-gray-700"
