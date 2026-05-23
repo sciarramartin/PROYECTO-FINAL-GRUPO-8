@@ -95,7 +95,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
 
     // guardar edición
     const handleSave = () => {
-                // Validaciones
+        // Validaciones
         if (!formData.nombre.trim()) {
             alert('El nombre de la actividad es requerido');
             return;
@@ -106,25 +106,22 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
             return;
         }
 
+        let minInicio = formData.horaInicio.split(':').map(Number);
+        let minFin = formData.horaFin.split(':').map(Number);
+        const nuevaDuracion =
+            (minFin[0] - minInicio[0]) * 60 +
+            (minFin[1] - minInicio[1]);
 
-
-        if (formData.horaInicio !== formData.horaFin) {
-            let minInicio = formData.horaInicio.split(':').map(Number);
-            let minFin = formData.horaFin.split(':').map(Number);
-            const nuevaDuracion =
-                (minFin[0] - minInicio[0]) * 60 +
-                (minFin[1] - minInicio[1]);
-            if (nuevaDuracion <= 0) {
-                alert('La duración debe ser mayor a 0 minutos');
-                return;
-            }
-            const actividadFinal = {
-                ...formData,
-                duracion: nuevaDuracion
-            };
-            onSave(actividadFinal);
+        if (nuevaDuracion <= 0) {
+            alert('La hora de fin debe ser posterior a la hora de inicio (duración mayor a 0 minutos)');
+            return;
         }
 
+        const actividadFinal = {
+            ...formData,
+            duracion: nuevaDuracion
+        };
+        onSave(actividadFinal);
     };
 
 

@@ -233,21 +233,32 @@ const Horario = () => {
 
     // seccion editor
     const handleSaveActividad = async (actividadActualizada) => {
-        if(actividadActualizada.id !== "preview"){
-            await PutActividad(actividadActualizada);
-
-        } else {
-            console.log(actividadActualizada);
-            const nuevaActividad = {
-                nombre: actividadActualizada.nombre,
-                horaInicio: actividadActualizada.horaInicio,
-                duracion: actividadActualizada.duracion,
-                dias: actividadActualizada.dias,
-                color: actividadActualizada.color, // Mantener color existente o usar default
-                idUsuario: actividadActualizada.idUsuario
-            };
-            const actResp = await PostActividad(nuevaActividad);
-            setActividades(prev => [...prev, actResp]);
+        try {
+            if (actividadActualizada.id !== "preview") {
+                const actResp = await PutActividad(actividadActualizada);
+                setActividades(prev =>
+                    prev.map(act => act.id === actResp.id ? actResp : act)
+                );
+            } else {
+                console.log(actividadActualizada);
+                const nuevaActividad = {
+                    nombre: actividadActualizada.nombre,
+                    horaInicio: actividadActualizada.horaInicio,
+                    duracion: actividadActualizada.duracion,
+                    dias: actividadActualizada.dias,
+                    color: actividadActualizada.color, // Mantener color existente o usar default
+                    idUsuario: actividadActualizada.idUsuario
+                };
+                const actResp = await PostActividad(nuevaActividad);
+                setActividades(prev =>
+                    prev.filter(act => act.id !== "preview").concat(actResp)
+                );
+            }
+            setShowEditor(false);
+            setActividadEditando(null);
+        } catch (error) {
+            console.error("Error al guardar la actividad:", error);
+            alert("No se pudo guardar la actividad. Por favor, verifique los datos e intente nuevamente.");
         }
     };
 
