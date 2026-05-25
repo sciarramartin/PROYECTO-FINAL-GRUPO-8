@@ -39,7 +39,7 @@ INSERT INTO usuarios (
 VALUES
 (
     'admin@test.com',
-    '$2b$10$hash_falso',
+    '$2b$10$v.5wYrYijxVSHjkWxifxPeSxXprHPmJPWFEFqZnqumfyFZZxECUzG', -- esto es Admin123?
     'Administrador',
     'Sistema',
     'admin',

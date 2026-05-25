@@ -3,6 +3,9 @@ import axios from 'axios';
 const API_URL =
     'http://localhost:3000/api/actividad-personal';
 
+const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+
 export const getActividades = async (
     idUsuario
 ) => {
@@ -10,7 +13,8 @@ export const getActividades = async (
     try {
 
         const response = await axios.get(
-            `${API_URL}/${idUsuario}`
+            `${API_URL}`,
+            { headers: { Authorization: `Bearer ${token}` } }
         );
 
         return response.data;
@@ -34,7 +38,8 @@ export const PostActividad = async (
 
         const response = await axios.post(
             API_URL,
-            actividad
+            actividad,
+            { headers: { Authorization: `Bearer ${token}` } }
         );
 
         return response.data;
@@ -57,8 +62,9 @@ export const PutActividad = async (
     try {
 
         const response = await axios.put(
-            `${API_URL}/${actividad.idUsuario}/${actividad.id}`,
-            actividad
+            `${API_URL}/${actividad.id}`,
+            actividad,
+            { headers: { Authorization: `Bearer ${token}` } }
         );
 
         return response.data;
@@ -81,7 +87,8 @@ export const DeleteActividad = async (
     try {
 
         const response = await axios.delete(
-            `${API_URL}/${id}`
+            `${API_URL}/${id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
         );
 
         return response.data;

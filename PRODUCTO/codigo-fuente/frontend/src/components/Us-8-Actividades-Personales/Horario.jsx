@@ -21,7 +21,7 @@ const Horario = () => {
 
     const cargarActividades = async () => {
         try {
-            const data = await getActividades(1);
+            const data = await getActividades();
             setActividades(data);
         } catch (error) {
             console.error(error);
@@ -112,7 +112,7 @@ const Horario = () => {
     }, [actividades]);
 
     const columns = useMemo(() => {
-        if (diasActividades.length > 2) {
+        if (diasActividades.length > 5) {
             return diasActividades;
         }
 
