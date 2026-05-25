@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import TimeSelect from './timeSelect';
+
 
 const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActual, preview, onSave, onCancel }) => {
     const days = [
@@ -95,7 +97,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
 
     // guardar edición
     const handleSave = () => {
-                // Validaciones
+        // Validaciones
         if (!formData.nombre.trim()) {
             alert('El nombre de la actividad es requerido');
             return;
@@ -106,187 +108,152 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
             return;
         }
 
+        let minInicio = formData.horaInicio.split(':').map(Number);
+        let minFin = formData.horaFin.split(':').map(Number);
+        const nuevaDuracion =
+            (minFin[0] - minInicio[0]) * 60 +
+            (minFin[1] - minInicio[1]);
 
-
-        if (formData.horaInicio !== formData.horaFin) {
-            let minInicio = formData.horaInicio.split(':').map(Number);
-            let minFin = formData.horaFin.split(':').map(Number);
-            const nuevaDuracion =
-                (minFin[0] - minInicio[0]) * 60 +
-                (minFin[1] - minInicio[1]);
-            if (nuevaDuracion <= 0) {
-                alert('La duración debe ser mayor a 0 minutos');
-                return;
-            }
-            const actividadFinal = {
-                ...formData,
-                duracion: nuevaDuracion
-            };
-            onSave(actividadFinal);
+        if (nuevaDuracion <= 0) {
+            alert('La hora de fin debe ser posterior a la hora de inicio (duración mayor a 0 minutos)');
+            return;
         }
 
+        const actividadFinal = {
+            ...formData,
+            duracion: nuevaDuracion
+        };
+        onSave(actividadFinal);
     };
 
-
+    const horaOpts = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+    // Minutos
+    const minOpts = ['00', '30'];
 
     if (!editor) return null;
 
     return (
-        <div className="fixed bottom-0 right-0 w-[calc(100vw-14rem)] bg-white border-t border-gray-200 shadow-lg z-50">
-            <div className="px-4 py-2 flex items-center gap-2 flex-wrap">
-                {/* Nombre */}
-                <input
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={(e) => {
-                            setFormData(prev => ({ ...prev, nombre: e.target.value }));
+        <div className="fixed bottom-0 left-0 md:left-52 right-0 bg-white border-t border-gray-100 shadow-[0_-1px_8px_rgba(0,0,0,0.06)] z-50">
+            <div className="px-4 py-2 flex flex-col gap-2">
 
-                        }}
-                    className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300"
-                    placeholder="Nombre"
-                    style={{ width: '120px' }}
-                />
+                {/* Fila 2: Días + Colores + Horas */}
+                <div className="flex items-center gap-x-3 gap-y-2 flex-wrap pb-1">
 
-                {/* Separador */}
-                <span className="text-gray-300">|</span>
-
-                {/* Hora inicio con selector numérico */}
-                <div className="flex items-center gap-1">
-                    <select
-                        name="horaInicio"
-                        value={formData.horaInicio.split(':')[0]}
-                        onChange={(e) => {
-                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.horaInicio.split(':')[1]}`;
-                            setFormData(prev => ({ ...prev, horaInicio: nuevaHora }));
-
-                        }}
-                        className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
-                    >
-                        {Array.from({ length: 24 }, (_, i) => (
-                            <option key={i} value={i.toString().padStart(2, '0')}>
-                                {i.toString().padStart(2, '0')}
-                            </option>
+                    {/* Días */}
+                    <div className="flex gap-1 shrink-0">
+                        {days.map(([dayName, dayValue]) => (
+                            <button
+                                key={dayName}
+                                type="button"
+                                onClick={() => toggleDay(dayValue)}
+                                className={`w-7 h-7 rounded-lg text-xs font-semibold transition cursor-pointer
+                                    ${(formData.dias & dayValue) !== 0
+                                        ? 'bg-indigo-500 text-white shadow-sm'
+                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    }`}
+                                title={dayName}
+                            >
+                                {dayName.charAt(0)}
+                            </button>
                         ))}
-                    </select>
-                    <span className="text-gray-400">:</span>
-                    <select
-                        value={formData.horaInicio.split(':')[1]}
-                        onChange={(e) => {
-                            const nuevaHora = `${formData.horaInicio.split(':')[0]}:${e.target.value}`;
-                            setFormData(prev => ({ ...prev, horaInicio: nuevaHora }));
+                    </div>
 
-                        }}
-                        className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
-                    >
-                        <option value="00">00</option>
-                        <option value="30">30</option>
-                    </select>
-                </div>
+                    <div className="w-px h-5 bg-gray-200 shrink-0" />
 
-                {/* Separador */}
-                <span className="text-gray-300">|</span>
-
-                {/* Duración */}
-                {/* Hora fin con selector numérico */}
-                <div className="flex items-center gap-1">
-                    <select
-                        name="hora_fin"
-                        value={formData.horaFin.split(':')[0]}
-                        onChange={(e) => {
-                            const nuevaHora = `${e.target.value.padStart(2, '0')}:${formData.horaFin.split(':')[1]}`;
-                            setFormData(prev => ({ ...prev, horaFin: nuevaHora }));
-
-                        }}
-                        className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
-                    >
-                        {Array.from({ length: 24 }, (_, i) => (
-                            <option key={i} value={i.toString().padStart(2, '0')}>
-                                {i.toString().padStart(2, '0')}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="text-gray-400">:</span>
-                    <select
-                        value={formData.horaFin.split(':')[1]}
-                        onChange={(e) => {
-                            const nuevaHora = `${formData.horaFin.split(':')[0]}:${e.target.value}`;
-                            setFormData(prev => ({ ...prev, horaFin: nuevaHora }));
-
-                        }}
-                        className="px-2 py-1 text-sm border border-gray-200 rounded focus:outline-none focus:border-indigo-300 bg-white w-16"
-                    >
-                        <option value="00">00</option>
-                        <option value="30">30</option>
-                    </select>
-                </div>
-
-                {/* Separador */}
-                <span className="text-gray-300">|</span>
-
-                {/* Días */}
-                <div className="flex gap-1">
-                    {days.map(([dayName, dayValue]) => (
-                        <button
-                            key={dayName}
-                            type="button"
-                            onClick={() => toggleDay(dayValue)}
-                            className={`w-7 h-7 rounded text-xs font-medium transition
-                                ${(formData.dias & dayValue) !== 0
-                                    ? 'bg-indigo-500 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    {/* Colores */}
+                    <div className="flex gap-1.5 items-center shrink-0">
+                        {[
+                            { name: 'Rosa',        value: '#D08B9B' },
+                            { name: 'Verde claro', value: '#C5E99B' },
+                            { name: 'Azul claro',  value: '#B5E3FF' },
+                            { name: 'Durazno',     value: '#E9C772' },
+                            { name: 'Violeta',     value: '#E0BBE4' },
+                            { name: 'Menta',       value: '#B5F5E3' },
+                            { name: 'Rosa suave',  value: '#FFCCD9' },
+                        ].map((color) => (
+                            <button
+                                key={color.value}
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
+                                className={`w-5 h-5 rounded-full border-2 transition cursor-pointer ${
+                                    formData.color === color.value
+                                        ? 'border-gray-700 scale-110 shadow-sm'
+                                        : 'border-transparent hover:border-gray-300'
                                 }`}
-                            title={dayName}
-                        >
-                            {dayName.charAt(0)}
-                        </button>
-                    ))}
+                                style={{ backgroundColor: color.value }}
+                                title={color.name}
+                            />
+                        ))}
+                    </div>
+
+                    <div className="w-px h-5 bg-gray-200 shrink-0" />
+
+                    {/* Horas */}
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                        <span className="text-xs text-gray-400">Inicio</span>
+                        <TimeSelect
+                            value={formData.horaInicio.split(':')[0]}
+                            options={horaOpts}
+                            onChange={(v) => setFormData(prev => ({ ...prev, horaInicio: `${v}:${formData.horaInicio.split(':')[1]}` }))}
+                        />
+                        <span className="text-gray-300 text-sm">:</span>
+                        <TimeSelect
+                            value={formData.horaInicio.split(':')[1]}
+                            options={minOpts}
+                            freeInput={true}
+                            min={0}
+                            max={59}
+                            onChange={(v) => setFormData(prev => ({ ...prev, horaInicio: `${formData.horaInicio.split(':')[0]}:${v}` }))}
+                        />
+
+                        <div className="w-px h-5 bg-gray-200 shrink-0" />
+
+                        <span className="text-xs text-gray-400">Fin</span>
+                        <TimeSelect
+                            value={formData.horaFin.split(':')[0]}
+                            options={horaOpts}
+                            onChange={(v) => setFormData(prev => ({ ...prev, horaFin: `${v}:${formData.horaFin.split(':')[1]}` }))}
+                        />
+                        <span className="text-gray-300 text-sm">:</span>
+                        <TimeSelect
+                            value={formData.horaFin.split(':')[1]}
+                            options={minOpts}
+                            freeInput={true}
+                            min={0}
+                            max={59}
+                            onChange={(v) => setFormData(prev => ({ ...prev, horaFin: `${formData.horaFin.split(':')[0]}:${v}` }))}
+                        />
+                    </div>
+
                 </div>
-
-                {/* Separador */}
-                <span className="text-gray-300">|</span>
-
-                {/* Colores */}
-                <div className="flex gap-1">
-                {[
-                    { name: 'Rojo', value: '#FFB3BA' },
-                    { name: 'Azul', value: '#C5E99B' },
-                    { name: 'Verde', value: '#B5E3FF' },
-                    { name: 'Amarillo', value: '#FFD1B3' },
-                    { name: 'Violeta', value: '#E0BBE4' },
-                    { name: 'Rosa', value: '#B5F5E3' },
-                    { name: 'Rosa', value: '#FFCCD9' }
-                ].map((color) => (
-                    <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
-                    className={`w-4 h-4 rounded-xs border-2 transition ${
-                        formData.color === color.value
-                        ? 'border-gray-800 scale-110 shadow-sm'
-                        : 'border-gray-200 hover:border-gray-400'
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.name}
+                {/* Fila 1: Nombre + Botones */}
+                <div className="flex items-center gap-3">
+                    <input
+                        type="text"
+                        name="nombre"
+                        value={formData.nombre}
+                        onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
+                        className="px-2.5 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-100 text-gray-700 placeholder:text-gray-300 min-w-0 flex-1"
+                        placeholder="Nombre de la actividad"
                     />
-                ))}
+                    <div className="flex gap-2 shrink-0">
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            className="px-3 py-1.5 text-sm font-medium text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 hover:text-gray-700 transition cursor-pointer"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSave}
+                            className="px-3 py-1.5 text-sm font-medium text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 transition cursor-pointer shadow-sm"
+                        >
+                            Guardar
+                        </button>
+                    </div>
                 </div>
 
-                {/* Botones */}
-                <div className="flex gap-1 ml-2">
-                    <button
-                        onClick={handleSave}
-                        className="px-3 py-1 bg-indigo-500 text-white text-sm rounded hover:bg-indigo-600 transition"
-                    >
-                        ✓
-                    </button>
-                    <button
-                        onClick={handleCancel}
-                        className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded hover:bg-gray-200 transition"
-                    >
-                        ✗
-                    </button>
-                </div>
             </div>
         </div>
     );

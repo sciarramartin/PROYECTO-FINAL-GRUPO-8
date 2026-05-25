@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URL =
-    'http://localhost:3000/api/actividad-personal';
+    `${import.meta.env.VITE_API_URL}/actividad-personal`;
 
 const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
