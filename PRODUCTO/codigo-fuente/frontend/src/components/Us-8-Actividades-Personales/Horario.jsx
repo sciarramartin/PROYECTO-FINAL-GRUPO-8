@@ -325,6 +325,16 @@ const Horario = () => {
         setShowEditor(false);
     };
 
+    const handleDelete = (ac) => {
+        setActividades(prev =>
+            prev.filter(act => act.id !== actividadEditando.id)
+        );
+        DeleteActividad(actividadEditando.id);
+        setActividadEditando(null); // revertir
+
+        setShowEditor(false);
+    };
+
 
     return (
         <>
@@ -514,6 +524,7 @@ const Horario = () => {
                 preview={handlePreviewActividad}
                 onSave={handleSaveActividad}
                 onCancel={handleCancel}
+                DeleteActividad={handleDelete}
             />
         </>
     );

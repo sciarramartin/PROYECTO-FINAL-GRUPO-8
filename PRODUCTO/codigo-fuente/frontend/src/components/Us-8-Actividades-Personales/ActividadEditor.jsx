@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import TimeSelect from './timeSelect';
 
 
-const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActual, preview, onSave, onCancel }) => {
+const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActual, preview, onSave, onCancel, DeleteActividad }) => {
     const days = [
         ['Lunes', 1],
         ['Martes', 2],
@@ -94,6 +94,14 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         }
         onCancel();
     };
+
+        const handleDelete = () => {
+        setEditor(false);
+        if (setActividadActual) {
+            DeleteActividad();
+        }
+    };
+
 
     // guardar edición
     const handleSave = () => {
@@ -237,6 +245,16 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                         placeholder="Nombre de la actividad"
                     />
                     <div className="flex gap-2 shrink-0">
+                        {/* Eliminar — solo si no es una actividad nueva */}
+                        {actividadActual?.id !== 'preview' && (
+                            <button
+                                type="button"
+                                onClick={() => handleDelete()}
+                                className="px-3 py-1.5 text-sm font-medium text-red-400 bg-red-50 rounded-lg hover:bg-red-100 hover:text-red-600 transition cursor-pointer"
+                            >
+                                Eliminar
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={handleCancel}
