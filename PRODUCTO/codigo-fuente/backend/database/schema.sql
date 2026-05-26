@@ -78,6 +78,8 @@ CREATE TABLE correlativas_x_materia (
     materia_base_id INTEGER NOT NULL,
 
     materia_correlativa_id INTEGER NOT NULL,
+    
+    tipo_requisito TEXT NOT NULL DEFAULT 'regular', -- Puede ser 'regular' o 'aprobada'
 
     PRIMARY KEY (
         materia_base_id,
@@ -109,3 +111,16 @@ CREATE TABLE actividad (
         ON UPDATE CASCADE
 );
 
+-- =========================
+-- ESTADO MATERIA ALUMNO
+-- =========================
+
+CREATE TABLE estado_materia_alumno (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL,
+    id_materia INTEGER NOT NULL,
+    estado TEXT NOT NULL DEFAULT 'No Cursada',
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_usuario, id_materia)
+);

@@ -30,10 +30,29 @@ const Materia = baseDeDatos.define('materia', {
     timestamps: false
 });
 
+const CorrelativaXMateria = baseDeDatos.define('correlativas_x_materia', {
+    materia_base_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+    },
+    materia_correlativa_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+    },
+    tipo_requisito: {
+        type: DataTypes.STRING,
+        defaultValue: 'regular', // 'regular' o 'aprobada'
+        allowNull: false
+    }
+}, {
+    tableName: 'correlativas_x_materia',
+    timestamps: false
+});
+
 // Asociación M:N (Self-referencing) para Correlativas
 Materia.belongsToMany(Materia, {
     as: 'correlativas',
-    through: 'correlativas_x_materia',
+    through: CorrelativaXMateria,
     foreignKey: 'materia_base_id',
     otherKey: 'materia_correlativa_id',
     timestamps: false
@@ -41,10 +60,10 @@ Materia.belongsToMany(Materia, {
 
 Materia.belongsToMany(Materia, {
     as: 'es_correlativa_de',
-    through: 'correlativas_x_materia',
+    through: CorrelativaXMateria,
     foreignKey: 'materia_correlativa_id',
     otherKey: 'materia_base_id',
     timestamps: false
 });
 
-module.exports = { Materia };
+module.exports = { Materia, CorrelativaXMateria };

@@ -7,6 +7,7 @@ import Registro from './components/ModuloSesion/Registro';
 import Horario from './components/Us-8-Actividades-Personales/Horario';
 import Layout from './components/Layout';
 import ModuloCorrelativas from './components/Us-9-Registrar-Correlativas';
+import MapaCorrelatividades from './components/US-10-Consultar-correlativas/MapaCorrelatividades';
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -30,8 +31,22 @@ const App = () => {
           </RutaPrivada>
         } />
         
-        {/* Ruta temporal para probar tu User Story */}
-        <Route path="/correlativas" element={<ModuloCorrelativas />} />
+        {/* Rutas de Correlatividades */}
+        <Route path="/correlativas" element={
+          <RutaPrivada>
+            <Layout>
+              <ModuloCorrelativas />
+            </Layout>
+          </RutaPrivada>
+        } />
+
+        <Route path="/mapa-correlatividades" element={
+          <RutaPrivada>
+            <Layout>
+              <MapaCorrelatividades />
+            </Layout>
+          </RutaPrivada>
+        } />
 
         <Route path="/Horario" element={
           //<RutaPrivada>

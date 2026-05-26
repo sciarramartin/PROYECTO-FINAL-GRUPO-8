@@ -1,8 +1,6 @@
-const { baseDeDatos, conectarDB } = require('../configuracion/base-de-datos');
+const { baseDeDatos, conectarDB } = require('../database/base-de-datos');
 const { Materia } = require('../modelos/materia.modelo');
-
-// Sincronizar modelos antes del seed (por si acaso no corrieron el servidor aún)
-require('../modelos/materia.modelo'); // Asegurarnos de que el modelo esté registrado con sus relaciones
+require('../modelos/materia.modelo');
 
 const materiasSistemas = [
     // Primer Año
@@ -56,7 +54,7 @@ const materiasSistemas = [
 const seed = async () => {
     try {
         await conectarDB();
-        await baseDeDatos.sync({ force: true }); // ADVERTENCIA: force: true BORRA TABLAS EXISTENTES
+        await baseDeDatos.sync({ force: true });
         console.log('Tablas sincronizadas. Limpiando datos...');
 
         console.log('Insertando materias base...');
@@ -65,51 +63,64 @@ const seed = async () => {
             creadas[m.codigo] = await Materia.create(m);
         }
 
-        console.log('Insertando correlativas...');
+        console.log('Insertando correlativas con tipos de requisito...');
         
-        const addCorr = async (codMateria, codigosRequisitos) => {
+        // Función helper para no repetir el through
+        const addCorr = async (codMateria, reg, apr) => {
             if (!creadas[codMateria]) return;
-            const reqs = codigosRequisitos.map(c => creadas[c]).filter(Boolean);
-            if (reqs.length > 0) {
-                await creadas[codMateria].addCorrelativas(reqs);
+            
+            // Regulares
+            for (const codReq of reg) {
+                if(creadas[codReq]) {
+                    await creadas[codMateria].addCorrelativa(creadas[codReq], { through: { tipo_requisito: 'regular' } });
+                }
+            }
+            
+            // Aprobadas
+            for (const codReq of apr) {
+                if(creadas[codReq]) {
+                    await creadas[codMateria].addCorrelativa(creadas[codReq], { through: { tipo_requisito: 'aprobada' } });
+                }
             }
         };
 
-        // Nivel 2
-        await addCorr('9', ['1', '2']);
-        await addCorr('10', ['1', '3']);
-        await addCorr('12', ['4']);
-        await addCorr('13', ['5', '6']);
-        await addCorr('14', ['5', '6']);
-        await addCorr('15', ['7']);
-        await addCorr('16', ['6', '8']);
-        await addCorr('17', ['1', '2']);
+        // Nivel 2 (Materia, [Regulares], [Aprobadas])
+        await addCorr('9', ['1', '2'], []);
+        await addCorr('10', ['1', '3'], []);
+        await addCorr('12', ['4'], []);
+        await addCorr('13', ['5', '6'], []);
+        await addCorr('14', ['5', '6'], []);
+        await addCorr('15', ['7'], []);
+        await addCorr('16', ['6', '8'], []);
+        await addCorr('17', ['1', '2'], []);
 
         // Nivel 3
-        await addCorr('19', ['13', '16']);
-        await addCorr('20', ['14', '16']);
-        await addCorr('22', ['9']);
-        await addCorr('23', ['14', '16']);
-        await addCorr('99', ['16']);
+        await addCorr('18', [], ['1', '2']);
+        await addCorr('19', ['13', '16'], ['5', '6']);
+        await addCorr('20', ['14', '16'], ['5', '6']);
+        await addCorr('21', [], ['3', '7']);
+        await addCorr('22', ['9'], ['1', '2']);
+        await addCorr('23', ['14', '16'], ['4', '6', '8']);
+        await addCorr('99', ['16'], ['6', '8', '13', '14']);
 
         // Nivel 4
-        await addCorr('24', ['11']);
-        await addCorr('25', ['19', '20', '23']);
-        await addCorr('26', ['15', '21']);
-        await addCorr('27', ['17', '22']);
-        await addCorr('28', ['17']);
-        await addCorr('29', ['10', '22']);
-        await addCorr('30', ['18', '23']);
+        await addCorr('24', ['11'], []);
+        await addCorr('25', ['19', '20', '23'], ['13', '14']);
+        await addCorr('26', ['15', '21'], []);
+        await addCorr('27', ['17', '22'], []);
+        await addCorr('28', ['17'], ['9']);
+        await addCorr('29', ['10', '22'], ['9']);
+        await addCorr('30', ['18', '23'], ['16']);
 
         // Nivel 5
-        await addCorr('31', ['28']);
-        await addCorr('32', ['28']);
-        await addCorr('33', ['18', '27']);
-        await addCorr('34', ['24', '30']);
-        await addCorr('35', ['26', '30']);
-        await addCorr('36', ['25', '26', '30']);
+        await addCorr('31', ['28'], ['17', '22']);
+        await addCorr('32', ['28'], ['17', '19']);
+        await addCorr('33', ['18', '27'], ['23']);
+        await addCorr('34', ['24', '30'], ['18']);
+        await addCorr('35', ['26', '30'], ['20', '21']);
+        await addCorr('36', ['25', '26', '30'], ['12', '20', '23']);
 
-        console.log('✅ Base de datos poblada exitosamente con datos iniciales (PDF Sistemas).');
+        console.log('✅ Base de datos poblada exitosamente con Correlativas Fuertes y Débiles.');
         process.exit(0);
     } catch (error) {
         console.error('❌ Error al poblar BD:', error);

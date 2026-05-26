@@ -34,24 +34,29 @@ const crearMateria = async (datos) => {
         cuatrimestre
     });
 
-    // 2. Si vienen correlativas, asignarlas (validando ciclos por si acaso, aunque siendo nueva no debería tener)
+    // 2. Si vienen correlativas, asignarlas con su tipo de requisito
     if (correlativas && correlativas.length > 0) {
-        for (const reqId of correlativas) {
-            if (await tieneCiclo(nuevaMateria.id, reqId)) {
+        for (const req of correlativas) {
+            if (await tieneCiclo(nuevaMateria.id, req.id)) {
                 // Hacemos rollback manual eliminando la materia recién creada
                 await nuevaMateria.destroy();
-                throw new Error(`Dependencia circular detectada con la materia ID: ${reqId}`);
+                throw new Error(`Dependencia circular detectada con la materia ID: ${req.id}`);
             }
         }
-        await nuevaMateria.setCorrelativas(correlativas);
+        // Construimos el array de relaciones para la tabla intermedia
+        for (const req of correlativas) {
+            await nuevaMateria.addCorrelativa(req.id, { through: { tipo_requisito: req.tipo_requisito || 'regular' }});
+        }
     }
 
-    return await Materia.findByPk(nuevaMateria.id, { include: 'correlativas' });
+    return await Materia.findByPk(nuevaMateria.id, { 
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    });
 };
 
 const obtenerTodas = async () => {
     return await Materia.findAll({
-        include: 'correlativas',
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } },
         order: [
             ['nivel_anio', 'ASC'],
             ['cuatrimestre', 'ASC']
@@ -60,7 +65,9 @@ const obtenerTodas = async () => {
 };
 
 const obtenerPorId = async (id) => {
-    const materia = await Materia.findByPk(id, { include: 'correlativas' });
+    const materia = await Materia.findByPk(id, { 
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    });
     if (!materia) throw new Error('Materia no encontrada');
     return materia;
 };
@@ -82,15 +89,21 @@ const actualizarMateria = async (id, datos) => {
     // Actualizar correlativas si se envían
     if (correlativas) {
         // Validar ciclos para cada nueva correlativa
-        for (const reqId of correlativas) {
-            if (await tieneCiclo(materia.id, reqId)) {
-                throw new Error(`No se puede guardar: Genera una dependencia circular con la materia ID: ${reqId}`);
+        for (const req of correlativas) {
+            if (await tieneCiclo(materia.id, req.id)) {
+                throw new Error(`No se puede guardar: Genera una dependencia circular con la materia ID: ${req.id}`);
             }
         }
-        await materia.setCorrelativas(correlativas);
+        // Limpiamos las viejas y agregamos las nuevas con su tipo
+        await materia.setCorrelativas([]);
+        for (const req of correlativas) {
+            await materia.addCorrelativa(req.id, { through: { tipo_requisito: req.tipo_requisito || 'regular' }});
+        }
     }
 
-    return await Materia.findByPk(id, { include: 'correlativas' });
+    return await Materia.findByPk(id, { 
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    });
 };
 
 const eliminarMateria = async (id) => {

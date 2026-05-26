@@ -9,6 +9,8 @@ const menuItems = [
   { label: "Horario", icon: "◎", path: "/Horario" },
   { label: "Reportes", icon: "◈", path: "/reportes" },
   { label: "Ajustes", icon: "◍", path: "/ajustes" },
+  { label: "Mapa Correlativas", icon: "🕸", path: "/mapa-correlatividades", role: 1 },
+  { label: "Registrar Correlativas", icon: "⚙", path: "/correlativas", role: 3 }
 ];
 
 const Layout = ({ children }) => {
@@ -77,7 +79,7 @@ const Layout = ({ children }) => {
               </div>
               <div className="hidden md:block text-left">
                 <p className="text-sm font-semibold text-gray-800 leading-none">{usuario?.nombre || "Usuario"}</p>
-                <p className="text-xs text-gray-400">Estudiante</p>
+                <p className="text-xs text-gray-400">{usuario?.id_tipo_usuario === 3 ? "Administrador" : "Estudiante"}</p>
               </div>
               <span className="text-gray-400 text-xs">▾</span>
             </button>
@@ -115,7 +117,7 @@ const Layout = ({ children }) => {
           md:translate-x-0
         `}>
           <nav className="p-3 flex flex-col gap-1 mt-2">
-            {menuItems.map((item) => {
+            {menuItems.filter(item => !item.role || item.role === usuario?.id_tipo_usuario).map((item) => {
               const activo = location.pathname === item.path;
               return (
                 <button

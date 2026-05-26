@@ -38,11 +38,22 @@ export default function ModuloCorrelativas() {
   };
 
   const handleCheckboxChange = (id) => {
+    setFormData(prev => {
+      const existe = prev.correlativas.find(c => c.id === id);
+      if (existe) {
+        return { ...prev, correlativas: prev.correlativas.filter(c => c.id !== id) };
+      } else {
+        return { ...prev, correlativas: [...prev.correlativas, { id, tipo_requisito: 'regular' }] };
+      }
+    });
+  };
+
+  const handleTipoRequisitoChange = (id, tipo) => {
     setFormData(prev => ({
       ...prev,
-      correlativas: prev.correlativas.includes(id) 
-        ? prev.correlativas.filter(cid => cid !== id)
-        : [...prev.correlativas, id]
+      correlativas: prev.correlativas.map(c => 
+        c.id === id ? { ...c, tipo_requisito: tipo } : c
+      )
     }));
   };
 
@@ -69,7 +80,10 @@ export default function ModuloCorrelativas() {
       nombre: materia.nombre,
       nivel_anio: materia.nivel_anio,
       cuatrimestre: materia.cuatrimestre,
-      correlativas: materia.correlativas ? materia.correlativas.map(c => c.id) : []
+      correlativas: materia.correlativas ? materia.correlativas.map(c => ({
+        id: c.id,
+        tipo_requisito: c.correlativas_x_materia?.tipo_requisito || 'regular'
+      })) : []
     });
   };
 
@@ -176,18 +190,33 @@ export default function ModuloCorrelativas() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Correlativas Requeridas</label>
-                  <div className="max-h-32 overflow-y-auto border border-slate-200 rounded-md p-2 space-y-1 bg-slate-50">
-                    {materias.filter(m => m.id !== editandoId).map(materia => (
-                      <label key={materia.id} className="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer hover:bg-slate-100 p-1 rounded">
-                        <input 
-                          type="checkbox" 
-                          checked={formData.correlativas.includes(materia.id)}
-                          onChange={() => handleCheckboxChange(materia.id)}
-                          className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        <span>{materia.codigo} - {materia.nombre}</span>
-                      </label>
-                    ))}
+                  <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-md p-2 space-y-2 bg-slate-50">
+                    {materias.filter(m => m.id !== editandoId).map(materia => {
+                      const seleccionada = formData.correlativas.find(c => c.id === materia.id);
+                      return (
+                        <div key={materia.id} className={`flex items-center justify-between p-2 rounded border ${seleccionada ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-transparent hover:bg-slate-100'}`}>
+                          <label className="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={!!seleccionada}
+                              onChange={() => handleCheckboxChange(materia.id)}
+                              className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <span className={seleccionada ? 'font-semibold text-indigo-900' : ''}>{materia.codigo} - {materia.nombre}</span>
+                          </label>
+                          {seleccionada && (
+                            <select 
+                              value={seleccionada.tipo_requisito} 
+                              onChange={(e) => handleTipoRequisitoChange(materia.id, e.target.value)}
+                              className="text-xs rounded border-slate-300 py-1 pl-2 pr-6 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                            >
+                              <option value="regular">Para Cursar (Regular)</option>
+                              <option value="aprobada">Para Rendir (Aprobada)</option>
+                            </select>
+                          )}
+                        </div>
+                      );
+                    })}
                     {materias.length === 0 && <span className="text-xs text-slate-500 italic">No hay materias disponibles</span>}
                   </div>
                 </div>

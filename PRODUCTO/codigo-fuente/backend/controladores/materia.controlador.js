@@ -1,7 +1,7 @@
 const MateriaService = require('../servicios/materia.servicio');
+const { verificarToken, verificarAdmin } = require('../middleware/authMiddleware');
 const express = require('express');
 const router = express.Router();
-
 router.get('/', async (req, res) => {
     try {
         const materias = await MateriaService.obtenerTodas();
@@ -23,7 +23,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', verificarToken, verificarAdmin, async (req, res) => {
     try {
         const { codigo, nombre, nivel_anio, cuatrimestre, correlativas } = req.body;
 
@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const datos = req.body;
@@ -62,7 +62,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verificarToken, verificarAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         await MateriaService.eliminarMateria(id);

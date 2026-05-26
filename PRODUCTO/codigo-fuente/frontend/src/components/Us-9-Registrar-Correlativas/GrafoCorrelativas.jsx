@@ -35,13 +35,15 @@ const GrafoCorrelativas = ({ materias }) => {
       // Llenar Aristas
       if (materia.correlativas) {
         materia.correlativas.forEach(req => {
+          const tipo = req.correlativas_x_materia?.tipo_requisito || 'regular';
           edges.add({
             id: `${req.id}-${materia.id}`, // ID explícito para poder actualizarla luego
             from: req.id,
             to: materia.id,
             arrows: 'to',
-            color: { color: 'rgba(203, 213, 225, 0.8)' }, // Un poco más oscuras para que se vean
-            width: 1.5,
+            color: { color: tipo === 'aprobada' ? 'rgba(79, 70, 229, 0.6)' : 'rgba(203, 213, 225, 0.8)' },
+            width: tipo === 'aprobada' ? 2 : 1.5,
+            dashes: tipo === 'regular' ? [5, 5] : false, // Punteada si es solo para cursar
             smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.6 } // Más ondulada
           });
         });
@@ -198,13 +200,25 @@ const GrafoCorrelativas = ({ materias }) => {
       
       {/* Leyenda */}
       <div className="p-4 border-t border-slate-100 bg-white z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <h4 className="text-sm font-semibold text-slate-700 mb-2">Columnas de Años</h4>
-        <div className="flex flex-wrap gap-4 text-xs text-slate-600">
-          <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f0f9ff] border border-[#bae6fd]"></div> 1° Año</div>
-          <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#faf5ff] border border-[#e9d5ff]"></div> 2° Año</div>
-          <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f0fdf4] border border-[#bbf7d0]"></div> 3° Año</div>
-          <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fff7ed] border border-[#fed7aa]"></div> 4° Año</div>
-          <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fdf2f8] border border-[#fbcfe8]"></div> 5° Año</div>
+        <h4 className="text-sm font-semibold text-slate-700 mb-2">Leyenda</h4>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-wrap gap-4 text-xs text-slate-600">
+            <span className="font-medium text-slate-500 mr-2">Años:</span>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f0f9ff] border border-[#bae6fd]"></div> 1° Año</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#faf5ff] border border-[#e9d5ff]"></div> 2° Año</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f0fdf4] border border-[#bbf7d0]"></div> 3° Año</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fff7ed] border border-[#fed7aa]"></div> 4° Año</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fdf2f8] border border-[#fbcfe8]"></div> 5° Año</div>
+          </div>
+          <div className="flex flex-wrap gap-4 text-xs text-slate-600">
+            <span className="font-medium text-slate-500 mr-2">Requisitos:</span>
+            <div className="flex items-center gap-2">
+              <div className="w-6 border-b-2 border-dashed border-slate-400"></div> Regular (Cursar)
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 border-b-2 border-solid border-indigo-500"></div> Aprobada (Rendir)
+            </div>
+          </div>
         </div>
       </div>
     </div>
