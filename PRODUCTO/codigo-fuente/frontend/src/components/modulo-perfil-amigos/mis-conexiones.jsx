@@ -17,6 +17,30 @@ const CARRERAS = {
 const MisConexiones = () => {
   const navigate = useNavigate();
   const [tabActiva, setTabActiva] = useState("amigos"); // amigos, solicitudes
+
+  const renderAvatar = (foto, iniciales, sizeClass = "w-12 h-12 text-sm") => {
+    if (!foto) {
+      return (
+        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center text-indigo-700 font-bold shrink-0`}>
+          {iniciales}
+        </div>
+      );
+    }
+    if (foto.length <= 4) {
+      return (
+        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center shrink-0 text-2xl`}>
+          {foto}
+        </div>
+      );
+    }
+    return (
+      <img
+        src={foto}
+        alt="Avatar"
+        className={`${sizeClass} rounded-full object-cover border border-gray-250 shrink-0`}
+      />
+    );
+  };
   
   const [amigos, setAmigos] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
@@ -176,9 +200,7 @@ const MisConexiones = () => {
                   <div>
                     {/* Header de Tarjeta */}
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center text-indigo-700 text-sm font-bold shrink-0">
-                        {iniciales}
-                      </div>
+                      {renderAvatar(amigo.Perfil?.foto_perfil || amigo.perfil?.foto_perfil, iniciales)}
                       <div className="min-w-0">
                         <h3 className="text-sm font-bold text-gray-900 leading-tight truncate">
                           {amigo.nombre} {amigo.apellido}
@@ -263,9 +285,7 @@ const MisConexiones = () => {
                   <div>
                     {/* Header de Tarjeta */}
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center text-indigo-700 text-sm font-bold shrink-0">
-                        {iniciales}
-                      </div>
+                      {renderAvatar(sol.usuario.Perfil?.foto_perfil || sol.usuario.perfil?.foto_perfil, iniciales)}
                       <div className="min-w-0">
                         <h3 className="text-sm font-bold text-gray-900 leading-tight truncate">
                           {sol.usuario.nombre} {sol.usuario.apellido}

@@ -44,7 +44,7 @@ const ChatPrivado = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         // Cargar datos del perfil del amigo
-        const amigoRes = await axios.get(`${apiUrl}/usuarios/${amigoId}`, { headers });
+        const amigoRes = await axios.get(`${apiUrl}/perfiles/${amigoId}`, { headers });
         setAmigo(amigoRes.data);
 
         // Cargar historial de chat privado
@@ -138,8 +138,35 @@ const ChatPrivado = () => {
     return grupos;
   };
 
+  const renderAvatarChico = (foto, inicialesStr, sizeClass = "w-8 h-8 text-xs") => {
+    if (!foto) {
+      return (
+        <div className={`${sizeClass} rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shrink-0`}>
+          {inicialesStr}
+        </div>
+      );
+    }
+    if (foto.length <= 4) {
+      const emojiSize = sizeClass.includes("w-10") ? "text-xl" : "text-sm";
+      return (
+        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center shrink-0 ${emojiSize}`}>
+          {foto}
+        </div>
+      );
+    }
+    return (
+      <img
+        src={foto}
+        alt="Avatar"
+        className={`${sizeClass} rounded-full object-cover border border-gray-250 shrink-0`}
+      />
+    );
+  };
+
   const mensajesAgrupados = agruparMensajesPorFecha(mensajes);
-  const inicialesAmigo = amigo ? `${amigo.nombre[0]}${amigo.apellido[0]}`.toUpperCase() : "A";
+  const usuarioAmigo = amigo?.usuario || amigo;
+  const perfilAmigo = amigo?.perfil;
+  const inicialesAmigo = usuarioAmigo ? `${usuarioAmigo.nombre?.[0] || ""}${usuarioAmigo.apellido?.[0] || ""}`.toUpperCase() : "A";
 
   return (
     <div className="max-w-4xl mx-auto px-2">
@@ -178,16 +205,14 @@ const ChatPrivado = () => {
           <div className="bg-gray-50 border-b border-gray-150 px-5 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
               {/* Avatar */}
-              <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center text-indigo-700 text-xs font-bold shrink-0">
-                {inicialesAmigo}
-              </div>
+              {renderAvatarChico(perfilAmigo?.foto_perfil, inicialesAmigo, "w-10 h-10")}
               {/* Info Amigo */}
               <div className="min-w-0">
                 <h3 className="text-xs font-extrabold text-gray-850 truncate leading-tight">
-                  {amigo.nombre} {amigo.apellido}
+                  {usuarioAmigo?.nombre} {usuarioAmigo?.apellido}
                 </h3>
                 <p className="text-[9px] text-indigo-600 font-medium mt-0.5 truncate">
-                  🎓 {CARRERAS[amigo.id_carrera] || "Ingeniería"} • @{amigo.nombre_usuario}
+                  🎓 {CARRERAS[usuarioAmigo?.id_carrera] || "Ingeniería"} • @{usuarioAmigo?.nombre_usuario}
                 </p>
               </div>
             </div>

@@ -1,6 +1,7 @@
 // servicios/amistad.service.js
 const { Amistad } = require('../modelos/Amistad');
 const { Usuario } = require('../modelos/Usuario');
+const { Perfil } = require('../modelos/Perfil');
 const { Op } = require('sequelize');
 
 // Helper para validar si un usuario existe
@@ -125,24 +126,24 @@ const listarAmigos = async (idUsuario) => {
             {
                 model: Usuario,
                 as: 'UsuarioOrigen',
-                attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso']
+                attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso'],
+                include: [{ model: Perfil, attributes: ['foto_perfil'] }]
             },
             {
                 model: Usuario,
                 as: 'UsuarioDestino',
-                attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso']
+                attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso'],
+                include: [{ model: Perfil, attributes: ['foto_perfil'] }]
             }
         ]
     });
 
     // Mapear el resultado para retornar los datos del *otro* usuario (el amigo)
     const amigos = relaciones.map(relacion => {
-        if (relacion.id_usuario_origen === userId) {
-            return relacion.UsuarioDestino;
-        } else {
-            return relacion.UsuarioOrigen;
-        }
-    });
+        const amigoUser = relacion.id_usuario_origen === userId ? relacion.UsuarioDestino : relacion.UsuarioOrigen;
+        if (!amigoUser) return null;
+        return amigoUser.toJSON ? amigoUser.toJSON() : amigoUser;
+    }).filter(Boolean);
 
     return amigos;
 };
@@ -161,18 +162,24 @@ const listarSolicitudesPendientes = async (idUsuario) => {
             {
                 model: Usuario,
                 as: 'UsuarioOrigen',
-                attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso']
+                attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso'],
+                include: [{ model: Perfil, attributes: ['foto_perfil'] }]
             }
         ],
         order: [['createdAt', 'DESC']]
     });
 
     // Retorna el perfil del usuario que envió la solicitud junto con la fecha de envío
-    return solicitudes.map(solicitud => ({
-        id_solicitud: solicitud.id,
-        fecha_solicitud: solicitud.createdAt,
-        usuario: solicitud.UsuarioOrigen
-    }));
+    return solicitudes.map(solicitud => {
+        const userJson = solicitud.UsuarioOrigen && solicitud.UsuarioOrigen.toJSON 
+            ? solicitud.UsuarioOrigen.toJSON() 
+            : solicitud.UsuarioOrigen;
+        return {
+            id_solicitud: solicitud.id,
+            fecha_solicitud: solicitud.createdAt,
+            usuario: userJson
+        };
+    });
 };
 
 // 6. Obtener estado de la relación específica entre dos usuarios

@@ -12,7 +12,6 @@ const menuItems = [
   { label: "Conexiones", icon: "🔗", path: "/conexiones" },
   { label: "Grupos", icon: "👥", path: "/grupos" },
   { label: "Reportes", icon: "◈", path: "/reportes" },
-  { label: "Ajustes", icon: "◍", path: "/ajustes" },
 ];
 
 const Layout = ({ children }) => {
@@ -39,6 +38,7 @@ const Layout = ({ children }) => {
   // Estados para Mensajes Privados no leídos y Dropdown
   const [cantMensajesPendientes, setCantMensajesPendientes] = useState(0);
   const [mensajesPendientes, setMensajesPendientes] = useState([]);
+  const [fotoPerfil, setFotoPerfil] = useState("");
 
   const usuario = JSON.parse(
     localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || "{}"
@@ -47,6 +47,31 @@ const Layout = ({ children }) => {
   const iniciales = usuario?.nombre
     ? usuario.nombre.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "US";
+
+  const renderAvatarChico = (foto, inicialesStr, sizeClass = "w-8 h-8 text-xs") => {
+    if (!foto) {
+      return (
+        <div className={`${sizeClass} rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shrink-0`}>
+          {inicialesStr}
+        </div>
+      );
+    }
+    if (foto.length <= 4) {
+      const emojiSize = sizeClass.includes("w-10") ? "text-xl" : "text-sm";
+      return (
+        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center shrink-0 ${emojiSize}`}>
+          {foto}
+        </div>
+      );
+    }
+    return (
+      <img
+        src={foto}
+        alt="Avatar"
+        className={`${sizeClass} rounded-full object-cover border border-gray-250 shrink-0`}
+      />
+    );
+  };
 
   // Efecto 1: Búsqueda Global Debounced (300ms)
   useEffect(() => {
@@ -134,15 +159,35 @@ const Layout = ({ children }) => {
     }
   };
 
+  const cargarFotoPerfilPropia = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) return;
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const res = await axios.get(`${apiUrl}/perfiles/mi-perfil`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data?.perfil?.foto_perfil) {
+        setFotoPerfil(res.data.perfil.foto_perfil);
+      } else {
+        setFotoPerfil("");
+      }
+    } catch (err) {
+      console.error("Error al obtener foto propia en Layout:", err);
+    }
+  };
+
   useEffect(() => {
     cargarPendientes();
     cargarInvitacionesGrupo();
     cargarMensajesPendientes();
+    cargarFotoPerfilPropia();
   }, []);
 
   // Sincronizar notificaciones de chat al cambiar de ruta
   useEffect(() => {
     cargarMensajesPendientes();
+    cargarFotoPerfilPropia();
   }, [location.pathname]);
 
   // Handlers para Aceptar / Rechazar Solicitudes de Amistad desde la campana
@@ -334,9 +379,7 @@ const Layout = ({ children }) => {
                       }}
                       className="w-full text-left px-4 py-3 hover:bg-indigo-50 flex items-center gap-3 border-b border-gray-50 last:border-b-0 transition"
                     >
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 text-xs font-bold shrink-0">
-                        {user.nombre[0].toUpperCase()}{user.apellido[0].toUpperCase()}
-                      </div>
+                      {renderAvatarChico(user.Perfil?.foto_perfil, `${user.nombre[0]}${user.apellido[0]}`.toUpperCase())}
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-800 leading-tight truncate">
                           {user.nombre} {user.apellido}
@@ -401,9 +444,7 @@ const Layout = ({ children }) => {
                         return (
                           <div key={sol.id_solicitud} className="p-2.5 bg-indigo-50/30 border border-indigo-100 rounded-xl flex flex-col gap-2 text-left">
                             <div className="flex items-start gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-[10px] font-bold shrink-0">
-                                {inicialesAmigo}
-                              </div>
+                              {renderAvatarChico(sol.usuario?.Perfil?.foto_perfil, inicialesAmigo)}
                               <div className="min-w-0 flex-1">
                                 <p className="text-[10.5px] font-bold text-gray-800 leading-tight">
                                   <span className="text-indigo-650">{sol.usuario?.nombre} {sol.usuario?.apellido}</span> te envió una solicitud de amistad
@@ -552,9 +593,7 @@ const Layout = ({ children }) => {
               onClick={() => setMenuUsuarioAbierto(!menuUsuarioAbierto)}
               className="flex items-center gap-2 hover:bg-gray-100 rounded-lg px-2 py-1 transition"
             >
-              <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
-                {iniciales}
-              </div>
+              {renderAvatarChico(fotoPerfil, iniciales)}
               <div className="hidden md:block text-left">
                 <p className="text-sm font-semibold text-gray-800 leading-none">{usuario?.nombre || "Usuario"}</p>
                 <p className="text-xs text-gray-400">Estudiante</p>
@@ -566,10 +605,19 @@ const Layout = ({ children }) => {
             {menuUsuarioAbierto && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
                 <button
-                  onClick={cerrarSesion}
-                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition"
+                  onClick={() => {
+                    setMenuUsuarioAbierto(false);
+                    navigate("/mi-perfil");
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition border-none bg-transparent cursor-pointer font-bold flex items-center gap-1.5"
                 >
-                  Cerrar sesión
+                  👤 Mi Perfil
+                </button>
+                <button
+                  onClick={cerrarSesion}
+                  className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 transition border-none bg-transparent cursor-pointer font-bold flex items-center gap-1.5"
+                >
+                  🚪 Cerrar sesión
                 </button>
               </div>
             )}

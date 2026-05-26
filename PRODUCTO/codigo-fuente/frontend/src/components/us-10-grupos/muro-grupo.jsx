@@ -6,6 +6,36 @@ const MuroGrupo = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const chatContainerRef = useRef(null);
+
+  const renderAvatarChico = (foto, iniciales, extraClasses = "w-8 h-8 text-[11px]") => {
+    if (!foto) {
+      return (
+        <div className={`${extraClasses} rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-extrabold shrink-0`}>
+          {iniciales}
+        </div>
+      );
+    }
+    if (foto.length <= 4) {
+      return (
+        <div className={`${extraClasses} rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0`}>
+          <span className="text-sm select-none">{foto}</span>
+        </div>
+      );
+    }
+    const src = foto.startsWith('data:') ? foto : `data:image/jpeg;base64,${foto}`;
+    return (
+      <img
+        src={src}
+        alt="Avatar"
+        className={`${extraClasses} rounded-full object-cover shrink-0 border border-gray-200`}
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '';
+          e.target.outerHTML = `<div class="${extraClasses} rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-extrabold shrink-0">${iniciales}</div>`;
+        }}
+      />
+    );
+  };
   
   const [grupo, setGrupo] = useState(null);
   const [mensajes, setMensajes] = useState([]);
@@ -490,13 +520,14 @@ const MuroGrupo = () => {
               <div className="flex flex-wrap gap-2">
                 {grupo.Miembros.map((miembro) => {
                   const iniciales = `${miembro.nombre[0]}${miembro.apellido[0]}`.toUpperCase();
+                  const foto = miembro.Perfil?.foto_perfil || miembro.perfil?.foto_perfil;
                   return (
                     <div 
                       key={miembro.id}
                       title={`${miembro.nombre} ${miembro.apellido} (@${miembro.nombre_usuario})`}
-                      className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center text-indigo-700 text-[10px] font-bold"
+                      className="shrink-0"
                     >
-                      {iniciales}
+                      {renderAvatarChico(foto, iniciales, "w-8 h-8 text-[10px]")}
                     </div>
                   );
                 })}
@@ -587,13 +618,24 @@ const MuroGrupo = () => {
                   return (
                     <div 
                       key={msg.id} 
-                      className={`flex ${esPropio ? 'justify-end' : 'justify-start'} w-full animate-fade-in`}
+                      className={`flex ${esPropio ? 'justify-end' : 'justify-start'} items-start w-full gap-2 animate-fade-in`}
                     >
+                      {/* Avatar del autor para mensajes ajenos */}
+                      {!esPropio && (
+                        <div className="mt-0.5 shrink-0" title={nombreAutor}>
+                          {renderAvatarChico(
+                            autor?.Perfil?.foto_perfil || autor?.perfil?.foto_perfil, 
+                            `${autor?.nombre?.[0] || 'U'}${autor?.apellido?.[0] || 'S'}`.toUpperCase(),
+                            "w-7 h-7 text-[9px]"
+                          )}
+                        </div>
+                      )}
+                      
                       <div 
                         className={`max-w-md px-3 py-1.5 text-xs shadow-sm rounded-2xl ${
                           esPropio 
-                            ? 'bg-[#d9fdd3] text-gray-800 rounded-tr-none ml-10 border border-[#d1f8cb]' 
-                            : 'bg-white text-gray-800 rounded-tl-none mr-10 border border-gray-150'
+                            ? 'bg-[#d9fdd3] text-gray-800 rounded-tr-none border border-[#d1f8cb]' 
+                            : 'bg-white text-gray-800 rounded-tl-none border border-gray-150'
                         }`}
                       >
                         {/* Autor de mensaje (Solo para recibidos) */}
@@ -694,9 +736,11 @@ const MuroGrupo = () => {
                     return (
                       <div key={miembro.id} className="flex items-center justify-between gap-2 relative min-h-[38px]">
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-[10px] font-bold shrink-0">
-                            {iniciales}
-                          </div>
+                          {renderAvatarChico(
+                            miembro.Perfil?.foto_perfil || miembro.perfil?.foto_perfil,
+                            iniciales,
+                            "w-8 h-8 text-[10px]"
+                          )}
                           <div className="min-w-0">
                             <p className="text-[11px] font-bold text-gray-800 truncate">
                               {miembro.nombre} {miembro.apellido} {miembro.id === miUsuarioId && <span className="text-[9px] text-indigo-500 font-normal">(Tú)</span>}
@@ -835,9 +879,11 @@ const MuroGrupo = () => {
                     return (
                       <div key={amigo.id} className="flex items-center justify-between gap-2 p-2 bg-gray-50 border border-gray-100 rounded-xl">
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-[10px] font-bold shrink-0">
-                            {iniciales}
-                          </div>
+                          {renderAvatarChico(
+                            amigo.Perfil?.foto_perfil || amigo.perfil?.foto_perfil,
+                            iniciales,
+                            "w-8 h-8 text-[10px]"
+                          )}
                           <div className="min-w-0">
                             <p className="text-[10px] font-bold text-gray-805 truncate">{amigo.nombre} {amigo.apellido}</p>
                             <p className="text-[8.5px] text-gray-450 truncate">@{amigo.nombre_usuario}</p>

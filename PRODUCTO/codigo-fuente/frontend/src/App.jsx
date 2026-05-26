@@ -9,6 +9,7 @@ import Layout from './components/Layout';
 import ModuloCorrelativas from './components/Us-9-Registrar-Correlativas';
 import PerfilPublico from './components/modulo-perfil-amigos/perfil-publico';
 import MisConexiones from './components/modulo-perfil-amigos/mis-conexiones';
+import MiPerfil from './components/modulo-perfil-amigos/mi-perfil';
 import ListaGrupos from './components/us-10-grupos/lista-grupos';
 import MuroGrupo from './components/us-10-grupos/muro-grupo';
 import ChatPrivado from './components/us-11-chat-privado/chat-privado';
@@ -82,6 +83,14 @@ const App = () => {
           <RutaPrivada>
             <Layout>
               <ChatPrivado />
+            </Layout>
+          </RutaPrivada>
+        } />
+
+        <Route path="/mi-perfil" element={
+          <RutaPrivada>
+            <Layout>
+              <MiPerfil />
             </Layout>
           </RutaPrivada>
         } />

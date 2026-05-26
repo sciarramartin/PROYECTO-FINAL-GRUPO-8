@@ -29,5 +29,16 @@ router.post('/', async (req, res) => {
     }
 });
 
+// GET /api/carreras
+router.get('/', async (req, res) => {
+    try {
+        const carreras = await Carrera.findAll();
+        return res.status(200).json(carreras);
+    } catch (error) {
+        console.error("Error al obtener carreras:", error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+});
+
 // CRUCIAL: Exportamos el router completo, que es lo que espera tu servidor.js
 module.exports = router;

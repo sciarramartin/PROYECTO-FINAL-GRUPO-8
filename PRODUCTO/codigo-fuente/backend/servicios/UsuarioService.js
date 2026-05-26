@@ -139,10 +139,12 @@ const buscarUsuarios = async (terminoBusqueda, idUsuarioActual) => {
 
     // 2. Traer todos los usuarios (excluyendo al usuario actual si se pasa)
     const whereClause = idUsuarioActual ? { id: { [Op.ne]: Number(idUsuarioActual) } } : {};
+    const { Perfil } = require('../modelos/Perfil');
 
     const todosLosUsuarios = await Usuario.findAll({
         where: whereClause,
-        attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso']
+        attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso'],
+        include: [{ model: Perfil, attributes: ['foto_perfil'] }]
     });
 
     // Helper para normalizar strings para la comparación

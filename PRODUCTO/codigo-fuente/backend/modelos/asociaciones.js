@@ -77,9 +77,14 @@ Grupo.hasMany(GrupoMiembro, { foreignKey: 'id_grupo', onDelete: 'CASCADE' });
 Usuario.hasMany(GrupoMiembro, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 
 const { MensajePrivado } = require('./MensajePrivado');
+const { Perfil } = require('./Perfil');
 
 // Relaciones de Mensajería Privada
 MensajePrivado.belongsTo(Usuario, { as: 'Remitente', foreignKey: 'id_remitente' });
 MensajePrivado.belongsTo(Usuario, { as: 'Destinatario', foreignKey: 'id_destinatario' });
 Usuario.hasMany(MensajePrivado, { foreignKey: 'id_remitente', as: 'MensajesEnviados' });
 Usuario.hasMany(MensajePrivado, { foreignKey: 'id_destinatario', as: 'MensajesRecibidos' });
+
+// Relación de Perfil Académico (1 a 1 con Usuario)
+Usuario.hasOne(Perfil, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+Perfil.belongsTo(Usuario, { foreignKey: 'id_usuario' });

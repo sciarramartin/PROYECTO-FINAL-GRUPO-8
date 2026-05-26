@@ -6,6 +6,7 @@ const { Grupo } = require('../modelos/Grupo');
 const { GrupoMiembro } = require('../modelos/GrupoMiembro');
 const { GrupoMensaje } = require('../modelos/GrupoMensaje');
 const { Usuario } = require('../modelos/Usuario');
+const { Perfil } = require('../modelos/Perfil');
 const { Op } = require('sequelize');
 
 // 1. POST /api/grupos
@@ -132,14 +133,20 @@ router.get('/:id', verificarToken, async (req, res) => {
 
         const grupo = await Grupo.findByPk(id_grupo, {
             include: [
-                { model: Usuario, as: 'Creador', attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'] },
+                { 
+                    model: Usuario, 
+                    as: 'Creador', 
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'],
+                    include: [{ model: Perfil, attributes: ['foto_perfil'] }]
+                },
                 {
                     model: Usuario,
                     as: 'Miembros',
                     attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'],
                     through: { 
                         attributes: ['rol', 'estado']
-                    }
+                    },
+                    include: [{ model: Perfil, attributes: ['foto_perfil'] }]
                 }
             ]
         });
@@ -343,7 +350,12 @@ router.post('/:id/mensajes', verificarToken, async (req, res) => {
         // Obtener mensaje completo con datos del autor
         const mensajeCompleto = await GrupoMensaje.findByPk(nuevoMensaje.id, {
             include: [
-                { model: Usuario, as: 'Autor', attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'] }
+                { 
+                    model: Usuario, 
+                    as: 'Autor', 
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'],
+                    include: [{ model: Perfil, attributes: ['foto_perfil'] }]
+                }
             ]
         });
 
@@ -379,7 +391,12 @@ router.get('/:id/mensajes', verificarToken, async (req, res) => {
         const mensajes = await GrupoMensaje.findAll({
             where: { id_grupo },
             include: [
-                { model: Usuario, as: 'Autor', attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'] }
+                { 
+                    model: Usuario, 
+                    as: 'Autor', 
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'],
+                    include: [{ model: Perfil, attributes: ['foto_perfil'] }]
+                }
             ],
             order: [['createdAt', 'DESC']]
         });
