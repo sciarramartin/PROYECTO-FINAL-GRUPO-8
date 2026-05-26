@@ -20,6 +20,34 @@ VALUES
 (
     'Ingeniería en Sistemas',
     'FCEFyN'
+),
+(
+    'Ingeniería Electrónica',
+    'FCEFyN'
+),
+(
+    'Ingeniería Industrial',
+    'FCEFyN'
+),
+(
+    'Ingeniería Mecánica',
+    'FCEFyN'
+),
+(
+    'Ingeniería Civil',
+    'FCEFyN'
+),
+(
+    'Ingeniería Química',
+    'FCEFyN'
+),
+(
+    'Ingeniería Eléctrica',
+    'FCEFyN'
+),
+(
+    'Ingeniería Metalúrgica',
+    'FCEFyN'
 );
 
 -- =========================
