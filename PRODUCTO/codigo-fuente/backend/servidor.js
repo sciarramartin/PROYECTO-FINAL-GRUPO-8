@@ -14,6 +14,8 @@ require('./modelos/asociaciones');
 const { inicializarDB } = require('./database/base-de-datos');
 
 const rutasActividad = require('./controladores/actividades-personales.controlador.js');
+const rutasCursos = require('./controladores/curso.controlador.js');
+const rutasEstadoMateria = require('./controladores/estado-materia-alumno.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js');
 const rutasAuth = require('./controladores/auth.controller.js');       
 const rutasMateria = require('./controladores/materia.controlador');
@@ -32,6 +34,8 @@ app.use(express.json());
 app.use('/api/auth', rutasAuth);                                  
 app.use('/api/materias', rutasMateria);
 app.use('/api/actividad-personal', rutasActividad);
+app.use('/api/cursos', rutasCursos);
+app.use('/api/estado-materias', rutasEstadoMateria);
 app.use('/api/usuarios', rutasUsuarios);
 app.use('/api/carreras', rutasCarreras); // para probar registro
 app.use('/api/progreso', rutasProgreso);

@@ -112,15 +112,34 @@ CREATE TABLE actividad (
 );
 
 -- =========================
+-- CURSOS
+-- =========================
+
+CREATE TABLE cursos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hora_inicio TEXT NOT NULL,
+    duracion INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    dias INTEGER NOT NULL DEFAULT 0,
+    id_materia INTEGER NOT NULL,
+    FOREIGN KEY (id_materia)
+        REFERENCES materias(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- =========================
 -- ESTADO MATERIA ALUMNO
 -- =========================
 
 CREATE TABLE estado_materia_alumno (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha_inscripcion TEXT NOT NULL, 
     id_usuario INTEGER NOT NULL,
-    id_materia INTEGER NOT NULL,
+    id_curso INTEGER NOT NULL,
     estado TEXT NOT NULL DEFAULT 'No Cursada',
+    nota_final FLOAT,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE(id_usuario, id_materia)
+    FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_usuario, id_curso)
 );

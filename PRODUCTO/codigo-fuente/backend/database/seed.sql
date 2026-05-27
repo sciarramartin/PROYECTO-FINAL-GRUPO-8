@@ -247,3 +247,10 @@ INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tip
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 12, 'aprobada');
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 20, 'aprobada');
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 23, 'aprobada');
+
+
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES ('MAT1_mañana', '09:00', 60, 1, 1);
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES ('MAT1_tarde', '12:00', 60, 1, 1);
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES ('MAT1_noche', '19:00', 60, 1, 1);
+
+INSERT INTO estado_materia_alumno (fecha_inscripcion, id_usuario, id_curso, estado, nota_final) VALUES ("25/12/2023", 1, 1, "aprobada", 10);
