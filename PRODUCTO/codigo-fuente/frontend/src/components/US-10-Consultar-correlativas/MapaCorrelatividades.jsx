@@ -380,7 +380,7 @@ const MapaCorrelatividades = () => {
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[75vh] flex flex-col relative">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[85vh] md:h-[75vh] flex flex-col relative">
             <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10 relative shadow-sm">
                 <div>
                     <h3 className="text-lg font-semibold text-slate-800">Mi Progreso</h3>
@@ -415,7 +415,7 @@ const MapaCorrelatividades = () => {
 
             {/* Panel Flotante de Edición */}
             {nodoSeleccionado && (
-                <div className="absolute top-24 right-6 w-80 bg-white border border-slate-200 p-6 rounded-2xl shadow-xl z-20">
+                <div className="absolute bottom-0 md:top-24 md:bottom-auto left-0 md:left-auto right-0 md:right-6 w-full md:w-80 bg-white border border-slate-200 p-6 rounded-t-2xl md:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-xl z-20 max-h-[60vh] md:max-h-none overflow-y-auto">
                     <div className="flex justify-between items-start mb-4">
                         <h2 className="text-xl font-bold text-slate-800">{nodoSeleccionado.nombre}</h2>
                         <button onClick={() => {

@@ -108,7 +108,7 @@ export default function ModuloCorrelativas() {
       nivel_anio: materia.nivel_anio,
       cuatrimestre: materia.cuatrimestre,
       id_carrera: materia.id_carrera || selectedCarreraId,
-      visible_en_grafo: materia.visible_en_grafo,
+      visible_en_grafo: !!materia.visible_en_grafo,
       correlativas: materia.correlativas ? materia.correlativas.map(c => ({
         id: c.id,
         tipo_requisito: c.correlativas_x_materia?.tipo_requisito || 'regular'
@@ -135,14 +135,14 @@ export default function ModuloCorrelativas() {
     <div className="p-8 bg-slate-50 min-h-screen text-slate-800 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
         
-        <header className="mb-8 flex justify-between items-end">
+        <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Registrar correlativas</h1>
-            <p className="text-slate-500 mt-2">Agregá materias y definí sus correlatividades para estructurar las reglas de cursada.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Registrar correlativas</h1>
+            <p className="text-sm sm:text-base text-slate-500 mt-2">Agregá materias y definí sus correlatividades para estructurar las reglas de cursada.</p>
           </div>
-          <div>
+          <div className="w-full sm:w-auto">
              <label className="block text-sm font-medium text-slate-700 mb-1">Filtrar por Carrera</label>
-             <select value={selectedCarreraId} onChange={handleCarreraChange} className="rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white">
+             <select value={selectedCarreraId} onChange={handleCarreraChange} className="w-full sm:w-auto rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white">
                 {carreras.map(c => (
                   <option key={c.id} value={c.id}>{c.nombre}</option>
                 ))}
@@ -160,7 +160,7 @@ export default function ModuloCorrelativas() {
               <div className="p-4 border-b border-slate-100 bg-slate-50">
                 <h3 className="text-sm font-semibold text-slate-700">Materias Registradas</h3>
               </div>
-              <div className="overflow-y-auto flex-1">
+              <div className="overflow-x-auto overflow-y-auto flex-1">
                 <table className="min-w-full divide-y divide-slate-200 text-sm">
                   <thead className="bg-slate-50 sticky top-0 shadow-sm">
                     <tr>
@@ -228,7 +228,7 @@ export default function ModuloCorrelativas() {
                     <input 
                       type="checkbox" 
                       name="visible_en_grafo"
-                      checked={formData.visible_en_grafo}
+                      checked={!!formData.visible_en_grafo}
                       onChange={handleInputChange}
                       className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
