@@ -11,6 +11,20 @@ const mapToCamelCase = (curso) => {
     };
 };
 
+const findById = async (id) => {
+    try {
+
+        const registro = await Curso.findOne({
+            where: {
+                id: id
+            }
+        });
+        return mapToCamelCase(registro);
+    } catch (error) {
+        throw error;
+    }
+};
+
 const findAllByMateriaId = async (idMateria) => {
     try {
 
@@ -123,4 +137,4 @@ const update = async (idMateria, id, cursoData) => {
 
 
 // Exportar todos los métodos
-module.exports = { findAllByMateriaId, create, update };
+module.exports = { findById, findAllByMateriaId, create, update };

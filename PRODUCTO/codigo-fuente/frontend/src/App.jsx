@@ -5,6 +5,7 @@ import RecuperarContrasena from './components/RecuperarContrasena';
 import ResetearContrasena from './components/ResetearContrasena';
 import Registro from './components/ModuloSesion/Registro';
 import Horario from './components/Us-8-Actividades-Personales/Horario';
+import Planificador from './components/Us-7-Generar-planificacion/Planificador';
 import Layout from './components/Layout';
 import ModuloCorrelativas from './components/Us-9-Registrar-Correlativas';
 import MapaCorrelatividades from './components/US-10-Consultar-correlativas/MapaCorrelatividades';
@@ -52,6 +53,14 @@ const App = () => {
           //<RutaPrivada>
             <Layout>
               <Horario/>
+            </Layout>
+          //</RutaPrivada>
+        } />
+
+        <Route path="/Planificador" element={
+          //<RutaPrivada>
+            <Layout>
+              <Planificador/>
             </Layout>
           //</RutaPrivada>
         } />

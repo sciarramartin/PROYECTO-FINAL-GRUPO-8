@@ -30,16 +30,16 @@ const findAllByUserId = async (idUsuario) => {
 
 function generarColorRandom() {
     const colores = [
-        '#FFB3BA', // Rosa pastel
+        '#D08B9B', // Rosa pastel
         '#C5E99B', // Verde menta pastel
         '#B5E3FF', // Azul cielo pastel
-        '#FFD1B3', // Durazno pastel
+        '#E9C772', // Durazno pastel
         '#E0BBE4', // Lila pastel
         '#FFF5BA', // Amarillo pastel
         '#B5F5E3', // Verde agua pastel
         '#FFCCD9'  // Rosado pastel
     ];
-    
+
     return colores[Math.floor(Math.random() * colores.length)];
 }
 

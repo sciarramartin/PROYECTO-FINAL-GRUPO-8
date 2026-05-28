@@ -254,3 +254,5 @@ INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES ('MA
 INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES ('MAT1_noche', '19:00', 60, 1, 1);
 
 INSERT INTO estado_materia_alumno (fecha_inscripcion, id_usuario, id_curso, estado, nota_final) VALUES ("25/12/2023", 1, 1, "aprobada", 10);
+INSERT INTO estado_materia_alumno (fecha_inscripcion, id_usuario, id_curso, estado, nota_final) VALUES ("25/12/2023", 1, 2, "aprobada", 10);
+INSERT INTO estado_materia_alumno (fecha_inscripcion, id_usuario, id_curso, estado, nota_final) VALUES ("25/12/2023", 1, 3, "aprobada", 10);

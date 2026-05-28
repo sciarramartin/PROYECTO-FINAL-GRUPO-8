@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import ActividadEditor from './ActividadEditor';
 import {getActividades, PostActividad, PutActividad, DeleteActividad} from './services';
 
-const Horario = () => {
+const Horario = ({ refresh }) => {
     const days = [
         ['Lunes', 1],
         ['Martes', 2],
@@ -31,8 +31,7 @@ const Horario = () => {
 
     useEffect(() => {
         cargarActividades();
-    }, []);
-
+    }, [refresh]);
 
     const PIXELS_POR_HORA = 32;
     const PIXELS_POR_MINUTO = PIXELS_POR_HORA / 60;
@@ -468,53 +467,7 @@ const Horario = () => {
                 </div>
             </div>
 
-            {/* Leyenda */}
-            {columns.length > 0 && (
-                <div className="mt-6 p-4 bg-white rounded-lg shadow">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                        Leyenda
-                    </h3>
 
-                    <div className="flex flex-wrap gap-3">
-                        {[
-                            ...new Map(
-                                columns
-                                    .flatMap(
-                                        (col) =>
-                                            col.data
-                                    )
-                                    .filter(
-                                        (act) =>
-                                            act.nombre &&
-                                            act.nombre.trim() !== '' &&
-                                            act.id !== 'preview'
-                                    )
-                                    .map((act) => [
-                                        act.nombre,
-                                        act
-                                    ])
-                            ).values()
-                        ].map((act) => (
-                            <div
-                                key={act.nombre}
-                                className="flex items-center gap-2"
-                            >
-                                <div
-                                    className="w-4 h-4 rounded"
-                                    style={{
-                                        backgroundColor:
-                                            act.color
-                                    }}
-                                />
-
-                                <span className="text-xs text-gray-700 capitalize">
-                                    {act.nombre}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
             {/* Editor */}
             <ActividadEditor
                 editor={showEditor}
