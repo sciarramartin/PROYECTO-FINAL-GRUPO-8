@@ -16,3 +16,7 @@ Thumbs.db
 logs
 *.log
 npm-debug.log*
+
+# Antigravity AI Agent files
+.agents/
+skills-lock.json
