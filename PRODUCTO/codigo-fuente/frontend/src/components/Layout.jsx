@@ -43,9 +43,15 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const usuario = JSON.parse(
-    localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || "{}"
-  );
+  let usuario = {};
+  try {
+    const usuarioStr = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+    if (usuarioStr && usuarioStr !== "undefined") {
+      usuario = JSON.parse(usuarioStr);
+    }
+  } catch (e) {
+    console.error("Error parseando usuario:", e);
+  }
 
   const iniciales = usuario?.nombre
     ? usuario.nombre.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()

@@ -11,7 +11,7 @@ class ProgresoService {
     }
 
     async actualizarEstadoMateria(id_usuario, id_materia, estado) {
-        if (!['Aprobada', 'Regular', 'No Cursada'].includes(estado)) {
+        if (!['Aprobada', 'Regular', 'Cursando', 'No Cursada'].includes(estado)) {
             throw new Error('Estado inválido.');
         }
 

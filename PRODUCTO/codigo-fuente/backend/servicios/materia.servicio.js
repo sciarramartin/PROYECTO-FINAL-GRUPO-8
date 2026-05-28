@@ -24,14 +24,16 @@ const tieneCiclo = async (materiaDestinoId, materiaRequisitoId, visitados = new 
 };
 
 const crearMateria = async (datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, visible_en_grafo } = datos;
 
     // 1. Crear la materia principal
     const nuevaMateria = await Materia.create({
         codigo,
         nombre,
         nivel_anio,
-        cuatrimestre
+        cuatrimestre,
+        id_carrera,
+        visible_en_grafo: visible_en_grafo ?? false
     });
 
     // 2. Si vienen correlativas, asignarlas con su tipo de requisito
@@ -54,8 +56,13 @@ const crearMateria = async (datos) => {
     });
 };
 
-const obtenerTodas = async () => {
+const obtenerTodas = async (id_carrera) => {
+    const where = {};
+    if (id_carrera) {
+        where.id_carrera = id_carrera;
+    }
     return await Materia.findAll({
+        where,
         include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } },
         order: [
             ['nivel_anio', 'ASC'],
@@ -73,7 +80,7 @@ const obtenerPorId = async (id) => {
 };
 
 const actualizarMateria = async (id, datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, visible_en_grafo } = datos;
     const materia = await Materia.findByPk(id);
 
     if (!materia) throw new Error('Materia no encontrada');
@@ -83,7 +90,9 @@ const actualizarMateria = async (id, datos) => {
         codigo: codigo || materia.codigo,
         nombre: nombre || materia.nombre,
         nivel_anio: nivel_anio || materia.nivel_anio,
-        cuatrimestre: cuatrimestre || materia.cuatrimestre
+        cuatrimestre: cuatrimestre || materia.cuatrimestre,
+        id_carrera: id_carrera !== undefined ? id_carrera : materia.id_carrera,
+        visible_en_grafo: visible_en_grafo !== undefined ? visible_en_grafo : materia.visible_en_grafo
     });
 
     // Actualizar correlativas si se envían
