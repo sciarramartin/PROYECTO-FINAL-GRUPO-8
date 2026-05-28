@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "iniciar": "node servidor.js",
-    "seed": "node scripts/seed-materias.js"
+    "seed": "node -e \"require('./database/base-de-datos').inicializarDB().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1)})\""
   },
   "keywords": [],
   "author": "",

@@ -66,7 +66,16 @@ CREATE TABLE materias (
 
     nivel_anio INTEGER NOT NULL,
 
-    cuatrimestre INTEGER NOT NULL
+    cuatrimestre INTEGER NOT NULL,
+    
+    visible_en_grafo BOOLEAN NOT NULL DEFAULT 1,
+
+    id_carrera INTEGER,
+
+    FOREIGN KEY (id_carrera)
+        REFERENCES carreras(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
 );
 
 -- =========================

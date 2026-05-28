@@ -24,6 +24,15 @@ const Materia = baseDeDatos.define('materia', {
     cuatrimestre: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    visible_en_grafo: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    id_carrera: {
+        type: DataTypes.INTEGER,
+        allowNull: true // True temporalmente para compatibilidad hacia atrás
     }
 }, {
     tableName: 'materias',

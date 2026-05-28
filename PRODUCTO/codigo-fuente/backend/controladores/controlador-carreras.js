@@ -4,6 +4,16 @@ const router = express.Router();
 const { Carrera } = require('../modelos/Carrera');
 
 // Definimos la ruta POST directamente sobre el router
+router.get('/', async (req, res) => {
+    try {
+        const carreras = await Carrera.findAll();
+        res.json(carreras);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: 'Error al obtener carreras.' });
+    }
+});
+
 router.post('/', async (req, res) => {
     try {
         const { nombre, facultad } = req.body;
