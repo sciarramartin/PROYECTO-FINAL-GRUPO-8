@@ -1,11 +1,6 @@
 // frontend/src/App.jsx
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/ModuloSesion/Login';
-import RecuperarContrasena from './components/RecuperarContrasena';
-import ResetearContrasena from './components/ResetearContrasena';
-import Registro from './components/ModuloSesion/Registro';
-import Horario from './components/Us-8-Actividades-Personales/Horario';
 import Layout from './components/Layout';
 import Spinner from './components/common/Spinner';
 
@@ -16,6 +11,7 @@ const Registro = lazy(() => import('./components/ModuloSesion/Registro'));
 const Horario = lazy(() => import('./components/Us-8-Actividades-Personales/Horario'));
 const ModuloCorrelativas = lazy(() => import('./components/Us-9-Registrar-Correlativas'));
 const MapaCorrelatividades = lazy(() => import('./components/US-10-Consultar-correlativas/MapaCorrelatividades'));
+const Planificador = lazy(()=> import('./components/Us-7-Generar-planificacion/PlanificadorCursado'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -61,6 +57,14 @@ const App = () => {
           //<RutaPrivada>
             <Layout>
               <Horario/>
+            </Layout>
+          //</RutaPrivada>
+        } />
+
+        <Route path="/Planificador" element={
+          //<RutaPrivada>
+            <Layout>
+              <Planificador/>
             </Layout>
           //</RutaPrivada>
         } />
