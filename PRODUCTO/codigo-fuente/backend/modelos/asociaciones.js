@@ -18,3 +18,6 @@ EstadoMateria.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
 Materia.hasMany(EstadoMateria, { foreignKey: 'id_materia' });
 EstadoMateria.belongsTo(Materia, { foreignKey: 'id_materia' });
+
+Materia.belongsTo(Carrera, { foreignKey: 'id_carrera' });
+Carrera.hasMany(Materia, { foreignKey: 'id_carrera' });

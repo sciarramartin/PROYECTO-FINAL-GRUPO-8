@@ -17,10 +17,10 @@ const MapaCorrelatividades = () => {
     const [nodoSeleccionado, setNodoSeleccionado] = useState(null);
     const [guardando, setGuardando] = useState(false);
 
-    // Paleta de colores para los 4 estados (Pastel)
     const colores = {
         aprobada: { background: '#d1fae5', border: '#10b981' }, 
         regular: { background: '#fef3c7', border: '#f59e0b' },   
+        cursando: { background: '#f3e8ff', border: '#a855f7' },
         habilitada: { background: '#dbeafe', border: '#3b82f6' }, 
         bloqueada: { background: '#ffffff', border: '#cbd5e1' }, // Igual al nodo base en GrafoCorrelativas
     };
@@ -29,11 +29,19 @@ const MapaCorrelatividades = () => {
         try {
             setCargando(true);
             setError(null);
+            const usuarioInfo = sessionStorage.getItem('usuario') || localStorage.getItem('usuario');
+            const usuarioObj = usuarioInfo ? JSON.parse(usuarioInfo) : null;
+            const id_carrera = usuarioObj?.id_carrera || null;
+
             const [materiasData, progresoData] = await Promise.all([
-                obtenerTodas(),
+                obtenerTodas(id_carrera),
                 obtenerProgreso()
             ]);
-            setMaterias(materiasData);
+            
+            // Filtrar materias que no están visibles
+            const materiasVisibles = materiasData.filter(m => m.visible_en_grafo !== false && m.visible_en_grafo !== 0);
+            
+            setMaterias(materiasVisibles);
             setProgreso(progresoData);
         } catch (err) {
             console.error(err);
@@ -48,7 +56,7 @@ const MapaCorrelatividades = () => {
     }, []);
 
     const getEstadoCalculado = (materiaId, estadoMateria, mapEstadosProgreso, materiasLista) => {
-        if (estadoMateria === 'Aprobada' || estadoMateria === 'Regular') {
+        if (estadoMateria === 'Aprobada' || estadoMateria === 'Regular' || estadoMateria === 'Cursando') {
             return estadoMateria.toLowerCase();
         }
 
@@ -372,7 +380,7 @@ const MapaCorrelatividades = () => {
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[75vh] flex flex-col relative">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[85vh] md:h-[75vh] flex flex-col relative">
             <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10 relative shadow-sm">
                 <div>
                     <h3 className="text-lg font-semibold text-slate-800">Mi Progreso</h3>
@@ -390,6 +398,7 @@ const MapaCorrelatividades = () => {
                     <div className="flex flex-wrap gap-4 border-r pr-6 border-slate-200">
                         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#d1fae5] border border-[#10b981]"></div> Aprobada</div>
                         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fef3c7] border border-[#f59e0b]"></div> Regular</div>
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f3e8ff] border border-[#a855f7]"></div> Cursando</div>
                         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#dbeafe] border border-[#3b82f6]"></div> Habilitada</div>
                         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#ffffff] border border-[#cbd5e1]"></div> Bloqueada</div>
                     </div>
@@ -406,7 +415,7 @@ const MapaCorrelatividades = () => {
 
             {/* Panel Flotante de Edición */}
             {nodoSeleccionado && (
-                <div className="absolute top-24 right-6 w-80 bg-white border border-slate-200 p-6 rounded-2xl shadow-xl z-20">
+                <div className="absolute bottom-0 md:top-24 md:bottom-auto left-0 md:left-auto right-0 md:right-6 w-full md:w-80 bg-white border border-slate-200 p-6 rounded-t-2xl md:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-xl z-20 max-h-[60vh] md:max-h-none overflow-y-auto">
                     <div className="flex justify-between items-start mb-4">
                         <h2 className="text-xl font-bold text-slate-800">{nodoSeleccionado.nombre}</h2>
                         <button onClick={() => {
@@ -479,6 +488,9 @@ const MapaCorrelatividades = () => {
                             </button>
                             <button disabled={guardando} onClick={() => handleCambiarEstado('Regular')} className={`py-2 px-3 text-sm rounded-lg border font-medium transition-colors ${nodoSeleccionado.estadoActual === 'Regular' ? 'bg-[#fef3c7] text-amber-800 border-amber-400 shadow-sm' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}`}>
                                 Regular
+                            </button>
+                            <button disabled={guardando} onClick={() => handleCambiarEstado('Cursando')} className={`py-2 px-3 text-sm rounded-lg border font-medium transition-colors ${nodoSeleccionado.estadoActual === 'Cursando' ? 'bg-[#f3e8ff] text-purple-800 border-purple-400 shadow-sm' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}`}>
+                                Cursando
                             </button>
                             <button disabled={guardando} onClick={() => handleCambiarEstado('No Cursada')} className={`py-2 px-3 text-sm rounded-lg border font-medium transition-colors ${nodoSeleccionado.estadoActual === 'No Cursada' ? 'bg-slate-100 text-slate-800 border-slate-400 shadow-sm' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}`}>
                                 No Cursada

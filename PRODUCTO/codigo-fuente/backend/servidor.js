@@ -14,6 +14,7 @@ require('./modelos/asociaciones');
 const { inicializarDB } = require('./database/base-de-datos');
 
 const rutasActividad = require('./controladores/actividades-personales.controlador.js');
+const rutasActividadesFlexibles = require('./controladores/actividades-flexibles.controlador.js');
 const rutasCursos = require('./controladores/curso.controlador.js');
 const rutasInscripciones = require('./controladores/inscripciones-cursos.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js');
@@ -34,6 +35,7 @@ app.use(express.json());
 app.use('/api/auth', rutasAuth);                                  
 app.use('/api/materias', rutasMateria);
 app.use('/api/actividad-personal', rutasActividad);
+app.use('/api/planificador/actividades-flexibles', rutasActividadesFlexibles);
 app.use('/api/cursos', rutasCursos);
 app.use('/api/inscripcion', rutasInscripciones);
 app.use('/api/usuarios', rutasUsuarios);

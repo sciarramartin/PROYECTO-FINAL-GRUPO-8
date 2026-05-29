@@ -12,23 +12,25 @@ const GrafoCorrelativas = ({ materias }) => {
     const nodes = new DataSet();
     const edges = new DataSet();
 
-    // Llenar Nodos (Todos del mismo color base, blanco)
+    // Llenar Nodos
     materias.forEach(materia => {
+      const oculta = materia.visible_en_grafo === false || materia.visible_en_grafo === 0;
       nodes.add({
         id: materia.id,
-        label: `${materia.codigo}\n${materia.nombre}`,
+        label: `${materia.codigo}\n${materia.nombre}${oculta ? '\n(Oculta)' : ''}`,
         level: parseInt(materia.nivel_anio) || 1, // Nivel explícito convertido a entero
         color: {
-          background: '#ffffff',
-          border: '#cbd5e1',
-          highlight: { background: '#f8fafc', border: '#64748b' }
+          background: oculta ? '#f8fafc' : '#ffffff',
+          border: oculta ? '#94a3b8' : '#cbd5e1',
+          highlight: { background: oculta ? '#e2e8f0' : '#f8fafc', border: '#64748b' }
         },
-        font: { face: 'Inter, sans-serif', size: 14, color: '#1e293b' },
+        font: { face: 'Inter, sans-serif', size: 14, color: oculta ? '#64748b' : '#1e293b' },
         shape: 'box',
         widthConstraint: { maximum: 200 }, // Evita que se recorten los textos o se hagan minúsculos
         borderWidth: 2,
         borderRadius: 8,
         margin: 10,
+        opacity: oculta ? 0.6 : 1,
         shadow: { enabled: true, color: 'rgba(0,0,0,0.05)', size: 5, x: 0, y: 4 }
       });
 

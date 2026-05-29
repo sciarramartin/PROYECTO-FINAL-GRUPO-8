@@ -19,8 +19,9 @@ api.interceptors.request.use(config => {
 });
 
 // Materias
-export const obtenerTodas = async () => {
-    const res = await api.get('/materias');
+export const obtenerTodas = async (id_carrera) => {
+    const url = id_carrera ? `/materias?id_carrera=${id_carrera}` : '/materias';
+    const res = await api.get(url);
     return res.data;
 };
 
