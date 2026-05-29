@@ -134,11 +134,23 @@ CREATE TABLE cursos (
 
 CREATE TABLE estado_materia_alumno (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    fecha_inscripcion TEXT NOT NULL, 
+    id_usuario INTEGER NOT NULL,
+    id_materia INTEGER NOT NULL,
+    estado TEXT NOT NULL DEFAULT 'No Cursada',
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_usuario, id_materia)
+);
+
+-- =========================
+-- tabla alumno x curso
+-- =========================
+
+CREATE TABLE inscripciones_cursos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_usuario INTEGER NOT NULL,
     id_curso INTEGER NOT NULL,
-    estado TEXT NOT NULL DEFAULT 'No Cursada',
-    nota_final FLOAT,
+    fecha_inscripcion TEXT NOT NULL DEFAULT 'No Cursada',
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE(id_usuario, id_curso)

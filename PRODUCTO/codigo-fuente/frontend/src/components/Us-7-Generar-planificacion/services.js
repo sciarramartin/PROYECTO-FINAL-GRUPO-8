@@ -9,7 +9,7 @@ const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 export const getCursos = async () => {
     try {
         const cursados = await axios.get(
-            `${API_URL}/estado-materias`,
+            `${API_URL}/inscripcion`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
         

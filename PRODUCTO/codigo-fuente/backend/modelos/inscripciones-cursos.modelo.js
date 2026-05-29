@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { baseDeDatos } = require('../database/base-de-datos');
 
-const EstadoMateriaAlumno = baseDeDatos.define('estado_materia_alumno', {
+const inscripcionesCursos = baseDeDatos.define('inscripciones_cursos', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -14,14 +14,6 @@ const EstadoMateriaAlumno = baseDeDatos.define('estado_materia_alumno', {
             is: /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(19|20)[0-9]{2}$/
         }
     },
-    nota_final: {
-        type: DataTypes.FLOAT, 
-        allowNull: true,
-        validate: {
-            min: 1,
-            max: 10
-        }
-    }, 
     id_usuario: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -41,13 +33,9 @@ const EstadoMateriaAlumno = baseDeDatos.define('estado_materia_alumno', {
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
-    },
-    estado: {
-        type: DataTypes.STRING,
-        allowNull: false,
     }
 }, {
-    tableName: 'estado_materia_alumno',
+    tableName: 'inscripciones_cursos',
     timestamps: false,
 
     indexes: [
@@ -58,4 +46,4 @@ const EstadoMateriaAlumno = baseDeDatos.define('estado_materia_alumno', {
 });
 
 
-module.exports = EstadoMateriaAlumno;
+module.exports = inscripcionesCursos;
