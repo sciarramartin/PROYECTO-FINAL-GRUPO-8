@@ -8,6 +8,7 @@ import {
     getMateriasHabilitadas
 } from './services'; 
 
+const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
 const Planificador = () => {
     const [refresh, setRefresh] = useState(0);
@@ -22,7 +23,7 @@ const Planificador = () => {
         horasSemanales: '',
         duracion: '',
         prioridad: 2,
-        diasPreferidos: 0 
+        diasPreferidos: []
     });
 
     // Carga inicial y sincronización de datos
@@ -53,18 +54,37 @@ const Planificador = () => {
         );
     };
 
+    // Manejar la selección de días preferidos
+    const handleDiaCheck = (dia) => {
+        setNuevaFlexible(prev => {
+            const yaSeleccionado = prev.diasPreferidos.includes(dia);
+            return {
+                ...prev,
+                diasPreferidos: yaSeleccionado 
+                    ? prev.diasPreferidos.filter(d => d !== dia)
+                    : [...prev.diasPreferidos, dia]
+            };
+        });
+    };
+
     // Agregar actividad flexible
     const handleAgregarFlexible = async (e) => {
         e.preventDefault();
         try {
+            // 1.Validaciones obligatorias solicitadas
             if (!nuevaFlexible.nombre || !nuevaFlexible.horasSemanales || !nuevaFlexible.duracion) {
-                alert("Por favor, completa los campos obligatorios.");
+                alert("Por favor, completa los campos obligatorios: Nombre, Horas y Duración.");
                 return;
             }
-            setActividadesFlexibles(prev => [...prev, nuevaFlexible] );
-            
+            // 2.Control estricto de números negativos o cero
+            if (Number(nuevaFlexible.horasSemanales) <= 0 || Number(nuevaFlexible.duracion) <= 0) {
+                alert("Los valores numéricos deben ser mayores a cero.");
+                return;
+            }
 
-            setNuevaFlexible({ nombre: '', horasSemanales: '', duracion: '', prioridad: 2, diasPreferidos: 0 });
+            setActividadesFlexibles(prev => [...prev, nuevaFlexible] );
+
+            setNuevaFlexible({ nombre: '', horasSemanales: '', duracion: '', prioridad: 2, diasPreferidos: [] });
         } catch (error) {
             alert("Error al guardar: " + error.message);
         }
@@ -82,13 +102,19 @@ const Planificador = () => {
     };
 
     // Eliminar actividades flexibles
-    const handleEliminarFlexible = async (id) => {
-        try {
-            await deleteActividadFlexible(id);
-            setRefresh(r => r + 1);
-        } catch (error) {
-            console.error("Error al eliminar actividad flexible", error);
-        }
+    // const handleEliminarFlexible = async (id) => {
+    //     try {
+    //         await deleteActividadFlexible(id);
+    //         setRefresh(r => r + 1);
+    //     } catch (error) {
+    //         console.error("Error al eliminar actividad flexible", error);
+    //     }
+    // };
+
+    const handleEliminarFlexible = (indexAEliminar) => {
+        setActividadesFlexibles(prev => 
+            prev.filter((_, index) => index !== indexAEliminar)
+        );
     };
 
     const handleGenerarPlanificacion = () => {
@@ -113,20 +139,25 @@ const Planificador = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {materias.map((materia) => (
-                        <div 
+                    /* 1. Cambiamos el div contenedor por un <label> y le agregamos cursor-pointer */
+                        <label 
                             key={materia.id} 
-                            className={`p-4 border rounded-xl flex items-start gap-3 transition hover:shadow-sm bg-white ${
+                            htmlFor={`materia-${materia.id}`} /* 👈 Vincula todo el recuadro al checkbox */
+                            className={`p-4 border rounded-xl flex items-start gap-3 transition hover:shadow-sm bg-white cursor-pointer select-none ${
                                 materiasSeleccionadas.includes(materia.id) ? 'border-indigo-500 bg-indigo-50/10' : 'border-gray-200'
                             }`}
                         >
+                            {/* 2. El checkbox se queda igual con las nuevas clases de diseño */}
                             <input 
                                 type="checkbox" 
                                 id={`materia-${materia.id}`}
                                 checked={materiasSeleccionadas.includes(materia.id)}
                                 onChange={() => handleMateriaCheck(materia.id)}
-                                className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45 shrink-0 mt-0.5"
                             />
-                            <label htmlFor={`materia-${materia.id}`} className="flex-1 cursor-pointer">
+        
+                            {/* 3. Cambiamos este sub-label por un <div> simple para no duplicar etiquetas */}
+                            <div className="flex-1">
                                 <span className="text-[10px] font-mono font-bold bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">
                                     Code: {materia.id}
                                 </span>
@@ -136,8 +167,8 @@ const Planificador = () => {
                                         Recomendada
                                     </span>
                                 </div>
-                            </label>
-                        </div>
+                            </div>
+                        </label>
                     ))}
                     {materias.length === 0 && (
                         <p className="text-xs text-gray-400 italic">No hay materias disponibles para mostrar.</p>
@@ -160,11 +191,14 @@ const Planificador = () => {
                     {/* Filtros Básicos */}
                     <div>
                         <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Filtros y preferencias</h3>
-                        <label className="text-xs font-semibold text-gray-600 block mb-2">Disponibilidad horaria</label>
+                        <label className="text-xs font-semibold text-gray-600 block mb-2">Disponibilidad horaria para cursar</label>
                         <div className="flex flex-col gap-2 text-xs text-gray-700">
-                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="rounded text-indigo-600" /> Mañana (08:00 - 12:00)</label>
-                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="rounded text-indigo-600" /> Tarde (13:00 - 18:00)</label>
-                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="rounded text-indigo-600" /> Noche (18:00 - 22:00)</label>
+                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
+                                Mañana (08:00 - 12:00)</label>
+                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
+                                Tarde (13:00 - 18:00)</label>
+                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
+                                Noche (18:00 - 22:00)</label>
                         </div>
                     </div>
 
@@ -195,10 +229,22 @@ const Planificador = () => {
                                 <div key={index} className="flex justify-between items-center bg-purple-50/70 p-3 rounded-xl text-xs border border-purple-100">
                                     <div>
                                         <p className="font-semibold text-purple-900">{act.nombre}</p>
-                                        <p className="text-purple-600 text-[11px]">Flexible • Prioridad {act.prioridad} ({act.horasSemanales} min/sem)</p>
+                                        <p className="text-purple-600 text-[11px]">
+                                            Flexible • Prioridad {act.prioridad} • {act.horasSemanales}hs totales ({act.duracion} veces/sem)
+                                        </p>
+                                        {/* Render de los días seleccionados */}
+                                        {act.diasPreferidos && act.diasPreferidos.length > 0 && (
+                                            <div className="flex gap-1 mt-1 flex-wrap">
+                                                {act.diasPreferidos.map(dia => (
+                                                    <span key={dia} className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">
+                                                        {dia.substring(0, 3)}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                     <button 
-                                        onClick={() => handleEliminarFlexible(act)}
+                                        onClick={() => handleEliminarFlexible(index)}
                                         className="text-gray-400 hover:text-red-500 transition text-sm p-1 cursor-pointer"
                                         title="Eliminar actividad flexible"
                                     >
@@ -215,7 +261,7 @@ const Planificador = () => {
 
                     {/* Formulario de actividades flexibles */}
                     <form onSubmit={handleAgregarFlexible} className="border-t pt-4 flex flex-col gap-2.5">
-                        <h4 className="text-xs font-bold text-gray-700">＋ Agregar actividad flexible</h4>
+                        <h4 className="text-xs font-bold text-gray-700">＋ Agregar actividades de mis tiempos libres</h4>
                         
                         <input 
                             type="text" 
@@ -227,14 +273,39 @@ const Planificador = () => {
                         />
                         
                         <div className="grid grid-cols-2 gap-2">
-                            <input 
+                            <div>
+                                <label className="text-[10px] text-gray-400 font-medium block mb-1">Horas semanales</label>
+                                <input 
+                                    type="number" 
+                                    min="1" 
+                                    placeholder="Ej: 3" 
+                                    value={nuevaFlexible.horasSemanales}
+                                    onChange={e => setNuevaFlexible({...nuevaFlexible, horasSemanales: e.target.value})}
+                                    className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-gray-400 font-medium block mb-1">Veces a la semana</label>
+                                <input 
+                                    type="number" 
+                                    min="1" 
+                                    placeholder="Ej: 3" 
+                                    value={nuevaFlexible.duracion}
+                                    onChange={e => setNuevaFlexible({...nuevaFlexible, duracion: e.target.value})}
+                                    className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                                    required
+                                />
+                            </div>
+                            {/*<input 
                                 type="number" 
-                                placeholder="Minutos totales" 
+                                min="1"
+                                placeholder="Ej: 3" 
                                 value={nuevaFlexible.horasSemanales}
                                 onChange={e => setNuevaFlexible({...nuevaFlexible, horasSemanales: Number(e.target.value)})}
                                 className="p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
                                 required
-                            />
+                            /> 
                             <input 
                                 type="number" 
                                 placeholder="Bloques de (min)" 
@@ -242,7 +313,28 @@ const Planificador = () => {
                                 onChange={e => setNuevaFlexible({...nuevaFlexible, duracion: Number(e.target.value)})}
                                 className="p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
                                 required
-                            />
+                            /> */}
+                        </div>
+
+                        {/* CHECKBOXES DE DÍAS PREFERIDOS */}
+                        <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1.5">
+                                Días de preferencia (Opcional)
+                            </label>
+                            <div className="grid grid-cols-3 gap-1.5 text-[11px] text-gray-600">
+                                {diasSemana.map(dia => (
+                                    <label key={dia} className="flex items-center gap-1 cursor-pointer select-none">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={nuevaFlexible.diasPreferidos.includes(dia)}
+                                            onChange={() => handleDiaCheck(dia)}
+                                            // className="rounded text-indigo-600 focus:ring-0 h-3.5 w-3.5" 
+                                            className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45"
+                                        />
+                                        {dia.substring(0, 3)}
+                                    </label>
+                                ))}
+                            </div>
                         </div>
 
                         <select 
