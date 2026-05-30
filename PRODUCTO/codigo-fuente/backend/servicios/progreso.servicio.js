@@ -104,7 +104,14 @@ class ProgresoService {
             });
 
             console.log('Materias aceptadas (únicas):', materiasAceptadas);
-            return materiasAceptadas;
+            const materiasSinCorrelativas = materias.filter(materia => 
+                !materia.correlativas?.length && 
+                !materiasActualesMap.has(materia.id) // Excluir las que ya están en progreso
+            );
+            return [
+                ...materiasAceptadas,
+                ...materiasSinCorrelativas
+            ];
         } catch (error) {
             console.error('Error en obtenerMateriasHabilitadas:', error);
             throw error;
