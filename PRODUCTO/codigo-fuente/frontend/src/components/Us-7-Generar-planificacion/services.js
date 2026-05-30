@@ -12,8 +12,6 @@ export const getCursos = async () => {
             `${API_URL}/inscripcion`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
-        // TEST 1: Ver qué devuelve el estado de materias del alumno
-        console.log("Respuesta de /estado-materias:", cursados.data);
         
         const cursosDetalles = await Promise.all(
             cursados.data.map(async (curso) => {
@@ -25,14 +23,27 @@ export const getCursos = async () => {
             })
         );
 
-        // 🔍 TEST 2: Ver el array final compilado de materias
-        console.log("Materias finales listas para el Front:", cursosDetalles);
-       
-
         return cursosDetalles;
         
     } catch (error) {
         console.error('Error obteniendo actividades:', error);
+        throw error;
+    }
+};
+
+export const getMateriasHabilitadas = async () => {
+    try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        
+        const materias = await axios.get(`${API_URL}/progreso/materias-habilitadas`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        console.log('Materias obtenidas:', materias);
+        return materias.data; // ✅ Devolver el array directamente, NO materias.data
+        
+    } catch (error) {
+        console.error("Error en getMateriasHabilitadas:", error);
         throw error;
     }
 };

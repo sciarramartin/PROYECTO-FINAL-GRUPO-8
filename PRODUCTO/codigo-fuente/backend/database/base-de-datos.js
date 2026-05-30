@@ -9,7 +9,7 @@ const DB_PATH = path.join(__dirname, 'base-de-datos.sqlite');
 const baseDeDatos = new Sequelize({
     dialect: 'sqlite',
     storage: DB_PATH,
-    logging: true
+    logging: false
 });
 
 const inicializarDB = async () => {

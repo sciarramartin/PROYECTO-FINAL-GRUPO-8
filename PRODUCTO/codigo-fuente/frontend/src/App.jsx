@@ -11,7 +11,7 @@ const Registro = lazy(() => import('./components/ModuloSesion/Registro'));
 const Horario = lazy(() => import('./components/Us-8-Actividades-Personales/Horario'));
 const ModuloCorrelativas = lazy(() => import('./components/Us-9-Registrar-Correlativas'));
 const MapaCorrelatividades = lazy(() => import('./components/US-10-Consultar-correlativas/MapaCorrelatividades'));
-const Planificador = lazy(()=> import('./components/Us-7-Generar-planificacion/PlanificadorCursado'));
+const Planificador = lazy(()=> import('./components/Us-7-Generar-planificacion/Planificador'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");

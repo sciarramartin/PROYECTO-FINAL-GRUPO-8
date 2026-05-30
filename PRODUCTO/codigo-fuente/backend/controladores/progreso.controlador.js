@@ -33,4 +33,15 @@ router.put('/:id_materia', verificarToken, async (req, res) => {
     }
 });
 
+
+router.get('/materias-habilitadas', verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const estados = await ProgresoService.obtenerMateriasHabilitadas(id_usuario);
+        return res.json(estados);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener el progreso del estudiante.' });
+    }
+});
 module.exports = router;
