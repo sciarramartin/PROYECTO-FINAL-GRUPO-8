@@ -1,6 +1,6 @@
 // modelos/GrupoMensaje.js
 const { DataTypes } = require('sequelize');
-const { baseDeDatos } = require('../configuracion/base-de-datos');
+const { baseDeDatos } = require('../database/base-de-datos');
 
 const GrupoMensaje = baseDeDatos.define('GrupoMensaje', {
     id: {

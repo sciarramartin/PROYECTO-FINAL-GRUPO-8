@@ -1,5 +1,5 @@
 // scratch/test_private_chat.js
-const { baseDeDatos } = require('../configuracion/base-de-datos');
+const { baseDeDatos } = require('../database/base-de-datos');
 const { Amistad } = require('../modelos/Amistad');
 
 async function runTests() {

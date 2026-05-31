@@ -1,6 +1,6 @@
 // modelos/GrupoMiembro.js
 const { DataTypes } = require('sequelize');
-const { baseDeDatos } = require('../configuracion/base-de-datos');
+const { baseDeDatos } = require('../database/base-de-datos');
 
 const GrupoMiembro = baseDeDatos.define('GrupoMiembro', {
     id: {
