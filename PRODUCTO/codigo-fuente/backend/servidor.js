@@ -17,7 +17,7 @@ require('./modelos/Perfil');
 
 require('./modelos/asociaciones');
 
-const { inicializarDB, baseDeDatos } = require('./database/base-de-datos');
+const { inicializarDB } = require('./database/base-de-datos');
 
 const rutasActividad = require('./controladores/actividades-personales.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js');
@@ -110,8 +110,7 @@ const iniciarServidor = async () => {
     try {
 
         await inicializarDB();
-        await baseDeDatos.sync();
-        console.log('Base de datos conectada correctamente y tablas sincronizadas.');
+        console.log('Base de datos conectada correctamente.');
         
         const servidor = servidorHttp.listen(PUERTO, () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO} con soporte de WebSockets`);

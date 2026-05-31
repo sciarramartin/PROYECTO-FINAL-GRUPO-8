@@ -275,3 +275,12 @@ INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tip
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 12, 'aprobada');
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 20, 'aprobada');
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 23, 'aprobada');
+
+-- ===============================================================
+-- PERFILES DE USUARIOS SEED
+-- ===============================================================
+INSERT INTO perfiles (id_usuario, apodo, anio_cursado, biografia, foto_perfil, rol_equipo, mostrar_anio_cursado, mostrar_contacto)
+VALUES 
+(1, 'Admin', 5, 'Administrador del sistema.', '💻', 'Admin', 1, 1),
+(2, 'Juancho', 2, 'Estudiante de Ingeniería en Sistemas.', '🎓', 'Miembro', 1, 1);
+
