@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef  } from 'react';
 import Horario from '../Us-8-Actividades-Personales/Horario';
 import { 
     getActividades as getActividadesFijas, 
+    PostActividad,
     DeleteActividad as deleteActividadFija 
 } from '../Us-8-Actividades-Personales/services';
 import { 
-    getMateriasHabilitadas
+    getMateriasHabilitadas,
+    calcularPlan
 } from './services'; 
 
 const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -16,7 +18,10 @@ const Planificador = () => {
     const [materiasSeleccionadas, setMateriasSeleccionadas] = useState([]);
     const [actividadesFijas, setActividadesFijas] = useState([]);
     const [actividadesFlexibles, setActividadesFlexibles] = useState([]);
-    
+    const mananaRef = useRef(null);
+    const tardeRef = useRef(null);
+    const nocheRef = useRef(null);
+
     // Formulario para tus actividades flexibles (Sector Derecho)
     const [nuevaFlexible, setNuevaFlexible] = useState({
         nombre: '',
@@ -117,16 +122,48 @@ const Planificador = () => {
         );
     };
 
-    const handleGenerarPlanificacion = () => {
+    const handleGenerarPlanificacion = async () => {
         if (materiasSeleccionadas.length === 0) {
             alert("Debes seleccionar al menos una materia para planificar.");
             return;
         }
+        console.log({
+            manana: mananaRef.current.checked,
+            tarde: tardeRef.current.checked,
+            noche: nocheRef.current.checked
+        });
         console.log("Datos listos para enviar al algoritmo de asignación:", {
             materias: materiasSeleccionadas,
             fijas: actividadesFijas,
-            flexibles: actividadesFlexibles
+            flexibles: actividadesFlexibles,
+            disponibilidad: {
+                manana: mananaRef.current.checked,
+                tarde: tardeRef.current.checked,
+                noche: nocheRef.current.checked
+            }
         });
+        setActividadesFijas(await getActividadesFijas());
+        const actividadesResultantes = await calcularPlan({
+            materias: materiasSeleccionadas,
+            fijas: actividadesFijas,
+            flexibles: actividadesFlexibles,
+            disponibilidad: {
+                manana: mananaRef.current.checked,
+                tarde: tardeRef.current.checked,
+                noche: nocheRef.current.checked
+            }
+        })
+
+        await Promise.all(
+            actividadesResultantes.cursos.map(async (curso) => {
+                const response = await PostActividad({
+                nombre: curso.nombre,
+                horaInicio: curso.horaInicio,
+                duracion: curso.duracion,
+                dias: curso.dias,
+                })
+            }));
+        setRefresh(r => r + 1);
     };
 
     return (
@@ -193,11 +230,11 @@ const Planificador = () => {
                         <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Filtros y preferencias</h3>
                         <label className="text-xs font-semibold text-gray-600 block mb-2">Disponibilidad horaria para cursar</label>
                         <div className="flex flex-col gap-2 text-xs text-gray-700">
-                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
+                            <label className="flex items-center gap-2 cursor-pointer"><input ref={mananaRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
                                 Mañana (08:00 - 12:00)</label>
-                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
+                            <label className="flex items-center gap-2 cursor-pointer"><input ref={tardeRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
                                 Tarde (13:00 - 18:00)</label>
-                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
+                            <label className="flex items-center gap-2 cursor-pointer"><input ref={nocheRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
                                 Noche (18:00 - 22:00)</label>
                         </div>
                     </div>

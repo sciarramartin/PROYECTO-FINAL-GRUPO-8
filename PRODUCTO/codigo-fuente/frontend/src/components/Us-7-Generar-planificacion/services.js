@@ -2,12 +2,11 @@
 import axios from 'axios';
 
 const API_URL = `${import.meta.env.VITE_API_URL}`;
-
+const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 // 1. Obtener los detalles de los cursos del alumno
 export const getCursos = async () => {
     try {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        
+       
         const cursados = await axios.get(
             `${API_URL}/inscripcion`,
             { headers: { Authorization: `Bearer ${token}` } }
@@ -32,9 +31,7 @@ export const getCursos = async () => {
 };
 
 export const getMateriasHabilitadas = async () => {
-    try {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        
+    try {    
         const materias = await axios.get(`${API_URL}/progreso/materias-habilitadas`, {
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -48,66 +45,27 @@ export const getMateriasHabilitadas = async () => {
     }
 };
 
-// 2. Obtener las actividades flexibles
-export const getActividadesFlexibles = async () => {
+
+export const calcularPlan = async (data) => {
     try {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        const respuesta = await axios.get(`${API_URL}/planificador/actividades-flexibles`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        return respuesta.data;
+ 
+        
+        const planes = await axios.post(
+            `${API_URL}/inscripcion/generar-opciones`,
+            data,
+            { headers: { Authorization: `Bearer ${token}` }}
+            
+        );
+        return planes.data;
+        
     } catch (error) {
-        console.error("Error en getActividadesFlexibles:", error);
+        console.error('Error obteniendo actividades:', error);
         throw error;
     }
 };
 
-// 3. Crear una actividad flexible (Corregido el endpoint y el token interno)
-export const PostActividad = async (actividad) => {
-    try {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        const response = await axios.post(
-            `${API_URL}/planificador/actividades-flexibles`,
-            actividad,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-    } catch (error) {
-        console.error('Error creando actividad:', error);
-        throw error;
-    }
-};
 
-// 4. Actualizar una actividad flexible (Corregido el endpoint y el token interno)
-export const PutActividad = async (actividad) => {
-    try {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        const response = await axios.put(
-            `${API_URL}/planificador/actividades-flexibles/${actividad.id}`,
-            actividad,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-    } catch (error) {
-        console.error('Error actualizando actividad:', error);
-        throw error;
-    }
-};
 
-// 5. Eliminar una actividad flexible (Corregido el endpoint y el token interno)
-export const DeleteActividad = async (id) => {
-    try {
-        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-        const response = await axios.delete(
-            `${API_URL}/planificador/actividades-flexibles/${id}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-    } catch (error) {
-        console.error('Error eliminando actividad:', error);
-        throw error;
-    }
-};
 
 
 // import axios from 'axios';

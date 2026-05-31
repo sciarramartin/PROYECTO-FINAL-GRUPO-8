@@ -24,5 +24,15 @@ router.get("/:id", async (req, res) => {
     }
 });
 
+router.post("/generar-opciones", verificarToken, async (req, res) => {
+    try {
+        const registros = await Inscripciones.calcularPlan(req.body);
+        console.log("Registros encontrados:", registros);
+        res.json(registros);
+    } catch (error) {
+        console.error('ERROR DETALLADO:', error);
+        res.status(500).json({ error: 'Hubo un error al obtener los registros.' });
+    }
+});
 
 module.exports = router;

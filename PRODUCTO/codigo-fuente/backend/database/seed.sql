@@ -277,9 +277,85 @@ INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tip
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 23, 'aprobada');
 
 
-INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES ('MAT1_mañana', '09:00', 60, 1, 1);
-INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES ('MAT1_tarde', '12:00', 60, 1, 1);
-INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES ('MAT1_noche', '19:00', 60, 1, 1);
+-- ==============================================
+-- MATEMÁTICA (id_materia = 1) - 3 turnos
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('MAT1 - Turno Mañana', '08:00', 90, 1, 1),      -- Lunes (bit 1)
+('MAT1 - Turno Tarde', '14:00', 90, 2, 1),       -- Martes (bit 2)
+('MAT1 - Turno Noche', '19:30', 90, 4, 1);       -- Miércoles (bit 4)
+
+-- ==============================================
+-- ÁLGEBRA (id_materia = 2) - frecuencia 2 días/semana
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('ALG1 - Mañana (Lun-Mie)', '09:00', 90, 5, 2),      -- Lunes(1) + Miércoles(4) = 5
+('ALG1 - Tarde (Mar-Jue)', '15:00', 90, 10, 2),      -- Martes(2) + Jueves(8) = 10
+('ALG1 - Noche (Lun-Jue)', '20:00', 90, 9, 2);       -- Lunes(1) + Jueves(8) = 9
+
+-- ==============================================
+-- PROGRAMACIÓN (id_materia = 3) - frecuencia 3 días/semana
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('PROG1 - Intensivo Mañana', '07:30', 120, 21, 3),   -- Lun(1)+Mie(4)+Vie(16)=21
+('PROG1 - Intensivo Tarde', '13:30', 120, 42, 3),    -- Mar(2)+Jue(8)+Sab(32)=42
+('PROG1 - Extensivo Noche', '18:00', 90, 21, 3);     -- Lun-Mie-Vie pero 90 min
+
+-- ==============================================
+-- BASE DE DATOS (id_materia = 4) - 2 días, distintos patrones
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('BD1 - Sabatino', '09:00', 240, 32, 4),            -- Solo Sábado (32), 4h
+('BD1 - Dominical', '10:00', 180, 64, 4),           -- Solo Domingo (64), 3h
+('BD1 - Finde Completo', '09:00', 150, 96, 4);      -- Sáb(32)+Dom(64)=96, 2.5h
+
+-- ==============================================
+-- FÍSICA (id_materia = 5) - 1 día intensivo
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('FIS1 - Viernes Práctica', '14:00', 180, 16, 5),    -- Solo Viernes (16), 3h lab
+('FIS1 - Sábado Teoría', '08:00', 120, 32, 5),      -- Solo Sábado (32), 2h
+('FIS1 - Lunes Teórico', '17:00', 90, 1, 5);        -- Solo Lunes (1), 1.5h
+
+-- ==============================================
+-- INGLÉS (id_materia = 6) - frecuencia diaria
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('ENG1 - Diario Mañana', '07:00', 60, 31, 6),       -- Lun a Vie (1+2+4+8+16)=31
+('ENG1 - Diario Noche', '20:00', 60, 31, 6),        -- Lun a Vie 20hs
+('ENG1 - Finde Intensivo', '09:00', 240, 96, 6);    -- Sáb+Dom (32+64)=96, 4h
+
+-- ==============================================
+-- QUÍMICA (id_materia = 7) - 2 días separados
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('QUI1 - Mar y Jue', '11:00', 90, 10, 7),           -- Mar(2)+Jue(8)=10
+('QUI1 - Lun y Vie', '11:00', 90, 17, 7),           -- Lun(1)+Vie(16)=17
+('QUI1 - Mie y Sab', '15:00', 90, 36, 7);           -- Mie(4)+Sab(32)=36
+
+-- ==============================================
+-- HISTORIA (id_materia = 8) - noche
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('HIS1 - Noche Lun-Mie', '19:00', 90, 5, 8),        -- Lun(1)+Mie(4)=5
+('HIS1 - Noche Mar-Jue', '19:30', 90, 10, 8),       -- Mar(2)+Jue(8)=10
+('HIS1 - Noche Vie', '20:00', 120, 16, 8);          -- Solo Vie(16), 2h
+
+-- ==============================================
+-- CASOS BORDE para pruebas
+-- ==============================================
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+-- Madrugadores vs nocturnos
+('ALG2 - Madrugada', '05:30', 60, 1, 2),            -- 5:30 AM
+('ALG2 - Trasnoche', '23:00', 60, 1, 2),            -- 11:00 PM
+
+-- Diferentes duraciones para misma materia
+('BD2 - Express 45min', '12:00', 45, 21, 4),        -- 45 min
+('BD2 - Standard 90min', '12:00', 90, 21, 4),       -- 90 min
+('BD2 - Extendido 120min', '12:00', 120, 21, 4);    -- 120 min
+
+
+
 
 INSERT INTO inscripciones_cursos (fecha_inscripcion, id_usuario, id_curso) VALUES ("25/12/2023", 1, 1);
 INSERT INTO inscripciones_cursos (fecha_inscripcion, id_usuario, id_curso) VALUES ("25/12/2023", 1, 2);
