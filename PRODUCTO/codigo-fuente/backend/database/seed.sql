@@ -84,6 +84,26 @@ VALUES
     2024,
     1,
     1
+),
+(
+    'alumno2@test.com',
+    '$2b$10$x9AoHfbl4GuyGPZT8PJ7MeL1DvG/vFN1QFB9a7zfkD59bs61/T4f6',
+    'Diego',
+    'Perez',
+    'diego',
+    2024,
+    1,
+    1
+),
+(
+    'alumno3@test.com',
+    '$2b$10$x9AoHfbl4GuyGPZT8PJ7MeL1DvG/vFN1QFB9a7zfkD59bs61/T4f6',
+    'Tito',
+    'Alegre',
+    'tito',
+    2024,
+    1,
+    1
 );
 
 -- ===============================================================
