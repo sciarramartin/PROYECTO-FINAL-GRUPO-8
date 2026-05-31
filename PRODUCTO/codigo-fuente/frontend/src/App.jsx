@@ -5,12 +5,18 @@ import Layout from './components/Layout';
 import Spinner from './components/common/Spinner';
 
 const Login = lazy(() => import('./components/ModuloSesion/Login'));
-const RecuperarContrasena = lazy(() => import('./components/RecuperarContrasena'));
-const ResetearContrasena = lazy(() => import('./components/ResetearContrasena'));
+const RecuperarContrasena = lazy(() => import('./components/ModuloSesion/RecuperarContrasena'));
+const ResetearContrasena = lazy(() => import('./components/ModuloSesion/ResetearContrasena'));
 const Registro = lazy(() => import('./components/ModuloSesion/Registro'));
 const Horario = lazy(() => import('./components/Us-8-Actividades-Personales/Horario'));
 const ModuloCorrelativas = lazy(() => import('./components/Us-9-Registrar-Correlativas'));
 const MapaCorrelatividades = lazy(() => import('./components/US-10-Consultar-correlativas/MapaCorrelatividades'));
+const PerfilPublico = lazy(() => import('./components/modulo-perfil-amigos/perfil-publico'));
+const MisConexiones = lazy(() => import('./components/modulo-perfil-amigos/mis-conexiones'));
+const MiPerfil = lazy(() => import('./components/modulo-perfil-amigos/mi-perfil'));
+const ListaGrupos = lazy(() => import('./components/us-10-grupos/lista-grupos'));
+const MuroGrupo = lazy(() => import('./components/us-10-grupos/muro-grupo'));
+const ChatPrivado = lazy(() => import('./components/us-11-chat-privado/chat-privado'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -53,11 +59,59 @@ const App = () => {
           } />
 
           <Route path="/Horario" element={
-            //<RutaPrivada>
+            <RutaPrivada>
               <Layout>
                 <Horario/>
               </Layout>
-            //</RutaPrivada>
+            </RutaPrivada>
+          } />
+
+          <Route path="/conexiones" element={
+            <RutaPrivada>
+              <Layout>
+                <MisConexiones />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/perfil/:id" element={
+            <RutaPrivada>
+              <Layout>
+                <PerfilPublico />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/grupos" element={
+            <RutaPrivada>
+              <Layout>
+                <ListaGrupos />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/grupos/:id" element={
+            <RutaPrivada>
+              <Layout>
+                <MuroGrupo />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/chat-privado/:amigoId" element={
+            <RutaPrivada>
+              <Layout>
+                <ChatPrivado />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/mi-perfil" element={
+            <RutaPrivada>
+              <Layout>
+                <MiPerfil />
+              </Layout>
+            </RutaPrivada>
           } />
 
           <Route path="/" element={<Navigate to="/login" />} />

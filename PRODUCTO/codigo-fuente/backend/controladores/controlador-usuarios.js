@@ -1,5 +1,6 @@
 const UsuarioService = require('../servicios/UsuarioService');
-const AuthService = require('../servicios/AuthService'); 
+const AuthService = require('../servicios/AuthService');
+const { verificarToken } = require('../middleware/authMiddleware');
 const express = require('express');
 const router = express.Router();
 
@@ -14,6 +15,20 @@ router.post('/registro', async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(error.status || 500).json({ error: error.message || 'Error interno del servidor' });
+    }
+});
+
+// GET /api/usuarios/buscar
+// Búsqueda de personas ignorando comas, acentos y mayúsculas
+router.get('/buscar', verificarToken, async (req, res) => {
+    try {
+        const { q } = req.query;
+        const excluirId = req.usuario.id; // Excluir automáticamente al usuario logueado
+        const usuarios = await UsuarioService.buscarUsuarios(q, excluirId);
+        return res.status(200).json(usuarios);
+    } catch (error) {
+        console.error("Error al buscar usuarios:", error);
+        return res.status(error.status || 500).json({ error: error.message || 'Error al realizar la búsqueda' });
     }
 });
 
@@ -36,16 +51,16 @@ router.put('/perfil-alumno', async (req, res) => {
     try {
         // En el futuro, req.usuario.id vendrá del middleware de autenticación (JWT)
         // Por ahora, para probar en Postman, puedes simular un ID fijo (ej: 1)
-        const idUsuarioLogueado = req.usuario?.id || 1; 
-        
+        const idUsuarioLogueado = req.usuario?.id || 1;
+
         // Solo le pasamos al servicio los campos que el alumno TIENE PERMITIDO cambiar
         const { nombre_usuario /**, foto_perfil */ } = req.body;
-        
-        const usuarioActualizado = await UsuarioService.actualizarPerfilAlumno(idUsuarioLogueado, { 
-            nombre_usuario, 
+
+        const usuarioActualizado = await UsuarioService.actualizarPerfilAlumno(idUsuarioLogueado, {
+            nombre_usuario,
             /**foto_perfil */
         });
-        
+
         return res.status(200).json({
             mensaje: 'Perfil actualizado correctamente',
             usuario: usuarioActualizado
@@ -59,12 +74,12 @@ router.put('/perfil-alumno', async (req, res) => {
 // DELETE /api/usuarios/:id
 router.delete('/:id', async (req, res) => {
     try {
-        const { id } = req.params; 
-        
+        const { id } = req.params;
+
         await UsuarioService.eliminarUsuario(id);
-        
-        return res.status(200).json({ 
-            mensaje: `Usuario con ID ${id} eliminado correctamente.` 
+
+        return res.status(200).json({
+            mensaje: `Usuario con ID ${id} eliminado correctamente.`
         });
     } catch (error) {
         console.error("Error al eliminar usuario manualmente:", error);

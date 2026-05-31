@@ -77,18 +77,18 @@ const obtenerUsuarioPorId = async (id) => {
     const usuario = await Usuario.findByPk(id, {
         attributes: { exclude: ['contraseña'] } // Por seguridad, nunca enviamos la contraseña
     });
-    
+
     if (!usuario) {
         throw { status: 404, message: 'Usuario no encontrado' };
     }
-    
+
     return usuario;
 };
 
 
 const actualizarPerfilAlumno = async (id, datosPermitidos) => {
     const usuario = await Usuario.findByPk(id);
-    
+
     if (!usuario) {
         throw { status: 404, message: 'Usuario no encontrado' };
     }
@@ -107,7 +107,7 @@ const actualizarPerfilAlumno = async (id, datosPermitidos) => {
 
 const eliminarUsuario = async (id) => {
     const usuario = await Usuario.findByPk(id);
-    
+
     if (!usuario) {
         throw { status: 404, message: 'El usuario que intentás eliminar no existe.' };
     }
@@ -117,4 +117,68 @@ const eliminarUsuario = async (id) => {
     return true;
 };
 
-module.exports = { crearUsuario, obtenerUsuarioPorId, actualizarPerfilAlumno, eliminarUsuario };
+const buscarUsuarios = async (terminoBusqueda, idUsuarioActual) => {
+    if (!terminoBusqueda) {
+        return [];
+    }
+
+    const { Op } = require('sequelize');
+
+    // 1. Normalizar el término de búsqueda: quitar comas, minúsculas, remover acentos
+    const terminoNormalizado = terminoBusqueda
+        .toLowerCase()
+        .replace(/,/g, '')
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (!terminoNormalizado) {
+        return [];
+    }
+
+    // 2. Traer todos los usuarios (excluyendo al usuario actual si se pasa)
+    const whereClause = idUsuarioActual ? { id: { [Op.ne]: Number(idUsuarioActual) } } : {};
+    const { Perfil } = require('../modelos/Perfil');
+
+    const todosLosUsuarios = await Usuario.findAll({
+        where: whereClause,
+        attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'mail', 'id_carrera', 'anio_ingreso'],
+        include: [{ model: Perfil, attributes: ['foto_perfil'] }]
+    });
+
+    // Helper para normalizar strings para la comparación
+    const normalizarString = (str) => {
+        if (!str) return '';
+        return str
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+    };
+
+    // 3. Filtrar en memoria para asegurar concordancia perfecta ignorando acentos y comas
+    const resultados = todosLosUsuarios.filter(usuario => {
+        const nombreNorm = normalizarString(usuario.nombre);
+        const apellidoNorm = normalizarString(usuario.apellido);
+        const nombreUsuarioNorm = normalizarString(usuario.nombre_usuario);
+        const nombreCompletoNorm = `${nombreNorm} ${apellidoNorm}`;
+        const nombreCompletoInversoNorm = `${apellidoNorm} ${nombreNorm}`;
+
+        return nombreNorm.includes(terminoNormalizado) ||
+            apellidoNorm.includes(terminoNormalizado) ||
+            nombreUsuarioNorm.includes(terminoNormalizado) ||
+            nombreCompletoNorm.includes(terminoNormalizado) ||
+            nombreCompletoInversoNorm.includes(terminoNormalizado);
+    });
+
+    // Devolver los primeros 15 resultados
+    return resultados.slice(0, 15);
+};
+
+module.exports = {
+    crearUsuario,
+    obtenerUsuarioPorId,
+    actualizarPerfilAlumno,
+    eliminarUsuario,
+    buscarUsuarios
+};
