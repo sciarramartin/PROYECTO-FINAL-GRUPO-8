@@ -85,6 +85,22 @@ const MuroGrupo = () => {
   const usuarioLogueado = usuarioGuardado ? JSON.parse(usuarioGuardado) : null;
   const miUsuarioId = usuarioLogueado ? usuarioLogueado.id : null;
 
+  const actualizarUltimoVisto = (mensajesLista) => {
+    if (!mensajesLista || mensajesLista.length === 0 || !miUsuarioId) return;
+    try {
+      const maxId = Math.max(...mensajesLista.map(m => m.id));
+      const key = `grupo_ultimo_visto_${miUsuarioId}`;
+      const ultimosVistos = JSON.parse(localStorage.getItem(key) || "{}");
+      if (!ultimosVistos[id] || maxId > ultimosVistos[id]) {
+        ultimosVistos[id] = maxId;
+        localStorage.setItem(key, JSON.stringify(ultimosVistos));
+        window.dispatchEvent(new CustomEvent("grupo_leido", { detail: { grupoId: parseInt(id, 10) } }));
+      }
+    } catch (e) {
+      console.error("Error al actualizar ultimo mensaje visto del grupo:", e);
+    }
+  };
+
   const cargarDatosGrupo = async () => {
     setCargando(true);
     setError("");
@@ -108,8 +124,10 @@ const MuroGrupo = () => {
         
         // WhatsApp style: ordenar los mensajes de más viejos a más nuevos (abajo del todo)
         // en el controlador vienen ORDER BY createdAt DESC, por lo que los invertimos
-        setMensajes(mensajesRes.data.reverse());
+        const msgs = mensajesRes.data.reverse();
+        setMensajes(msgs);
         setAmigos(amigosRes.data);
+        actualizarUltimoVisto(msgs);
       }
     } catch (err) {
       console.error("Error al cargar datos del grupo:", err);
@@ -152,7 +170,9 @@ const MuroGrupo = () => {
         setMensajes((prev) => {
           // Evitar duplicar si el remitente ya lo añadió de manera local
           if (prev.some((m) => m.id === mensajeNuevo.id)) return prev;
-          return [...prev, mensajeNuevo];
+          const nuevos = [...prev, mensajeNuevo];
+          actualizarUltimoVisto(nuevos);
+          return nuevos;
         });
       };
 
@@ -192,7 +212,9 @@ const MuroGrupo = () => {
       // Añadir mensaje enviado de manera local instantánea (evitando duplicados)
       setMensajes((prev) => {
         if (prev.some((m) => m.id === response.data.id)) return prev;
-        return [...prev, response.data];
+        const nuevos = [...prev, response.data];
+        actualizarUltimoVisto(nuevos);
+        return nuevos;
       });
       setNuevoMensaje("");
     } catch (err) {

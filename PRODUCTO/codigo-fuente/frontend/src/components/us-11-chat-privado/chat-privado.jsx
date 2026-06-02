@@ -72,6 +72,15 @@ const ChatPrivado = () => {
         const esParaEsteAmigo = mensajeNuevo.id_destinatario === parseInt(amigoId, 10);
 
         if (esDeEsteAmigo || esParaEsteAmigo) {
+          if (esDeEsteAmigo) {
+            // Como estoy en el chat, lo marco como leído inmediatamente en la base de datos
+            mensajeNuevo.leido = true;
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+            axios.put(`${apiUrl}/chat-privado/${amigoId}/leer`, {}, {
+              headers: { Authorization: `Bearer ${token}` }
+            }).catch(err => console.error("Error al marcar leido:", err));
+          }
+
           setMensajes((prev) => {
             // Evitar empujar duplicados si ya existen localmente
             if (prev.some((m) => m.id === mensajeNuevo.id)) return prev;
@@ -80,14 +89,27 @@ const ChatPrivado = () => {
         }
       };
 
+      const manejarMensajesLeidos = (data) => {
+        if (parseInt(data.lectorId, 10) === parseInt(amigoId, 10)) {
+          // El amigo leyó mis mensajes, actualizamos localmente
+          setMensajes((prev) =>
+            prev.map((msg) =>
+              msg.id_destinatario === parseInt(amigoId, 10) ? { ...msg, leido: true } : msg
+            )
+          );
+        }
+      };
+
       // Escuchar el evento de mensaje privado
       window.socket.on("mensaje_privado", manejarMensajePrivado);
+      window.socket.on("mensajes_leidos", manejarMensajesLeidos);
 
       return () => {
         window.socket.off("mensaje_privado", manejarMensajePrivado);
+        window.socket.off("mensajes_leidos", manejarMensajesLeidos);
       };
     }
-  }, [amigoId]);
+  }, [amigoId, token]);
 
   // 3. Hacer auto-scroll suave hacia el fondo del chat
   useEffect(() => {
@@ -267,12 +289,19 @@ const ChatPrivado = () => {
                           
                           <div
                             className={`flex items-center justify-end gap-1 text-[8.5px] mt-1 shrink-0 ${
-                              esMiMensaje ? "text-indigo-250" : "text-gray-400"
+                              esMiMensaje ? "text-indigo-200" : "text-gray-400"
                             }`}
                           >
                             <span>{horaStr}</span>
                             {esMiMensaje && (
-                              <span className="text-[10px] font-bold">✓✓</span>
+                              <span 
+                                className={`text-[11px] font-bold leading-none ${
+                                  msg.leido ? "text-blue-300 font-extrabold" : "text-indigo-300 opacity-60"
+                                }`}
+                                title={msg.leido ? "Leído" : "Enviado"}
+                              >
+                                {msg.leido ? "✓✓" : "✓"}
+                              </span>
                             )}
                           </div>
                         </div>

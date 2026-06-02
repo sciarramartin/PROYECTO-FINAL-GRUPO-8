@@ -53,6 +53,16 @@ router.put('/aceptar', verificarToken, async (req, res) => {
 
         const solicitudAceptada = await AmistadService.aceptarSolicitud(id_usuario_destino, id_usuario_origen);
 
+        // Emitir actualización de amistad por socket a ambos usuarios
+        const socketOrigen = req.usuariosConectados?.get(parseInt(id_usuario_origen, 10));
+        if (socketOrigen) {
+            req.io.to(socketOrigen).emit('actualizar_amistad');
+        }
+        const socketDestinoSelf = req.usuariosConectados?.get(parseInt(id_usuario_destino, 10));
+        if (socketDestinoSelf) {
+            req.io.to(socketDestinoSelf).emit('actualizar_amistad');
+        }
+
         return res.status(200).json({
             mensaje: 'Solicitud de amistad aceptada correctamente',
             solicitud: solicitudAceptada
@@ -79,6 +89,16 @@ router.delete('/eliminar', verificarToken, async (req, res) => {
         }
 
         await AmistadService.eliminarORechazarAmistad(idUsuarioA, idUsuarioB);
+
+        // Emitir actualización de amistad por socket a ambos usuarios
+        const socketB = req.usuariosConectados?.get(parseInt(idUsuarioB, 10));
+        if (socketB) {
+            req.io.to(socketB).emit('actualizar_amistad');
+        }
+        const socketASelf = req.usuariosConectados?.get(parseInt(idUsuarioA, 10));
+        if (socketASelf) {
+            req.io.to(socketASelf).emit('actualizar_amistad');
+        }
 
         return res.status(200).json({
             mensaje: 'Relación de amistad o solicitud eliminada correctamente'

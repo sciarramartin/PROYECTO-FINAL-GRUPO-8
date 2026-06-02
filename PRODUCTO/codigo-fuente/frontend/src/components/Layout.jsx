@@ -68,6 +68,10 @@ const Layout = ({ children }) => {
   const [mensajesPendientes, setMensajesPendientes] = useState([]);
   const [fotoPerfil, setFotoPerfil] = useState("");
 
+  // Estados para Mensajes de Grupos no leídos
+  const [cantGruposMensajesPendientes, setCantGruposMensajesPendientes] = useState(0);
+  const [gruposMensajesPendientes, setGruposMensajesPendientes] = useState([]);
+
   let usuario = {};
   try {
     const usuarioStr = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
@@ -214,6 +218,47 @@ const Layout = ({ children }) => {
     }
   };
 
+  // Cargar Mensajes de Grupos no leídos
+  const cargarGruposMensajesPendientes = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      if (!token) return;
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.get(`${apiUrl}/grupos`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const userId = usuario?.id;
+      if (!userId) return;
+      const ultimosVistos = JSON.parse(localStorage.getItem(`grupo_ultimo_visto_${userId}`) || "{}");
+      
+      const unreadGroups = response.data.filter(grupo => {
+        const ultMsg = grupo.ultimoMensaje;
+        if (!ultMsg) return false;
+        // Si el último mensaje es mío, no lo considero pendiente
+        if (ultMsg.id_usuario === userId) return false;
+        
+        // Si estamos viendo el muro de este grupo actualmente, tampoco es pendiente
+        const pathParts = window.location.pathname.split("/");
+        const esMuroGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && parseInt(pathParts[2], 10) === grupo.id;
+        if (esMuroGrupo) {
+          // Actualizar localStorage para que ya no aparezca como unread
+          ultimosVistos[grupo.id] = ultMsg.id;
+          localStorage.setItem(`grupo_ultimo_visto_${userId}`, JSON.stringify(ultimosVistos));
+          return false;
+        }
+
+        const ultimoVistoId = ultimosVistos[grupo.id] || 0;
+        return ultMsg.id > ultimoVistoId;
+      });
+
+      setGruposMensajesPendientes(unreadGroups);
+      setCantGruposMensajesPendientes(unreadGroups.length);
+    } catch (error) {
+      console.error("Error al cargar mensajes pendientes de grupos:", error);
+    }
+  };
+
   const cargarFotoPerfilPropia = async () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -236,14 +281,27 @@ const Layout = ({ children }) => {
     cargarPendientes();
     cargarInvitacionesGrupo();
     cargarMensajesPendientes();
+    cargarGruposMensajesPendientes();
     cargarFotoPerfilPropia();
   }, []);
 
   // Sincronizar notificaciones de chat al cambiar de ruta
   useEffect(() => {
     cargarMensajesPendientes();
+    cargarGruposMensajesPendientes();
     cargarFotoPerfilPropia();
   }, [location.pathname]);
+
+  // Escuchar el evento personalizado de lectura de grupo
+  useEffect(() => {
+    const handleGrupoLeido = () => {
+      cargarGruposMensajesPendientes();
+    };
+    window.addEventListener("grupo_leido", handleGrupoLeido);
+    return () => {
+      window.removeEventListener("grupo_leido", handleGrupoLeido);
+    };
+  }, [usuario?.id]);
 
   // Handlers para Aceptar / Rechazar Solicitudes de Amistad desde la campana
   const aceptarSolicitudAmistad = async (idUsuarioOrigen) => {
@@ -326,6 +384,11 @@ const Layout = ({ children }) => {
         cargarPendientes();
       });
 
+      window.socket.on("actualizar_amistad", () => {
+        console.log("[Socket.io] Recibida notificación de actualización de amistad");
+        cargarPendientes();
+      });
+
       window.socket.on("nueva_invitacion_grupo", () => {
         console.log("[Socket.io] Recibida notificación de nueva invitación de grupo en tiempo real");
         cargarInvitacionesGrupo();
@@ -342,11 +405,23 @@ const Layout = ({ children }) => {
         }
       });
 
+      window.socket.on("nuevo_mensaje_grupo_notificacion", (data) => {
+        console.log("[Socket.io] Recibida notificación de nuevo mensaje de grupo en tiempo real");
+        // Solo notificar si no estamos viendo este grupo actualmente
+        const pathParts = window.location.pathname.split("/");
+        const esMuroDeEsteGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && parseInt(pathParts[2], 10) === data.id_grupo;
+        if (!esMuroDeEsteGrupo) {
+          cargarGruposMensajesPendientes();
+        }
+      });
+
       return () => {
         window.socket.off("connect");
         window.socket.off("nueva_solicitud_amistad");
+        window.socket.off("actualizar_amistad");
         window.socket.off("nueva_invitacion_grupo");
         window.socket.off("mensaje_privado");
+        window.socket.off("nuevo_mensaje_grupo_notificacion");
       };
     }
   }, [usuario?.id]);
@@ -477,9 +552,9 @@ const Layout = ({ children }) => {
               className="relative p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition duration-200"
             >
               <FiBell className="w-5 h-5" />
-              {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes > 0 && (
+              {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px] font-bold">
-                  {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes}
+                  {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes}
                 </span>
               )}
             </button>
@@ -494,9 +569,9 @@ const Layout = ({ children }) => {
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 py-3.5 px-4">
                   <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-100 dark:border-zinc-800 pb-2 flex items-center justify-between">
                     <span>Notificaciones</span>
-                    {(cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes > 0) && (
+                    {(cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes > 0) && (
                       <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">
-                        {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes} pendientes
+                        {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes} pendientes
                       </span>
                     )}
                   </h3>
@@ -507,26 +582,31 @@ const Layout = ({ children }) => {
                       <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Solicitudes de amistad ({cantPendientes})</p>
                       <div className="mt-2 space-y-2 max-h-36 overflow-y-auto">
                         {solicitudesAmistadPendientes.map((sol) => {
-                          const amigo = sol.UsuarioOrigen || sol.UsuarioDestino || {};
+                          const amigo = sol.usuario || sol.UsuarioOrigen || sol.UsuarioDestino || {};
                           const inicialesAmigo = `${amigo.nombre?.[0] || ""}${amigo.apellido?.[0] || ""}`.toUpperCase();
                           return (
-                            <div key={sol.id} className="flex items-center justify-between gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
+                            <div key={sol.id_solicitud || sol.id} className="flex flex-col gap-1.5 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
                               <div className="flex items-center gap-2 min-w-0">
                                 {renderAvatarChico(amigo.Perfil?.foto_perfil || amigo.perfil?.foto_perfil, inicialesAmigo, "w-8 h-8 text-xs")}
-                                <div className="min-w-0">
+                                <div className="min-w-0 flex-1">
                                   <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">{amigo.nombre} {amigo.apellido}</p>
                                   <p className="text-[10px] text-zinc-400 truncate">@{amigo.nombre_usuario}</p>
                                 </div>
                               </div>
-                              <button 
-                                onClick={() => {
-                                  navigate("/conexiones");
-                                  setMostrarCampanitaDropdown(false);
-                                }}
-                                className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
-                              >
-                                Ver
-                              </button>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <button 
+                                  onClick={() => aceptarSolicitudAmistad(amigo.id)}
+                                  className="flex-1 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
+                                >
+                                  Aceptar
+                                </button>
+                                <button 
+                                  onClick={() => rechazarSolicitudAmistad(amigo.id)}
+                                  className="flex-1 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
+                                >
+                                  Rechazar
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
@@ -543,25 +623,40 @@ const Layout = ({ children }) => {
                           const grupoInv = inv.Grupo || {};
                           const inicialesGrupo = grupoInv.nombre?.[0]?.toUpperCase() || "G";
                           return (
-                            <div key={inv.id} className="flex items-center justify-between gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-[10px] font-bold shrink-0">
+                            <div key={inv.id} className="flex flex-col gap-1.5 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[8px] font-extrabold px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 rounded uppercase tracking-wider">
+                                  Grupo de Estudio
+                                </span>
+                                <span className="text-[9px] text-zinc-400">
+                                  Por @{grupoInv.Creador?.nombre_usuario || "creador"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2.5 min-w-0 mt-0.5">
+                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[12px] font-extrabold shrink-0 shadow-sm">
                                   {inicialesGrupo}
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">{grupoInv.nombre}</p>
-                                  <p className="text-[10px] text-zinc-400 truncate">@{grupoInv.Creador?.nombre_usuario || "creador"}</p>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{grupoInv.nombre}</p>
+                                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate leading-none mt-0.5">
+                                    Te invitaron a formar parte de este grupo
+                                  </p>
                                 </div>
                               </div>
-                              <button 
-                                onClick={() => {
-                                  navigate("/grupos");
-                                  setMostrarCampanitaDropdown(false);
-                                }}
-                                className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
-                              >
-                                Ver
-                              </button>
+                              <div className="flex items-center gap-2 mt-1">
+                                <button 
+                                  onClick={() => aceptarInvitacionGrupo(grupoInv.id)}
+                                  className="flex-1 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition shadow-sm"
+                                >
+                                  Aceptar
+                                </button>
+                                <button 
+                                  onClick={() => rejectInvitacionGrupo(grupoInv.id)}
+                                  className="flex-1 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition shadow-sm"
+                                >
+                                  Rechazar
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
@@ -569,32 +664,96 @@ const Layout = ({ children }) => {
                     </div>
                   )}
 
-                  {/* Mensajes Privados */}
-                  {cantMensajesPendientes > 0 && (
+                  {/* Mensajes Privados Agrupados */}
+                  {(() => {
+                    const mensajesAgrupados = [];
+                    const mapaMensajes = new Map();
+                    (mensajesPendientes || []).forEach((msg) => {
+                      const remitenteId = msg.Remitente?.id;
+                      if (!remitenteId) return;
+                      if (!mapaMensajes.has(remitenteId)) {
+                        mapaMensajes.set(remitenteId, {
+                          remitente: msg.Remitente,
+                          cantidad: 0
+                        });
+                      }
+                      mapaMensajes.get(remitenteId).cantidad += 1;
+                    });
+                    mapaMensajes.forEach((val) => mensajesAgrupados.push(val));
+
+                    if (mensajesAgrupados.length === 0) return null;
+
+                    return (
+                      <div className="mt-3">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Mensajes no leídos ({cantMensajesPendientes})</p>
+                        <div className="mt-2 space-y-2 max-h-36 overflow-y-auto">
+                          {mensajesAgrupados.map((item) => {
+                            const remitente = item.remitente || {};
+                            const inicialesRemi = `${remitente.nombre?.[0] || ""}${remitente.apellido?.[0] || ""}`.toUpperCase();
+                            return (
+                              <div key={remitente.id} className="flex items-center justify-between gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  {renderAvatarChico(remitente.Perfil?.foto_perfil || remitente.perfil?.foto_perfil, inicialesRemi, "w-8 h-8 text-xs")}
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">{remitente.nombre} {remitente.apellido}</p>
+                                    <p className="text-[10px] text-zinc-400 truncate leading-none mt-0.5">
+                                      {item.cantidad} {item.cantidad === 1 ? "mensaje nuevo" : "mensajes nuevos"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <button 
+                                  onClick={() => {
+                                    navigate(`/chat-privado/${remitente.id}`);
+                                    setMostrarCampanitaDropdown(false);
+                                  }}
+                                  className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
+                                >
+                                  Ver
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Mensajes de Grupos no leídos */}
+                  {cantGruposMensajesPendientes > 0 && (
                     <div className="mt-3">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Mensajes no leídos ({cantMensajesPendientes})</p>
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Mensajes de grupos ({cantGruposMensajesPendientes})</p>
                       <div className="mt-2 space-y-2 max-h-36 overflow-y-auto">
-                        {mensajesPendientes.map((msg) => {
-                          const remitente = msg.Remitente || {};
-                          const inicialesRemi = `${remitente.nombre?.[0] || ""}${remitente.apellido?.[0] || ""}`.toUpperCase();
+                        {gruposMensajesPendientes.map((grupo) => {
+                          const inicialesGrupo = grupo.nombre?.[0]?.toUpperCase() || "G";
                           return (
-                            <div key={msg.id} className="flex items-center justify-between gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
-                              <div className="flex items-center gap-2 min-w-0">
-                                {renderAvatarChico(remitente.Perfil?.foto_perfil || remitente.perfil?.foto_perfil, inicialesRemi, "w-8 h-8 text-xs")}
-                                <div className="min-w-0">
-                                  <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">{remitente.nombre} {remitente.apellido}</p>
-                                  <p className="text-[10px] text-zinc-400 truncate leading-none mt-0.5">{msg.contenido}</p>
-                                </div>
+                            <div key={grupo.id} className="flex flex-col gap-1.5 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-150/50 dark:border-zinc-800/30">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[8px] font-extrabold px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-650 dark:text-zinc-300 rounded uppercase tracking-wider">
+                                  Mensaje de Grupo
+                                </span>
                               </div>
-                              <button 
-                                onClick={() => {
-                                  navigate(`/chat-privado/${remitente.id}`);
-                                  setMostrarCampanitaDropdown(false);
-                                }}
-                                className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
-                              >
-                                Chat
-                              </button>
+                              <div className="flex items-center justify-between gap-3 mt-0.5 min-w-0">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[11px] font-extrabold shrink-0 shadow-sm">
+                                    {inicialesGrupo}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{grupo.nombre}</p>
+                                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate leading-none mt-0.5">
+                                      Nuevo mensaje en el grupo
+                                    </p>
+                                  </div>
+                                </div>
+                                <button 
+                                  onClick={() => {
+                                    navigate(`/grupos/${grupo.id}`);
+                                    setMostrarCampanitaDropdown(false);
+                                  }}
+                                  className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-bold cursor-pointer border-none transition shrink-0 shadow-sm"
+                                >
+                                  Ver
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
@@ -602,7 +761,7 @@ const Layout = ({ children }) => {
                     </div>
                   )}
 
-                  {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes === 0 && (
+                  {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes === 0 && (
                     <div className="py-6 text-center text-xs text-zinc-400">
                       No tienes notificaciones pendientes.
                     </div>

@@ -76,7 +76,7 @@ router.get('/:amigoId', verificarToken, async (req, res) => {
         });
 
         // Opcional: marcar como leídos los mensajes que me envió mi amigo
-        await MensajePrivado.update(
+        const [updatedCount] = await MensajePrivado.update(
             { leido: true },
             {
                 where: {
@@ -87,9 +87,57 @@ router.get('/:amigoId', verificarToken, async (req, res) => {
             }
         );
 
+        if (updatedCount > 0) {
+            // Notificar al amigo por socket que sus mensajes fueron leídos
+            const socketAmigo = req.usuariosConectados?.get(amigoId);
+            if (socketAmigo) {
+                req.io.to(socketAmigo).emit('mensajes_leidos', {
+                    lectorId: miUsuarioId
+                });
+            }
+        }
+
         return res.status(200).json(mensajes);
     } catch (error) {
         console.error("Error al obtener historial de chat privado:", error);
+        return res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+// 2.5. PUT /api/chat-privado/:amigoId/leer
+// Marca todos los mensajes no leídos del amigo como leídos
+router.put('/:amigoId/leer', verificarToken, async (req, res) => {
+    try {
+        const miUsuarioId = req.usuario.id;
+        const amigoId = parseInt(req.params.amigoId, 10);
+
+        if (isNaN(amigoId)) {
+            return res.status(400).json({ error: 'El ID del amigo debe ser un número válido.' });
+        }
+
+        const [updatedCount] = await MensajePrivado.update(
+            { leido: true },
+            {
+                where: {
+                    id_remitente: amigoId,
+                    id_destinatario: miUsuarioId,
+                    leido: false
+                }
+            }
+        );
+
+        if (updatedCount > 0) {
+            const socketAmigo = req.usuariosConectados?.get(amigoId);
+            if (socketAmigo) {
+                req.io.to(socketAmigo).emit('mensajes_leidos', {
+                    lectorId: miUsuarioId
+                });
+            }
+        }
+
+        return res.status(200).json({ mensaje: 'Mensajes marcados como leídos.' });
+    } catch (error) {
+        console.error("Error al marcar mensajes como leídos:", error);
         return res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });

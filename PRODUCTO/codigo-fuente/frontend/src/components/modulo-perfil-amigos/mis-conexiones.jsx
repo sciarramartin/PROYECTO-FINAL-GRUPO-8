@@ -79,6 +79,25 @@ const MisConexiones = () => {
 
   useEffect(() => {
     cargarDatos();
+
+    if (window.socket) {
+      const handleSocketUpdate = () => {
+        console.log("[Socket.io] Conexiones actualizadas por evento en tiempo real");
+        cargarDatos();
+      };
+
+      window.socket.on("nueva_solicitud_amistad", handleSocketUpdate);
+      window.socket.on("actualizar_amistad", handleSocketUpdate);
+      window.socket.on("mensaje_privado", handleSocketUpdate);
+      window.socket.on("mensajes_leidos", handleSocketUpdate);
+
+      return () => {
+        window.socket.off("nueva_solicitud_amistad", handleSocketUpdate);
+        window.socket.off("actualizar_amistad", handleSocketUpdate);
+        window.socket.off("mensaje_privado", handleSocketUpdate);
+        window.socket.off("mensajes_leidos", handleSocketUpdate);
+      };
+    }
   }, []);
 
   const aceptarSolicitud = async (idOrigen) => {
