@@ -17,7 +17,10 @@ const Planificador = () => {
     const [materias, setMaterias] = useState([]);
     const [materiasSeleccionadas, setMateriasSeleccionadas] = useState([]);
     const [actividadesFijas, setActividadesFijas] = useState([]);
+    const [actividadesPreview, setActividadesPreview] = useState([]);
     const [actividadesFlexibles, setActividadesFlexibles] = useState([]);
+    const [mostrarHorario, setMostrarHorario] = useState(false);
+    
     const mananaRef = useRef(null);
     const tardeRef = useRef(null);
     const nocheRef = useRef(null);
@@ -40,7 +43,7 @@ const Planificador = () => {
                 setMaterias(datosMaterias || []);
 
                 const fijas = await getActividadesFijas();
-
+                setActividadesFijas(fijas);
                 setActividadesFlexibles([]);
             } catch (error) {
                 console.error("Error al cargar los datos del planificador:", error);
@@ -142,7 +145,7 @@ const Planificador = () => {
                 noche: nocheRef.current.checked
             }
         });
-        setActividadesFijas(await getActividadesFijas());
+
         const actividadesResultantes = await calcularPlan({
             materias: materiasSeleccionadas,
             fijas: actividadesFijas,
@@ -154,8 +157,26 @@ const Planificador = () => {
             }
         })
 
-        await Promise.all(
+        setActividadesPreview([...actividadesResultantes.cursos, ...actividadesResultantes.flexibles]);
+        setMostrarHorario(true);
+        /*await Promise.all(
             actividadesResultantes.cursos.map(async (curso) => {
+                const response = await PostActividad({
+                nombre: curso.nombre,
+                horaInicio: curso.horaInicio,
+                duracion: curso.duracion,
+                dias: curso.dias,
+                })
+            }));
+        setRefresh(r => r + 1);*/
+    };
+
+    const guardarPlanificacion = async () => {
+
+        console.log(actividadesPreview);
+        setMostrarHorario(false);
+        await Promise.all(
+            actividadesPreview.map(async (curso) => {
                 const response = await PostActividad({
                 nombre: curso.nombre,
                 horaInicio: curso.horaInicio,
@@ -166,25 +187,30 @@ const Planificador = () => {
         setRefresh(r => r + 1);
     };
 
+    const cancelarPlanificacion = async () => {
+
+        console.log(actividadesPreview);
+        setMostrarHorario(false);
+        setactividadesPreview([]);
+    };
+
     return (
         <div className="p-6 bg-gray-50 min-h-screen flex flex-col gap-6 font-sans">
             
-            {/* ================= RECTÁNGULO ROJO SUPERIOR: SELECCIÓN DE MATERIAS ================= */}
+            {/* ===== PASO 1: SELECCIÓN DE MATERIAS ===== */}
             <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
                 <h2 className="text-sm font-bold text-gray-800 mb-1">1. Seleccioná las materias que querés cursar (mínimo una)</h2>
                 <p className="text-xs text-gray-400 mb-4">Módulos disponibles para tu carrera</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {materias.map((materia) => (
-                    /* 1. Cambiamos el div contenedor por un <label> y le agregamos cursor-pointer */
                         <label 
                             key={materia.id} 
-                            htmlFor={`materia-${materia.id}`} /* 👈 Vincula todo el recuadro al checkbox */
+                            htmlFor={`materia-${materia.id}`}
                             className={`p-4 border rounded-xl flex items-start gap-3 transition hover:shadow-sm bg-white cursor-pointer select-none ${
                                 materiasSeleccionadas.includes(materia.id) ? 'border-indigo-500 bg-indigo-50/10' : 'border-gray-200'
                             }`}
                         >
-                            {/* 2. El checkbox se queda igual con las nuevas clases de diseño */}
                             <input 
                                 type="checkbox" 
                                 id={`materia-${materia.id}`}
@@ -192,8 +218,6 @@ const Planificador = () => {
                                 onChange={() => handleMateriaCheck(materia.id)}
                                 className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45 shrink-0 mt-0.5"
                             />
-        
-                            {/* 3. Cambiamos este sub-label por un <div> simple para no duplicar etiquetas */}
                             <div className="flex-1">
                                 <span className="text-[10px] font-mono font-bold bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">
                                     Code: {materia.id}
@@ -213,194 +237,187 @@ const Planificador = () => {
                 </div>
             </div>
 
-            {/* SECTOR INFERIOR: CALENDARIO + TU INTERFAZ LATERAL */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                
-                {/* CALENDARIO DE COMPAÑERO (Ocupa 2 de las 3 columnas) */}
-                <div className="lg:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <h2 className="text-sm font-bold text-gray-800 mb-4">2. Vista previa de tu planificación semanal</h2>
-                    <Horario refresh={refresh} />
-                </div>
+            {/* ===== PASO 2: FILTROS + ACTIVIDADES (ancho completo, layout horizontal interno) ===== */}
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                <h2 className="text-sm font-bold text-gray-800 mb-4">2. Configurá tus preferencias y actividades</h2>
 
-                {/* ================= RECTÁNGULO ROJO LATERAL DERECHO ================= */}
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-5">
-                    
-                    {/* Filtros Básicos */}
-                    <div>
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Filtros y preferencias</h3>
-                        <label className="text-xs font-semibold text-gray-600 block mb-2">Disponibilidad horaria para cursar</label>
-                        <div className="flex flex-col gap-2 text-xs text-gray-700">
-                            <label className="flex items-center gap-2 cursor-pointer"><input ref={mananaRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
-                                Mañana (08:00 - 12:00)</label>
-                            <label className="flex items-center gap-2 cursor-pointer"><input ref={tardeRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
-                                Tarde (13:00 - 18:00)</label>
-                            <label className="flex items-center gap-2 cursor-pointer"><input ref={nocheRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" /> 
-                                Noche (18:00 - 22:00)</label>
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                    {/* Lista Unificada con opción de eliminación */}
-                    <div className="border-t pt-4">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Actividades cargadas</h3>
-                        <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-                            
-                            {/* Render de Actividades Fijas (Las de Martín) */}
-                            {actividadesFijas.map(act => (
-                                <div key={act.id} className="flex justify-between items-center bg-blue-50/70 p-3 rounded-xl text-xs border border-blue-100">
-                                    <div>
-                                        <p className="font-semibold text-blue-900">{act.nombre}</p>
-                                        <p className="text-blue-600 text-[11px]">Fija • {act.horaInicio} ({act.duracion} min)</p>
-                                    </div>
-                                    <button 
-                                        onClick={() => handleEliminarFija(act.id)}
-                                        className="text-gray-400 hover:text-red-500 transition text-sm p-1 cursor-pointer"
-                                        title="Eliminar actividad fija"
-                                    >
-                                        🗑️
-                                    </button>
-                                </div>
-                            ))}
-
-                            {/* Render de tus Actividades Flexibles */}
-                            {actividadesFlexibles.map((act, index) => (
-                                <div key={index} className="flex justify-between items-center bg-purple-50/70 p-3 rounded-xl text-xs border border-purple-100">
-                                    <div>
-                                        <p className="font-semibold text-purple-900">{act.nombre}</p>
-                                        <p className="text-purple-600 text-[11px]">
-                                            Flexible • Prioridad {act.prioridad} • {act.horasSemanales}hs totales ({act.duracion} veces/sem)
-                                        </p>
-                                        {/* Render de los días seleccionados */}
-                                        {act.diasPreferidos && act.diasPreferidos.length > 0 && (
-                                            <div className="flex gap-1 mt-1 flex-wrap">
-                                                {act.diasPreferidos.map(dia => (
-                                                    <span key={dia} className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">
-                                                        {dia.substring(0, 3)}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <button 
-                                        onClick={() => handleEliminarFlexible(index)}
-                                        className="text-gray-400 hover:text-red-500 transition text-sm p-1 cursor-pointer"
-                                        title="Eliminar actividad flexible"
-                                    >
-                                        🗑️
-                                    </button>
-                                </div>
-                            ))}
-
-                            {actividadesFijas.length === 0 && actividadesFlexibles.length === 0 && (
-                                <p className="text-xs text-gray-400 italic text-center py-2">No hay actividades registradas.</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Formulario de actividades flexibles */}
-                    <form onSubmit={handleAgregarFlexible} className="border-t pt-4 flex flex-col gap-2.5">
-                        <h4 className="text-xs font-bold text-gray-700">＋ Agregar actividades de mis tiempos libres</h4>
-                        
-                        <input 
-                            type="text" 
-                            placeholder="Nombre (Ej: Gimnasio, Cursillo)" 
-                            value={nuevaFlexible.nombre}
-                            onChange={e => setNuevaFlexible({...nuevaFlexible, nombre: e.target.value})}
-                            className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
-                            required
-                        />
-                        
-                        <div className="grid grid-cols-2 gap-2">
-                            <div>
-                                <label className="text-[10px] text-gray-400 font-medium block mb-1">Horas semanales</label>
-                                <input 
-                                    type="number" 
-                                    min="1" 
-                                    placeholder="Ej: 3" 
-                                    value={nuevaFlexible.horasSemanales}
-                                    onChange={e => setNuevaFlexible({...nuevaFlexible, horasSemanales: e.target.value})}
-                                    className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
-                                    required
-                                />
+                    {/* COLUMNA A: Filtros de disponibilidad */}
+                    <div className="flex flex-col gap-4">
+                        <div>
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Disponibilidad horaria</h3>
+                            <div className="flex flex-col gap-2 text-xs text-gray-700">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input ref={mananaRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
+                                    Mañana (08:00 - 12:00)
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input ref={tardeRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
+                                    Tarde (13:00 - 18:00)
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input ref={nocheRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
+                                    Noche (18:00 - 22:00)
+                                </label>
                             </div>
-                            <div>
-                                <label className="text-[10px] text-gray-400 font-medium block mb-1">Veces a la semana</label>
-                                <input 
-                                    type="number" 
-                                    min="1" 
-                                    placeholder="Ej: 3" 
-                                    value={nuevaFlexible.duracion}
-                                    onChange={e => setNuevaFlexible({...nuevaFlexible, duracion: e.target.value})}
-                                    className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
-                                    required
-                                />
-                            </div>
-                            {/*<input 
-                                type="number" 
-                                min="1"
-                                placeholder="Ej: 3" 
-                                value={nuevaFlexible.horasSemanales}
-                                onChange={e => setNuevaFlexible({...nuevaFlexible, horasSemanales: Number(e.target.value)})}
-                                className="p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
-                                required
-                            /> 
-                            <input 
-                                type="number" 
-                                placeholder="Bloques de (min)" 
-                                value={nuevaFlexible.duracion}
-                                onChange={e => setNuevaFlexible({...nuevaFlexible, duracion: Number(e.target.value)})}
-                                className="p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
-                                required
-                            /> */}
                         </div>
 
-                        {/* CHECKBOXES DE DÍAS PREFERIDOS */}
-                        <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1.5">
-                                Días de preferencia (Opcional)
-                            </label>
-                            <div className="grid grid-cols-3 gap-1.5 text-[11px] text-gray-600">
-                                {diasSemana.map(dia => (
-                                    <label key={dia} className="flex items-center gap-1 cursor-pointer select-none">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={nuevaFlexible.diasPreferidos.includes(dia)}
-                                            onChange={() => handleDiaCheck(dia)}
-                                            // className="rounded text-indigo-600 focus:ring-0 h-3.5 w-3.5" 
-                                            className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45"
-                                        />
-                                        {dia.substring(0, 3)}
-                                    </label>
+                        {/* Actividades cargadas */}
+                        <div>
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Actividades cargadas</h3>
+                            <div className="flex flex-col gap-2 max-h-52 overflow-y-auto pr-1">
+                                {actividadesFijas.map(act => (
+                                    <div key={act.id} className="flex justify-between items-center bg-blue-50/70 p-3 rounded-xl text-xs border border-blue-100">
+                                        <div>
+                                            <p className="font-semibold text-blue-900">{act.nombre}</p>
+                                            <p className="text-blue-600 text-[11px]">Fija • {act.horaInicio} ({act.duracion} min)</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleEliminarFija(act.id)}
+                                            className="text-gray-400 hover:text-red-500 transition text-sm p-1 cursor-pointer"
+                                            title="Eliminar actividad fija"
+                                        >🗑️</button>
+                                    </div>
                                 ))}
+                                {actividadesFlexibles.map((act, index) => (
+                                    <div key={index} className="flex justify-between items-center bg-purple-50/70 p-3 rounded-xl text-xs border border-purple-100">
+                                        <div>
+                                            <p className="font-semibold text-purple-900">{act.nombre}</p>
+                                            <p className="text-purple-600 text-[11px]">
+                                                Flexible • Prioridad {act.prioridad} • {act.horasSemanales}hs totales ({act.duracion} veces/sem)
+                                            </p>
+                                            {act.diasPreferidos && act.diasPreferidos.length > 0 && (
+                                                <div className="flex gap-1 mt-1 flex-wrap">
+                                                    {act.diasPreferidos.map(dia => (
+                                                        <span key={dia} className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">
+                                                            {dia.substring(0, 3)}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button 
+                                            onClick={() => handleEliminarFlexible(index)}
+                                            className="text-gray-400 hover:text-red-500 transition text-sm p-1 cursor-pointer"
+                                            title="Eliminar actividad flexible"
+                                        >🗑️</button>
+                                    </div>
+                                ))}
+                                {actividadesFijas.length === 0 && actividadesFlexibles.length === 0 && (
+                                    <p className="text-xs text-gray-400 italic text-center py-2">No hay actividades registradas.</p>
+                                )}
                             </div>
                         </div>
+                    </div>
 
-                        <select 
-                            value={nuevaFlexible.prioridad}
-                            onChange={e => setNuevaFlexible({...nuevaFlexible, prioridad: Number(e.target.value)})}
-                            className="w-full p-2 border border-gray-200 rounded-lg text-xs bg-white outline-none focus:border-indigo-500"
-                        >
-                            <option value={1}>Prioridad Alta (1)</option>
-                            <option value={2}>Prioridad Media (2)</option>
-                            <option value={3}>Prioridad Baja (3)</option>
-                        </select>
+                    {/* COLUMNA B: Formulario de actividades flexibles */}
+                    <div className="lg:col-span-2">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Agregar actividades de mis tiempos libres</h3>
+                        <form onSubmit={handleAgregarFlexible} className="flex flex-col gap-2.5">
+                            <input 
+                                type="text" 
+                                placeholder="Nombre (Ej: Gimnasio, Cursillo)" 
+                                value={nuevaFlexible.nombre}
+                                onChange={e => setNuevaFlexible({...nuevaFlexible, nombre: e.target.value})}
+                                className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                                required
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="text-[10px] text-gray-400 font-medium block mb-1">Horas semanales</label>
+                                    <input 
+                                        type="number" min="1" placeholder="Ej: 3" 
+                                        value={nuevaFlexible.horasSemanales}
+                                        onChange={e => setNuevaFlexible({...nuevaFlexible, horasSemanales: e.target.value})}
+                                        className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-gray-400 font-medium block mb-1">Veces a la semana</label>
+                                    <input 
+                                        type="number" min="1" placeholder="Ej: 3" 
+                                        value={nuevaFlexible.duracion}
+                                        onChange={e => setNuevaFlexible({...nuevaFlexible, duracion: e.target.value})}
+                                        className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1.5">
+                                    Días de preferencia (Opcional)
+                                </label>
+                                <div className="grid grid-cols-4 gap-1.5 text-[11px] text-gray-600">
+                                    {diasSemana.map(dia => (
+                                        <label key={dia} className="flex items-center gap-1 cursor-pointer select-none">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={nuevaFlexible.diasPreferidos.includes(dia)}
+                                                onChange={() => handleDiaCheck(dia)}
+                                                className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45"
+                                            />
+                                            {dia.substring(0, 3)}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <select 
+                                value={nuevaFlexible.prioridad}
+                                onChange={e => setNuevaFlexible({...nuevaFlexible, prioridad: Number(e.target.value)})}
+                                className="w-full p-2 border border-gray-200 rounded-lg text-xs bg-white outline-none focus:border-indigo-500"
+                            >
+                                <option value={1}>Prioridad Alta (1)</option>
+                                <option value={2}>Prioridad Media (2)</option>
+                                <option value={3}>Prioridad Baja (3)</option>
+                            </select>
+                            <button 
+                                type="submit" 
+                                className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold py-2 rounded-lg text-xs transition cursor-pointer"
+                            >
+                                Añadir a la lista
+                            </button>
+                        </form>
 
+                        {/* Botón generar — alineado al final del formulario */}
                         <button 
-                            type="submit" 
-                            className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold py-2 rounded-lg text-xs transition cursor-pointer"
+                            onClick={handleGenerarPlanificacion}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-sm cursor-pointer mt-4 flex items-center justify-center gap-1"
                         >
-                            Añadir a la lista
+                            ✨ Generar planificación
                         </button>
-                    </form>
+                    </div>
 
-                    {/* Botón de acción */}
-                    <button 
-                        onClick={handleGenerarPlanificacion}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-sm cursor-pointer mt-2 flex items-center justify-center gap-1"
-                    >
-                        ✨ Generar planificación
-                    </button>
                 </div>
             </div>
+
+            {/* ===== PASO 3: CALENDARIO — ancho completo, debajo ===== */}
+            {mostrarHorario && (
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <h2 className="text-sm font-bold text-gray-800 mb-4">3. Vista previa de tu planificación semanal</h2>
+                    <Horario
+                        actividades={[...actividadesPreview, ...actividadesFijas]}
+                        onActividadesChange={(lista) => setActividadesPreview(lista)}
+                        refresh={refresh}
+                    />
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                        <button 
+                            onClick={guardarPlanificacion}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-sm cursor-pointer flex items-center justify-center gap-1"
+                        >
+                            Guardar
+                        </button>
+                        <button 
+                            onClick={cancelarPlanificacion}
+                            className="bg-white hover:bg-gray-50 text-gray-600 font-bold py-3 rounded-xl text-xs transition shadow-sm cursor-pointer border border-gray-200 flex items-center justify-center gap-1"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

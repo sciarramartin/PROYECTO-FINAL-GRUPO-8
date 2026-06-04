@@ -282,7 +282,7 @@ INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tip
 -- ==============================================
 INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
 ('MAT1 - Turno Mañana', '08:00', 90, 1, 1),      -- Lunes (bit 1)
-('MAT1 - Turno Tarde', '14:00', 90, 2, 1),       -- Martes (bit 2)
+('MAT1 - Turno Tarde', '14:00', 90, 1, 1),       -- Lunes (bit 2)
 ('MAT1 - Turno Noche', '19:30', 90, 4, 1);       -- Miércoles (bit 4)
 
 -- ==============================================
@@ -297,33 +297,33 @@ INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES
 -- PROGRAMACIÓN (id_materia = 3) - frecuencia 3 días/semana
 -- ==============================================
 INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
-('PROG1 - Intensivo Mañana', '07:30', 120, 21, 3),   -- Lun(1)+Mie(4)+Vie(16)=21
-('PROG1 - Intensivo Tarde', '13:30', 120, 42, 3),    -- Mar(2)+Jue(8)+Sab(32)=42
-('PROG1 - Extensivo Noche', '18:00', 90, 21, 3);     -- Lun-Mie-Vie pero 90 min
+('FIS1 - Intensivo Mañana', '07:30', 120, 21, 3),   -- Lun(1)+Mie(4)+Vie(16)=21
+('FIS1 - Intensivo Tarde', '13:30', 120, 42, 3),    -- Mar(2)+Jue(8)+Sab(32)=42
+('FIS1 - Extensivo Noche', '18:00', 90, 21, 3);     -- Lun-Mie-Vie pero 90 min
 
 -- ==============================================
 -- BASE DE DATOS (id_materia = 4) - 2 días, distintos patrones
 -- ==============================================
 INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
-('BD1 - Sabatino', '09:00', 240, 32, 4),            -- Solo Sábado (32), 4h
-('BD1 - Dominical', '10:00', 180, 64, 4),           -- Solo Domingo (64), 3h
-('BD1 - Finde Completo', '09:00', 150, 96, 4);      -- Sáb(32)+Dom(64)=96, 2.5h
+('ING - Sabatino', '09:00', 240, 32, 4),            -- Solo Sábado (32), 4h
+('ING - Dominical', '10:00', 180, 64, 4),           -- Solo Domingo (64), 3h
+('ING - Finde Completo', '09:00', 150, 96, 4);      -- Sáb(32)+Dom(64)=96, 2.5h
 
 -- ==============================================
 -- FÍSICA (id_materia = 5) - 1 día intensivo
 -- ==============================================
 INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
-('FIS1 - Viernes Práctica', '14:00', 180, 16, 5),    -- Solo Viernes (16), 3h lab
-('FIS1 - Sábado Teoría', '08:00', 120, 32, 5),      -- Solo Sábado (32), 2h
-('FIS1 - Lunes Teórico', '17:00', 90, 1, 5);        -- Solo Lunes (1), 1.5h
+('LOG1 - Viernes Práctica', '14:00', 180, 16, 5),    -- Solo Viernes (16), 3h lab
+('LOG1 - Sábado Teoría', '08:00', 120, 32, 5),      -- Solo Sábado (32), 2h
+('LOG1 - Lunes Teórico', '17:00', 90, 1, 5);        -- Solo Lunes (1), 1.5h
 
 -- ==============================================
 -- INGLÉS (id_materia = 6) - frecuencia diaria
 -- ==============================================
 INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
-('ENG1 - Diario Mañana', '07:00', 60, 31, 6),       -- Lun a Vie (1+2+4+8+16)=31
-('ENG1 - Diario Noche', '20:00', 60, 31, 6),        -- Lun a Vie 20hs
-('ENG1 - Finde Intensivo', '09:00', 240, 96, 6);    -- Sáb+Dom (32+64)=96, 4h
+('AED1 - Diario Mañana', '07:00', 60, 31, 6),       -- Lun a Vie (1+2+4+8+16)=31
+('AED1 - Diario Noche', '20:00', 60, 31, 6),        -- Lun a Vie 20hs
+('AED1 - Finde Intensivo', '09:00', 240, 96, 6);    -- Sáb+Dom (32+64)=96, 4h
 
 -- ==============================================
 -- QUÍMICA (id_materia = 7) - 2 días separados
@@ -347,13 +347,7 @@ INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES
 INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
 -- Madrugadores vs nocturnos
 ('ALG2 - Madrugada', '05:30', 60, 1, 2),            -- 5:30 AM
-('ALG2 - Trasnoche', '23:00', 60, 1, 2),            -- 11:00 PM
-
--- Diferentes duraciones para misma materia
-('BD2 - Express 45min', '12:00', 45, 21, 4),        -- 45 min
-('BD2 - Standard 90min', '12:00', 90, 21, 4),       -- 90 min
-('BD2 - Extendido 120min', '12:00', 120, 21, 4);    -- 120 min
-
+('ALG2 - Trasnoche', '23:00', 60, 1, 2);            -- 11:00 PM
 
 
 

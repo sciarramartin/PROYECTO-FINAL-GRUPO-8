@@ -35,15 +35,21 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
 
     // Si el padre pasa actividades, usamos las suyas; si no, las propias.
     const actividades = actividadesProp ?? actividadesInternas;
-
-    /** Actualiza el estado interno Y notifica al padre (si escucha). */
+ 
+    /** Actualiza solo el estado interno; la notificación al padre va por useEffect. */
     const setActividades = (updater) => {
-        setActividadesInternas((prev) => {
-            const next = typeof updater === 'function' ? updater(prev) : updater;
-            onActividadesChange?.(next);
-            return next;
-        });
+        setActividadesInternas((prev) =>
+            typeof updater === 'function' ? updater(prev) : updater
+        );
     };
+
+    useEffect(() => {
+        // Solo notificamos cuando el componente gestiona su propio estado
+        // (si actividadesProp existe, el padre ya tiene la lista)
+        if (!actividadesProp) {
+            onActividadesChange?.(actividadesInternas);
+        }
+    }, [actividadesInternas]);
 
     // ─── Carga inicial ────────────────────────────────────────────────────────
     const cargarActividades = async () => {
@@ -246,13 +252,13 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                                                 className="absolute left-0.5 right-0.5 p-1.5 overflow-hidden shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02] flex flex-col justify-between rounded-sm"
                                                 onClick={(e) => { e.stopPropagation(); handleEditActividad(act); }}
                                                 style={{
-                                                    backgroundColor: act.color,
+                                                    backgroundColor: act.color ?? "#B5E3FF",
                                                     top:    `${calcularPosicionY(act.horaInicio, minHora)}px`,
                                                     height: `${calcularAltura(act.duracion)}px`,
                                                 }}
                                                 title={`${act.nombre}\n${act.horaInicio} - ${act.horaFin}`}
                                             >
-                                                <div className="font-bold text-xs text-gray-600 capitalize leading-tight truncate">
+                                                <div className="font-bold text-xs text-gray-600 capitalize leading-tight">
                                                     {act.nombre}
                                                 </div>
                                                 <div className="text-[10px] text-gray-700 mt-0.5">
@@ -269,16 +275,17 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
             </div>
 
             {/* Editor lateral / modal */}
-            <ActividadEditor
-                editor={showEditor}
-                setEditor={setShowEditor}
-                actividadActual={actividadEditando}
-                setActividadActual={setActividadEditando}
-                preview={handlePreviewActividad}
-                onSave={handleSaveActividad}
-                onCancel={handleCancel}
-                DeleteActividad={handleDelete}
-            />
+            {(!actividadesProp) && (
+                <ActividadEditor
+                    editor={showEditor}
+                    setEditor={setShowEditor}
+                    actividadActual={actividadEditando}
+                    setActividadActual={setActividadEditando}
+                    preview={handlePreviewActividad}
+                    onSave={handleSaveActividad}
+                    onCancel={handleCancel}
+                    DeleteActividad={handleDelete}
+            />)}
         </>
     );
 };

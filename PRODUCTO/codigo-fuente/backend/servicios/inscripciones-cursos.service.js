@@ -124,34 +124,68 @@ const calcularScore = (combinacion, fijas) => {
       const gap = actividadesDelDia[i].inicio - actividadesDelDia[i - 1].fin;
       if (gap > 0) totalGap += gap;
     }
+    if(actividadesDelDia.length > 0) totalGap += 100;
   }
 
   return totalGap; // Menor es mejor
 };
 
-// ─── Inserción de flexibles ───────────────────────────────────────────────────
+// ─── Inserción de flexibles (reescrita) ──────────────────────────────────────
 
-const insertarFlexibles = (combinacion, fijas, flexibles) => {
-  // Snapshot de todo lo ya ocupado
-  const ocupado = [...combinacion, ...fijas];
-  const resultado = [];
+/**
+ * Parsea "08:00-12:00" → { inicio: 480, fin: 720 }
+ * Si no hay preferencia, devuelve el rango completo del día (06:00–22:00)
+ */
+const parsearPreferenciaHoraria = (pref) => {
+  if (!pref) return { inicio: 360, fin: 1320 };
+  const [desde, hasta] = pref.split('-').map(toMin);
+  return { inicio: desde, fin: hasta };
+};
 
-  // Ordenar por prioridad descendente (prioridad 1 = más importante)
-  const flexiblesOrdenados = [...flexibles].sort((a, b) => a.prioridad - b.prioridad);
+/**
+ * Descompone un bitmask en un array de bits individuales.
+ * diasBitmask = 21 (Lun+Mié+Vie = 1+4+16) → [1, 4, 16]
+ */
+const bitmaskADias = (bitmask) =>
+  DIA_BITS.filter((bit) => bitmask & bit);
 
-  for (const flex of flexiblesOrdenados) {
-    const durMin     = parseInt(flex.duracion, 10);
-    const horasTotal = parseFloat(flex.horasSemanales);
-    const sesiones   = Math.ceil((horasTotal * 60) / durMin);
+/**
+ * Intenta colocar UNA sesión de `flex` en el horario que genera el menor gap
+ * respecto al plan ya armado (combinacion + fijas + flexiblesYaInsertados).
+ *
+ * Estrategia:
+ *  1. Construir la lista de días candidatos (preferidos primero, resto después).
+ *  2. Por cada día, barrer slots dentro del rango horario preferido (o todo el día).
+ *  3. Descartar slots con conflicto.
+ *  4. Para los restantes, simular la inserción y calcular el score con calcularScore.
+ *  5. Guardar el candidato con menor score.
+ *  6. Si no hubo candidatos en horario preferido, repetir sin restricción horaria.
+ *
+ * Devuelve el objeto sesión a insertar, o null si no hay hueco posible.
+ */
+const buscarMejorSlot = (flex, ocupado, durMin, rangoHorario) => {
+  const { inicio: rangoInicio, fin: rangoFin } = rangoHorario;
 
-    let sesionesInsertadas = 0;
-    const diasOrden = [...(flex.diasPreferidos ?? []), ...DIA_BITS.filter((b) => !flex.diasPreferidos?.includes(b))];
+  // Días preferidos primero, luego el resto
+  const diasPreferidos = flex.diasPreferidos ? bitmaskADias(flex.diasPreferidos) : [];
+  const diasRestantes  = DIA_BITS.filter((b) => !diasPreferidos.includes(b));
+  const diasOrden      = [...diasPreferidos, ...diasRestantes];
 
-    for (const bit of diasOrden) {
-      if (sesionesInsertadas >= sesiones) break;
+  let mejor      = null;
+  let mejorScore = Infinity;
 
-      // Buscar hueco libre en este día (en bloques de 30 min desde 06:00 a 22:00)
-      for (let startMin = 360; startMin + durMin <= 1320; startMin += 30) {
+  // Primera pasada: solo días y horario preferidos
+  // Si no encuentra nada, segunda pasada sin restricciones
+  for (const soloPreferidos of [true, false]) {
+    const diasAProbar = soloPreferidos ? diasPreferidos : diasRestantes;
+
+    // Si no hay días preferidos, la primera pasada ya prueba todos
+    const diasEfectivos = (soloPreferidos && diasPreferidos.length === 0)
+      ? diasOrden
+      : diasAProbar;
+
+    for (const bit of diasEfectivos) {
+      for (let startMin = rangoInicio; startMin + durMin <= rangoFin; startMin += 15) {
         const candidato = {
           nombre:     flex.nombre.trim(),
           horaInicio: `${String(Math.floor(startMin / 60)).padStart(2, '0')}:${String(startMin % 60).padStart(2, '0')}`,
@@ -160,20 +194,57 @@ const insertarFlexibles = (combinacion, fijas, flexibles) => {
           esFlexible: true,
         };
 
-        const sinConflicto = [...ocupado, ...resultado].every((a) => !hayConflicto(candidato, a));
+        // Descartar si hay conflicto con todo lo ocupado
+        if (ocupado.some((a) => hayConflicto(candidato, a))) continue;
 
-        if (sinConflicto) {
-          resultado.push(candidato);
-          sesionesInsertadas++;
-          break;
+        // Simular inserción y medir gap total
+        const score = calcularScore([...ocupado, candidato], []);
+        if (score < mejorScore) {
+          mejorScore = score;
+          mejor = candidato;
         }
       }
+    }
+
+    // Si encontramos algo en la primera pasada (preferidos), no hace falta la segunda
+    if (mejor) break;
+  }
+
+  return mejor;
+};
+
+const insertarFlexibles = (combinacion, fijas, flexibles) => {
+  // Todo lo fijo ya establecido
+  let ocupado = [...combinacion, ...fijas];
+  const resultado = [];
+
+  // Prioridad 1 = más urgente → ordenar ascendente
+  const flexiblesOrdenados = [...flexibles].sort((a, b) => a.prioridad - b.prioridad);
+
+  for (const flex of flexiblesOrdenados) {
+    const durMin   = flex.duracion;                           // ya está en minutos
+    const sesiones = Math.ceil(flex.horasSemanales / durMin); // minutos / minutos = sesiones
+    const rango    = parsearPreferenciaHoraria(flex.preferenciaHoraria);
+
+    for (let i = 0; i < sesiones; i++) {
+      // Intentar primero en rango preferido; si falla, rango completo
+      let slot = buscarMejorSlot(flex, ocupado, durMin, rango);
+
+      if (!slot && flex.preferenciaHoraria) {
+        // Fallback: rango completo del día
+        slot = buscarMejorSlot(flex, ocupado, durMin, { inicio: 360, fin: 1320 });
+      }
+
+      if (slot) {
+        resultado.push(slot);
+        ocupado = [...ocupado, slot]; // la sesión recién insertada ya ocupa espacio
+      }
+      // Si no hay slot posible para esta sesión, se omite sin romper el plan
     }
   }
 
   return resultado;
 };
-
 // ─── Orquestador principal ────────────────────────────────────────────────────
 
 const calcularPlan = async (data) => {
