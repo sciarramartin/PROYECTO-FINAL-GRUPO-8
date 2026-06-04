@@ -159,3 +159,12 @@ code {
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.35) transparent;
 }
+
+/* Ocultar barra de desplazamiento */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;  /* Firefox */
+}

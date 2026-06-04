@@ -304,3 +304,28 @@ VALUES
 (1, 'Admin', 5, 'Administrador del sistema.', '💻', 'Admin', 1, 1),
 (2, 'Juancho', 2, 'Estudiante de Ingeniería en Sistemas.', '🎓', 'Miembro', 1, 1);
 
+-- ===============================================================
+-- FORO PUBLICACIONES Y COMENTARIOS SEED
+-- ===============================================================
+-- Materia 1: Análisis Matemático I
+-- Materia 2: Álgebra y Geometría Analítica
+-- Materia 3: Química
+-- Materia 4: Física I
+-- Materia 5: Sistemas y Organizaciones
+-- Materia 6: Algoritmos y Estructura de Datos
+-- Materia 7: Arquitectura de Computadoras
+-- Materia 8: Análisis Matemático II
+
+INSERT INTO foro_publicaciones (id_materia, id_usuario, titulo, contenido, categoria, votos, createdAt, updatedAt)
+VALUES
+(8, 2, 'Duda sobre Teorema de la Convergencia Monótona', 'Hola! No termino de entender por qué en el teorema de la convergencia monótona es necesario que las funciones sean no negativas. ¿Alguien me puede dar un ejemplo o intuición? Gracias!', 'Duda', 18, '2026-06-03 14:00:00', '2026-06-03 14:00:00'),
+(8, 1, 'Bienvenidos al foro de Análisis Matemático II 📌', 'Este es el espacio para compartir dudas, opiniones y recursos. Revisen las reglas del foro antes de publicar.', 'General', 42, '2026-06-01 09:00:00', '2026-06-01 09:00:00'),
+(8, 2, 'Métodos de estudio que me funcionaron para el parcial', 'Les comparto algunos métodos que me ayudaron a entender mejor los temas y aprobar el parcial. ¡Ojalá les sirva!', 'Opinión', 25, '2026-06-02 18:30:00', '2026-06-02 18:30:00'),
+(8, 2, 'Resumen de integrales impropias', 'Dejo este resumen que hice para el tema de integrales impropias. Incluye ejemplos y ejercicios resueltos.', 'Recurso', 7, '2026-06-02 20:00:00', '2026-06-02 20:00:00');
+
+INSERT INTO foro_comentarios (id_publicacion, id_usuario, contenido, createdAt, updatedAt)
+VALUES
+(1, 1, 'La condición de no negatividad asegura que la sucesión de funciones sea acotada inferiormente por 0, lo que permite aplicar el teorema de convergencia en medida. Si no fueran negativas, podríamos tener problemas con la medida de los conjuntos donde crecen.', '2026-06-03 14:15:00', '2026-06-03 14:15:00'),
+(1, 2, 'Muchas gracias, Prof. Roberto Cáceres. Ya me queda mucho más claro con esa analogía.', '2026-06-03 14:22:00', '2026-06-03 14:22:00'),
+(2, 2, 'Excelente, espero que todos usen este foro de forma responsable.', '2026-06-01 10:10:00', '2026-06-01 10:10:00');
+

@@ -14,6 +14,9 @@ require('./modelos/GrupoMiembro');
 require('./modelos/GrupoMensaje');
 require('./modelos/MensajePrivado');
 require('./modelos/Perfil');
+require('./modelos/ForoPublicacion');
+require('./modelos/ForoComentario');
+require('./modelos/ForoReaccion');
 
 require('./modelos/asociaciones');
 
@@ -29,6 +32,7 @@ const rutasAmistades = require('./controladores/amistad.controller.js');
 const rutasGrupos = require('./controladores/grupo.controller.js');
 const rutasChatPrivado = require('./controladores/chat-privado.controller.js');
 const rutasPerfil = require('./controladores/perfil.controller.js');
+const rutasForo = require('./controladores/foro.controller.js');
 
 
 const http = require('http');
@@ -99,6 +103,7 @@ app.use('/api/amistades', rutasAmistades);
 app.use('/api/grupos', rutasGrupos);
 app.use('/api/chat-privado', rutasChatPrivado);
 app.use('/api/perfiles', rutasPerfil);
+app.use('/api/foro', rutasForo);
 
 // Ruta base
 app.get('/', (req, res) => {

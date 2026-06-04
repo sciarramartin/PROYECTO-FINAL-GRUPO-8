@@ -230,3 +230,49 @@ CREATE TABLE mensaje_privados (
     FOREIGN KEY (id_destinatario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- =========================
+-- PUBLICACIONES DE FORO
+-- =========================
+CREATE TABLE foro_publicaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_materia INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    titulo TEXT NOT NULL,
+    contenido TEXT NOT NULL,
+    categoria TEXT DEFAULT 'General', -- 'Duda', 'Opinión', 'Recurso', etc.
+    votos INTEGER DEFAULT 0,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- COMENTARIOS DE FORO
+-- =========================
+CREATE TABLE foro_comentarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_publicacion INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    contenido TEXT NOT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- REACCIONES DE FORO (Para compatibilidad con otras US)
+-- =========================
+CREATE TABLE foro_reacciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_publicacion INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    tipo TEXT NOT NULL, -- 'positivo' o 'negativo'
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_publicacion, id_usuario)
+);
+

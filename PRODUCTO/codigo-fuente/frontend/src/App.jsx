@@ -17,6 +17,9 @@ const MiPerfil = lazy(() => import('./components/modulo-perfil-amigos/mi-perfil'
 const ListaGrupos = lazy(() => import('./components/us-10-grupos/lista-grupos'));
 const MuroGrupo = lazy(() => import('./components/us-10-grupos/muro-grupo'));
 const ChatPrivado = lazy(() => import('./components/us-11-chat-privado/chat-privado'));
+const ListaForos = lazy(() => import('./components/us-foro/ListaForos'));
+const MuroForo = lazy(() => import('./components/us-foro/MuroForo'));
+const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -110,6 +113,31 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <MiPerfil />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          {/* Rutas de Foros */}
+          <Route path="/foros" element={
+            <RutaPrivada>
+              <Layout>
+                <ListaForos />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/foros/:materiaId" element={
+            <RutaPrivada>
+              <Layout>
+                <MuroForo />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/foros/:materiaId/publicacion/:postId" element={
+            <RutaPrivada>
+              <Layout>
+                <DetallePublicacion />
               </Layout>
             </RutaPrivada>
           } />

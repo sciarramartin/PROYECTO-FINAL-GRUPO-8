@@ -20,7 +20,8 @@ import {
   FiMoon,
   FiChevronDown,
   FiUsers,
-  FiShare2
+  FiShare2,
+  FiMessageSquare
 } from "react-icons/fi";
 
 const menuItems = [
@@ -31,6 +32,7 @@ const menuItems = [
   { label: "Horario", icon: <FiClock />, path: "/Horario" },
   { label: "Conexiones", icon: <FiShare2 />, path: "/conexiones" },
   { label: "Grupos", icon: <FiUsers />, path: "/grupos" },
+  { label: "Foros", icon: <FiMessageSquare />, path: "/foros" },
   { label: "Reportes", icon: <FiBarChart2 />, path: "/reportes" },
   { label: "Mapa Correlativas", icon: <FiGitMerge />, path: "/mapa-correlatividades", role: 1 },
   { label: "Registrar Correlativas", icon: <FiPlusCircle />, path: "/correlativas", role: 3 }
