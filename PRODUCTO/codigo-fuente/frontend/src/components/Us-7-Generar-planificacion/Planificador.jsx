@@ -12,6 +12,17 @@ import {
 
 const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
+// 🔢 Diccionario de Bitmask para el algoritmo de tu compañero
+const VALORES_DIAS = {
+    'Lunes': 1,
+    'Martes': 2,
+    'Miércoles': 4,
+    'Jueves': 8,
+    'Viernes': 16,
+    'Sábado': 32,
+    'Domingo': 64
+};
+
 const Planificador = () => {
     const [refresh, setRefresh] = useState(0);
     const [materias, setMaterias] = useState([]);
@@ -130,6 +141,24 @@ const Planificador = () => {
             alert("Debes seleccionar al menos una materia para planificar.");
             return;
         }
+        const flexiblesFormateadas = actividadesFlexibles.map(act => {
+            const hsSemanalesNum = Number(act.horasSemanales);
+            const vecesPorSemana = Number(act.duracion);
+            const minutosSemanales = hsSemanalesNum * 60; 
+            const duracionSesionMinutos = minutosSemanales / vecesPorSemana;
+            
+            const bitmaskDias = act.diasPreferidos.reduce((acumulador, dia) => {
+                return acumulador + (VALORES_DIAS[dia] || 0);
+            }, 0);
+
+            return {
+                nombre: act.nombre,
+                horasSemanales: minutosSemanales,
+                duracion: duracionSesionMinutos,
+                prioridad: Number(act.prioridad),
+                diasPreferidos: bitmaskDias > 0 ? bitmaskDias : 0
+            };
+        });
         console.log({
             manana: mananaRef.current.checked,
             tarde: tardeRef.current.checked,
@@ -138,7 +167,7 @@ const Planificador = () => {
         console.log("Datos listos para enviar al algoritmo de asignación:", {
             materias: materiasSeleccionadas,
             fijas: actividadesFijas,
-            flexibles: actividadesFlexibles,
+            flexibles: flexiblesFormateadas,
             disponibilidad: {
                 manana: mananaRef.current.checked,
                 tarde: tardeRef.current.checked,
@@ -149,7 +178,7 @@ const Planificador = () => {
         const actividadesResultantes = await calcularPlan({
             materias: materiasSeleccionadas,
             fijas: actividadesFijas,
-            flexibles: actividadesFlexibles,
+            flexibles: flexiblesFormateadas,
             disponibilidad: {
                 manana: mananaRef.current.checked,
                 tarde: tardeRef.current.checked,
