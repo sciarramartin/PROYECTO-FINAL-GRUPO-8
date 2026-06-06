@@ -134,3 +134,37 @@ code {
   background-color: var(--login-primario-disabled);
   cursor: not-allowed;
 }
+
+/* ===== ESTILOS DE SCROLLBARS PERSONALIZADOS Y ELEGANTES ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Sin fondo de scroll */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.35); /* Gris claro translúcido */
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.55); /* Un poco más visible al hover */
+}
+
+/* Compatibilidad para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.35) transparent;
+}
+
+/* Ocultar barra de desplazamiento */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;  /* Firefox */
+}

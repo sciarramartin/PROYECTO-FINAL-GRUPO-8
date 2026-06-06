@@ -164,3 +164,144 @@ CREATE TABLE inscripciones_cursos (
     FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE(id_usuario, id_curso)
 );
+-- AMISTADES
+-- =========================
+CREATE TABLE amistades (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario_origen INTEGER NOT NULL,
+    id_usuario_destino INTEGER NOT NULL,
+    estado TEXT NOT NULL DEFAULT 'pendiente',
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario_origen) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario_destino) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- PERFILES
+-- =========================
+CREATE TABLE perfiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL UNIQUE,
+    apodo TEXT,
+    anio_cursado INTEGER,
+    biografia TEXT,
+    foto_perfil TEXT,
+    link_discord TEXT,
+    link_telegram TEXT,
+    link_whatsapp TEXT,
+    link_github TEXT,
+    link_linkedin TEXT,
+    intereses TEXT,
+    rol_equipo TEXT,
+    mostrar_anio_cursado INTEGER DEFAULT 1,
+    mostrar_contacto INTEGER DEFAULT 1,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- GRUPOS
+-- =========================
+CREATE TABLE grupos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+    id_creador INTEGER NOT NULL,
+    estado TEXT NOT NULL DEFAULT 'publico',
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_creador) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- GRUPO MIEMBROS
+-- =========================
+CREATE TABLE grupo_miembros (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_grupo INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    rol TEXT NOT NULL DEFAULT 'miembro',
+    estado TEXT NOT NULL DEFAULT 'pendiente',
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_grupo) REFERENCES grupos(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- GRUPO MENSAJES
+-- =========================
+CREATE TABLE grupo_mensajes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_grupo INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    contenido TEXT NOT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_grupo) REFERENCES grupos(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- MENSAJES PRIVADOS
+-- =========================
+CREATE TABLE mensaje_privados (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_remitente INTEGER NOT NULL,
+    id_destinatario INTEGER NOT NULL,
+    contenido TEXT NOT NULL,
+    leido INTEGER DEFAULT 0,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_remitente) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_destinatario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- PUBLICACIONES DE FORO
+-- =========================
+CREATE TABLE foro_publicaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_materia INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    titulo TEXT NOT NULL,
+    contenido TEXT NOT NULL,
+    categoria TEXT DEFAULT 'General', -- 'Duda', 'Opinión', 'Recurso', etc.
+    votos INTEGER DEFAULT 0,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- COMENTARIOS DE FORO
+-- =========================
+CREATE TABLE foro_comentarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_publicacion INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    contenido TEXT NOT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- REACCIONES DE FORO (Para compatibilidad con otras US)
+-- =========================
+CREATE TABLE foro_reacciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_publicacion INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    tipo TEXT NOT NULL, -- 'positivo' o 'negativo'
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_publicacion, id_usuario)
+);
+
