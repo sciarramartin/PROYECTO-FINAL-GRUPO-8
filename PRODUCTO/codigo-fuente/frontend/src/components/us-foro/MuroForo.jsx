@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import CrearPublicacion from "./CrearPublicacion";
 import axios from "axios";
 import { 
   FiArrowUp, 
@@ -21,6 +22,7 @@ const MuroForo = () => {
   const navigate = useNavigate();
   const [datosForo, setDatosForo] = useState({ materia: {}, publicaciones: [] });
   const [cargando, setCargando] = useState(true);
+  const [vistaActual, setVistaActual] = useState('muro'); //sino crear
   
   // Para mostrar alertas de funcionalidad deshabilitada correspondiente a otras US
   const [alertaTeammate, setAlertaTeammate] = useState(null);
@@ -109,6 +111,34 @@ const MuroForo = () => {
 
   const { materia, publicaciones } = datosForo;
 
+  const refrescarMuro = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.get(`${apiUrl}/foro/materias/${materiaId}/publicaciones`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDatosForo(response.data);
+    } catch (error) {
+      console.error("Error al actualizar foro de materia:", error);
+    }
+  };
+
+  if (vistaActual === 'crear') {
+    return (
+        <CrearPublicacion 
+            idMateriaActual={materiaId} // Usamos materiaId del useParams directamente por seguridad
+            nombreMateriaActual={materia?.nombre || "Materia"}
+            // 👇 QUITAMOS EL OBJETO FIJO: CrearPublicacion ya lo lee directo del localStorage
+            onPublicacionCreada={() => {
+                setVistaActual('muro');
+                refrescarMuro(); // 🔥 ¡Mucho más elegante! Actualiza el listado en caliente sin recargar la pestaña
+            }}
+            onCancelar={() => setVistaActual('muro')}
+        />
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       
@@ -152,8 +182,8 @@ const MuroForo = () => {
               </p>
             </div>
             <button
-              onClick={() => mostrarMensajeTeammate("El botón de 'Crear Publicación' está deshabilitado temporalmente para no interferir con la US de tu compañero: 'Crear publicación en foro'.")}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition flex items-center justify-center gap-1.5 shadow-sm shadow-indigo-500/10 shrink-0 self-start sm:self-center"
+              onClick={() => setVistaActual('crear')}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition"
             >
               <FiPlus className="w-4 h-4" />
               Crear publicación

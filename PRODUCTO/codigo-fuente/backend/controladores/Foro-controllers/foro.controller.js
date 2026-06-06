@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { verificarToken } = require('../middleware/authMiddleware');
-const { Materia } = require('../modelos/materia.modelo');
-const { ForoPublicacion } = require('../modelos/ForoPublicacion');
-const { ForoComentario } = require('../modelos/ForoComentario');
-const { Usuario } = require('../modelos/Usuario');
-const { Perfil } = require('../modelos/Perfil');
+const { verificarToken } = require('../../middleware/authMiddleware');
+const { Materia } = require('../../modelos/materia.modelo');
+const { ForoPublicacion } = require('../../modelos/ForoPublicacion');
+const { ForoComentario } = require('../../modelos/ForoComentario');
+const { Usuario } = require('../../modelos/Usuario');
+const { Perfil } = require('../../modelos/Perfil');
 
 // GET /api/foro/materias - Obtener todas las materias y estadísticas de sus foros
 router.get('/materias', verificarToken, async (req, res) => {
