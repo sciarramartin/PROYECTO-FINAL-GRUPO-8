@@ -44,6 +44,24 @@ const MuroForo = () => {
     fetchForo();
   }, [materiaId]);
 
+  
+  const reorganizarPublicaciones = async (filtro) => {
+    try {
+      setCargando(true);
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.get(`${apiUrl}/foro/materias/${materiaId}/publicaciones`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { orden: filtro }
+      });
+      setDatosForo(response.data);
+    } catch (error) {
+      console.error("Error al cargar foro de materia:", error);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   const mostrarMensajeTeammate = (mensaje) => {
     setAlertaTeammate(mensaje);
     setTimeout(() => setAlertaTeammate(null), 5000);
@@ -167,13 +185,13 @@ const MuroForo = () => {
                 Publicaciones
               </button>
               <button 
-                onClick={() => mostrarMensajeTeammate("El ordenamiento de publicaciones está deshabilitado temporalmente para no interferir con la US: 'Ordenar publicaciones del foro'.")}
+                onClick={() => reorganizarPublicaciones("recientes")}
                 className="pb-2 text-zinc-400 dark:text-zinc-500 hover:text-zinc-650 dark:hover:text-zinc-355 border-none bg-transparent cursor-pointer transition shrink-0"
               >
                 Más recientes
               </button>
               <button 
-                onClick={() => mostrarMensajeTeammate("El ordenamiento de publicaciones está deshabilitado temporalmente para no interferir con la US: 'Ordenar publicaciones del foro'.")}
+                onClick={() => reorganizarPublicaciones("votos")}
                 className="pb-2 text-zinc-400 dark:text-zinc-500 hover:text-zinc-650 dark:hover:text-zinc-355 border-none bg-transparent cursor-pointer transition shrink-0"
               >
                 Más votadas
@@ -181,7 +199,7 @@ const MuroForo = () => {
             </div>
             <div className="text-xs shrink-0">
               <button
-                onClick={() => mostrarMensajeTeammate("El ordenamiento de publicaciones está deshabilitado temporalmente para no interferir con la US: 'Ordenar publicaciones del foro'.")}
+                onClick={() => reorganizarPublicaciones("votos")}
                 className="px-2 py-1 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 rounded-lg text-zinc-600 dark:text-zinc-300 font-semibold flex items-center gap-1 transition"
               >
                 Ordenar por: <span className="text-indigo-600 dark:text-indigo-400">Relevancia</span>
