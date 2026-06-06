@@ -196,9 +196,12 @@ const buscarMejorSlot = (flex, ocupado, durMin, rangoHorario) => {
 
         // Descartar si hay conflicto con todo lo ocupado
         if (ocupado.some((a) => hayConflicto(candidato, a))) continue;
-
+        
         // Simular inserción y medir gap total
-        const score = calcularScore([...ocupado, candidato], []);
+        let score = calcularScore([...ocupado, candidato], []);
+        if (ocupado.some((a) => a.esFlexible && (a.dias & candidato.dias))) {
+          score += 500;
+        }
         if (score < mejorScore) {
           mejorScore = score;
           mejor = candidato;
