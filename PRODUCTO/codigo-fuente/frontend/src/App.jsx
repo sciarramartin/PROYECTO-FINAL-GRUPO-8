@@ -62,25 +62,18 @@ const App = () => {
             </RutaPrivada>
           } />
 
-        <Route path="/Horario" element={
-          <RutaPrivada>
-            <Layout>
-              <Horario/>
-            </Layout>
-          </RutaPrivada>
-        } />
-
-        <Route path="/Planificador" element={
-          <RutaPrivada>
-            <Layout>
-              <Planificador/>
-            </Layout>
-          </RutaPrivada>
-        } />
           <Route path="/Horario" element={
             <RutaPrivada>
               <Layout>
                 <Horario/>
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/Planificador" element={
+            <RutaPrivada>
+              <Layout>
+                <Planificador/>
               </Layout>
             </RutaPrivada>
           } />
