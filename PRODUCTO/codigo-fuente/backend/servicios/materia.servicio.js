@@ -24,7 +24,7 @@ const tieneCiclo = async (materiaDestinoId, materiaRequisitoId, visitados = new 
 };
 
 const crearMateria = async (datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, visible_en_grafo } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = datos;
 
     // 1. Crear la materia principal
     const nuevaMateria = await Materia.create({
@@ -33,6 +33,7 @@ const crearMateria = async (datos) => {
         nivel_anio,
         cuatrimestre,
         id_carrera,
+        id_plan_academico,
         visible_en_grafo: visible_en_grafo ?? false
     });
 
@@ -56,9 +57,11 @@ const crearMateria = async (datos) => {
     });
 };
 
-const obtenerTodas = async (id_carrera) => {
+const obtenerTodas = async (id_carrera, id_plan_academico) => {
     const where = {};
-    if (id_carrera) {
+    if (id_plan_academico) {
+        where.id_plan_academico = id_plan_academico;
+    } else if (id_carrera) {
         where.id_carrera = id_carrera;
     }
     return await Materia.findAll({
@@ -80,7 +83,7 @@ const obtenerPorId = async (id) => {
 };
 
 const actualizarMateria = async (id, datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, visible_en_grafo } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = datos;
     const materia = await Materia.findByPk(id);
 
     if (!materia) throw new Error('Materia no encontrada');
@@ -92,6 +95,7 @@ const actualizarMateria = async (id, datos) => {
         nivel_anio: nivel_anio || materia.nivel_anio,
         cuatrimestre: cuatrimestre || materia.cuatrimestre,
         id_carrera: id_carrera !== undefined ? id_carrera : materia.id_carrera,
+        id_plan_academico: id_plan_academico !== undefined ? id_plan_academico : materia.id_plan_academico,
         visible_en_grafo: visible_en_grafo !== undefined ? visible_en_grafo : materia.visible_en_grafo
     });
 

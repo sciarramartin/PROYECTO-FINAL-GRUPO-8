@@ -20,6 +20,20 @@ CREATE TABLE carreras (
 );
 
 -- =========================
+-- PLANES ACADEMICOS
+-- =========================
+
+CREATE TABLE planes_academicos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    id_carrera INTEGER NOT NULL,
+    FOREIGN KEY (id_carrera)
+        REFERENCES carreras(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- =========================
 -- USUARIOS
 -- =========================
 
@@ -38,6 +52,7 @@ CREATE TABLE usuarios (
 
     id_carrera INTEGER NOT NULL,
     id_tipo_usuario INTEGER NOT NULL,
+    id_plan_academico INTEGER,
 
     reset_token TEXT,
     reset_token_expira DATETIME,
@@ -49,6 +64,11 @@ CREATE TABLE usuarios (
 
     FOREIGN KEY (id_tipo_usuario)
         REFERENCES tipos_usuarios(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    FOREIGN KEY (id_plan_academico)
+        REFERENCES planes_academicos(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
 );
@@ -71,11 +91,17 @@ CREATE TABLE materias (
     visible_en_grafo BOOLEAN NOT NULL DEFAULT 1,
 
     id_carrera INTEGER,
+    id_plan_academico INTEGER,
 
     FOREIGN KEY (id_carrera)
         REFERENCES carreras(id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT,
+
+    FOREIGN KEY (id_plan_academico)
+        REFERENCES planes_academicos(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 -- =========================

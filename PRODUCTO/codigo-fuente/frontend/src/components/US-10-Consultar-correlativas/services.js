@@ -19,8 +19,13 @@ api.interceptors.request.use(config => {
 });
 
 // Materias
-export const obtenerTodas = async (id_carrera) => {
-    const url = id_carrera ? `/materias?id_carrera=${id_carrera}` : '/materias';
+export const obtenerTodas = async (id_carrera, id_plan_academico) => {
+    let url = '/materias';
+    if (id_plan_academico) {
+        url += `?id_plan_academico=${id_plan_academico}`;
+    } else if (id_carrera) {
+        url += `?id_carrera=${id_carrera}`;
+    }
     const res = await api.get(url);
     return res.data;
 };

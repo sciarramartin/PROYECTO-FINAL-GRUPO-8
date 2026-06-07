@@ -13,6 +13,7 @@ const { Perfil } = require('./Perfil');
 const { ForoPublicacion } = require('./ForoPublicacion');
 const { ForoComentario } = require('./ForoComentario');
 const { ForoReaccion } = require('./ForoReaccion');
+const { PlanAcademico } = require('./PlanAcademico');
 
 Usuario.belongsTo(TipoUsuario, {
     foreignKey: 'id_tipo_usuario'
@@ -31,6 +32,16 @@ EstadoMateria.belongsTo(Materia, { foreignKey: 'id_materia' });
 
 Materia.belongsTo(Carrera, { foreignKey: 'id_carrera' });
 Carrera.hasMany(Materia, { foreignKey: 'id_carrera' });
+
+// Relaciones de Plan Académico
+PlanAcademico.belongsTo(Carrera, { foreignKey: 'id_carrera' });
+Carrera.hasMany(PlanAcademico, { foreignKey: 'id_carrera' });
+
+Materia.belongsTo(PlanAcademico, { foreignKey: 'id_plan_academico' });
+PlanAcademico.hasMany(Materia, { foreignKey: 'id_plan_academico' });
+
+Usuario.belongsTo(PlanAcademico, { foreignKey: 'id_plan_academico' });
+PlanAcademico.hasMany(Usuario, { foreignKey: 'id_plan_academico' });
 
 // Relación de muchos a muchos auto-referencial (Reflexiva) a través de la tabla intermedia Amistad
 Usuario.belongsToMany(Usuario, {

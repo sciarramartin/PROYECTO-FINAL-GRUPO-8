@@ -31,6 +31,7 @@ const rutasAuth = require('./controladores/auth.controller.js');
 const rutasMateria = require('./controladores/materia.controlador');
 const rutasCarreras = require('./controladores/controlador-carreras.js'); // para probar resgitro
 const rutasProgreso = require('./controladores/progreso.controlador.js');
+const rutasPlanesAcademicos = require('./controladores/plan-academico.controlador.js');
 const rutasAmistades = require('./controladores/amistad.controller.js');
 const rutasGrupos = require('./controladores/grupo.controller.js');
 const rutasChatPrivado = require('./controladores/chat-privado.controller.js');
@@ -107,6 +108,7 @@ app.use('/api/inscripcion', rutasInscripciones);
 app.use('/api/usuarios', rutasUsuarios);
 app.use('/api/carreras', rutasCarreras); // para probar registro
 app.use('/api/progreso', rutasProgreso);
+app.use('/api/planes-academicos', rutasPlanesAcademicos);
 app.use('/api/amistades', rutasAmistades);
 app.use('/api/grupos', rutasGrupos);
 app.use('/api/chat-privado', rutasChatPrivado);

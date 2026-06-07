@@ -18,7 +18,7 @@ const EstadoMateria = baseDeDatos.define('estado_materia_alumno', {
     estado: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: 'No Cursada' // 'Aprobada', 'Regular', 'No Cursada'
+        defaultValue: 'No Cursada' // 'Aprobada', 'Regular', 'Cursando', 'No Cursada'
     }
 }, {
     tableName: 'estado_materia_alumno',

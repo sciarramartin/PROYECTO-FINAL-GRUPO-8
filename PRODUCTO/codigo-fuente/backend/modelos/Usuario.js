@@ -42,6 +42,10 @@ const Usuario = baseDeDatos.define('usuario', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    id_plan_academico: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     reset_token: {
         type: DataTypes.STRING,
         allowNull: true

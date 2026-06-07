@@ -15,48 +15,85 @@ api.interceptors.request.use(config => {
 export default function ModuloCorrelativas() {
   const [materias, setMaterias] = useState([]);
   const [carreras, setCarreras] = useState([]);
+  const [planes, setPlanes] = useState([]);
+  const [selectedCarreraId, setSelectedCarreraId] = useState('');
+  const [selectedPlanId, setSelectedPlanId] = useState('');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [editandoId, setEditandoId] = useState(null);
-  const [selectedCarreraId, setSelectedCarreraId] = useState('');
+  const [creandoPlan, setCreandoPlan] = useState(false);
+  const [nuevoPlanNombre, setNuevoPlanNombre] = useState('');
 
   const [formData, setFormData] = useState({
-    codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: '', visible_en_grafo: false
+    codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: '', id_plan_academico: '', visible_en_grafo: false
   });
 
-  const cargarDatos = async (id_carrera = '') => {
+  const cargarCarreras = async () => {
     try {
       setCargando(true);
-      const [resMaterias, resCarreras] = await Promise.all([
-        api.get(`/materias${id_carrera ? `?id_carrera=${id_carrera}` : ''}`),
-        api.get('/carreras')
-      ]);
-      setMaterias(resMaterias.data);
-      setCarreras(resCarreras.data);
-      if (resCarreras.data.length > 0 && !id_carrera && !selectedCarreraId) {
-        setSelectedCarreraId(resCarreras.data[0].id);
-        cargarDatos(resCarreras.data[0].id);
-        setFormData(prev => ({ ...prev, id_carrera: resCarreras.data[0].id }));
-        return;
+      const res = await api.get('/carreras');
+      setCarreras(res.data);
+      if (res.data.length > 0) {
+        setSelectedCarreraId(res.data[0].id.toString());
       }
       setError(null);
     } catch (err) {
       console.error(err);
-      setError('Error al cargar los datos desde el servidor.');
+      setError('Error al cargar las carreras.');
     } finally {
       setCargando(false);
     }
   };
 
   useEffect(() => {
-    cargarDatos(selectedCarreraId);
+    cargarCarreras();
   }, []);
+
+  useEffect(() => {
+    if (!selectedCarreraId) return;
+    const fetchPlanes = async () => {
+      try {
+        const res = await api.get(`/planes-academicos?id_carrera=${selectedCarreraId}`);
+        setPlanes(res.data);
+        if (res.data.length > 0) {
+          setSelectedPlanId(res.data[0].id.toString());
+        } else {
+          setSelectedPlanId('');
+          setMaterias([]);
+        }
+      } catch (err) {
+        console.error("Error al cargar planes:", err);
+        setError('Error al cargar los planes académicos.');
+      }
+    };
+    fetchPlanes();
+    setFormData(prev => ({ ...prev, id_carrera: selectedCarreraId }));
+  }, [selectedCarreraId]);
+
+  useEffect(() => {
+    if (!selectedPlanId) {
+      setMaterias([]);
+      return;
+    }
+    const fetchMaterias = async () => {
+      try {
+        setCargando(true);
+        const res = await api.get(`/materias?id_plan_academico=${selectedPlanId}`);
+        setMaterias(res.data);
+      } catch (err) {
+        console.error("Error al cargar materias:", err);
+        setError('Error al cargar las materias.');
+      } finally {
+        setCargando(false);
+      }
+    };
+    fetchMaterias();
+    setFormData(prev => ({ ...prev, id_plan_academico: selectedPlanId }));
+  }, [selectedPlanId]);
 
   const handleCarreraChange = (e) => {
     const newId = e.target.value;
     setSelectedCarreraId(newId);
-    setFormData(prev => ({ ...prev, id_carrera: newId }));
-    cargarDatos(newId);
   };
 
   const handleInputChange = (e) => {
@@ -84,8 +121,29 @@ export default function ModuloCorrelativas() {
     }));
   };
 
+  const handleCrearPlan = async (e) => {
+    e.preventDefault();
+    if (!nuevoPlanNombre.trim()) return;
+    try {
+      const res = await api.post('/planes-academicos', {
+        nombre: nuevoPlanNombre,
+        id_carrera: Number(selectedCarreraId)
+      });
+      setPlanes(prev => [...prev, res.data]);
+      setSelectedPlanId(res.data.id.toString());
+      setNuevoPlanNombre('');
+      setCreandoPlan(false);
+    } catch (err) {
+      alert(err.response?.data?.error || 'Error al crear el plan académico');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedPlanId) {
+      alert('Debes seleccionar o crear un Plan Académico antes de agregar materias.');
+      return;
+    }
     try {
       if (editandoId) {
         await api.put(`/materias/${editandoId}`, formData);
@@ -93,8 +151,10 @@ export default function ModuloCorrelativas() {
         await api.post('/materias', formData);
       }
       setEditandoId(null);
-      setFormData({ codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: selectedCarreraId, visible_en_grafo: false });
-      cargarDatos(selectedCarreraId);
+      setFormData({ codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: selectedCarreraId, id_plan_academico: selectedPlanId, visible_en_grafo: false });
+      
+      const res = await api.get(`/materias?id_plan_academico=${selectedPlanId}`);
+      setMaterias(res.data);
     } catch (err) {
       alert(err.response?.data?.error || 'Error al guardar la materia');
     }
@@ -108,6 +168,7 @@ export default function ModuloCorrelativas() {
       nivel_anio: materia.nivel_anio,
       cuatrimestre: materia.cuatrimestre,
       id_carrera: materia.id_carrera || selectedCarreraId,
+      id_plan_academico: materia.id_plan_academico || selectedPlanId,
       visible_en_grafo: !!materia.visible_en_grafo,
       correlativas: materia.correlativas ? materia.correlativas.map(c => ({
         id: c.id,
@@ -120,7 +181,8 @@ export default function ModuloCorrelativas() {
     if (!window.confirm('¿Estás seguro de eliminar esta materia?')) return;
     try {
       await api.delete(`/materias/${id}`);
-      cargarDatos(selectedCarreraId);
+      const res = await api.get(`/materias?id_plan_academico=${selectedPlanId}`);
+      setMaterias(res.data);
     } catch (err) {
       alert('Error al eliminar la materia');
     }
@@ -128,7 +190,7 @@ export default function ModuloCorrelativas() {
 
   const cancelarEdicion = () => {
     setEditandoId(null);
-    setFormData({ codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: selectedCarreraId, visible_en_grafo: false });
+    setFormData({ codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: selectedCarreraId, id_plan_academico: selectedPlanId, visible_en_grafo: false });
   };
 
   return (
@@ -140,13 +202,30 @@ export default function ModuloCorrelativas() {
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Registrar correlativas</h1>
             <p className="text-sm sm:text-base text-slate-500 mt-2">Agregá materias y definí sus correlatividades para estructurar las reglas de cursada.</p>
           </div>
-          <div className="w-full sm:w-auto">
-             <label className="block text-sm font-medium text-slate-700 mb-1">Filtrar por Carrera</label>
-             <select value={selectedCarreraId} onChange={handleCarreraChange} className="w-full sm:w-auto rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white">
-                {carreras.map(c => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
-                ))}
-             </select>
+          <div className="flex flex-wrap items-end gap-4 w-full sm:w-auto">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Filtrar por Carrera</label>
+              <select value={selectedCarreraId} onChange={handleCarreraChange} className="w-full sm:w-auto rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white">
+                 {carreras.map(c => (
+                   <option key={c.id} value={c.id}>{c.nombre}</option>
+                 ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Plan Académico</label>
+              <div className="flex items-center gap-2">
+                <select value={selectedPlanId} onChange={(e) => setSelectedPlanId(e.target.value)} className="w-full sm:w-auto rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white min-w-[150px]">
+                   {planes.length === 0 && <option value="">Sin planes</option>}
+                   {planes.map(p => (
+                     <option key={p.id} value={p.id}>{p.nombre}</option>
+                   ))}
+                </select>
+                <button type="button" onClick={() => setCreandoPlan(true)} className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-bold shadow-sm transition">
+                  +
+                </button>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -302,6 +381,28 @@ export default function ModuloCorrelativas() {
              )}
         </div>
       </div>
+
+      {creandoPlan && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6 max-w-sm w-full">
+            <h3 className="text-lg font-bold text-slate-900 mb-4">Crear Nuevo Plan Académico</h3>
+            <form onSubmit={handleCrearPlan} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre del Plan</label>
+                <input type="text" required value={nuevoPlanNombre} onChange={(e) => setNuevoPlanNombre(e.target.value)} placeholder="Ej: Plan 2023" className="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => { setCreandoPlan(false); setNuevoPlanNombre(''); }} className="px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50">
+                  Cancelar
+                </button>
+                <button type="submit" className="px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                  Crear Plan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -33,6 +33,10 @@ const Materia = baseDeDatos.define('materia', {
     id_carrera: {
         type: DataTypes.INTEGER,
         allowNull: true // True temporalmente para compatibilidad hacia atrás
+    },
+    id_plan_academico: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 }, {
     tableName: 'materias',

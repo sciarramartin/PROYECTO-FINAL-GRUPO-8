@@ -16,6 +16,7 @@ const crearUsuario = async (datosRegistro) => {
         contraseña,
         confirmarContraseña,
         id_carrera,
+        id_plan_academico,
         anio_ingreso
     } = datosRegistro || {};
 
@@ -57,6 +58,7 @@ const crearUsuario = async (datosRegistro) => {
         mail,
         contraseña: hash,
         id_carrera,
+        id_plan_academico,
         anio_ingreso,
         id_tipo_usuario: 1 // Rol estándar
     });
@@ -68,6 +70,7 @@ const crearUsuario = async (datosRegistro) => {
         nombre_usuario: nuevo_Usuario.nombre_usuario,
         mail: nuevo_Usuario.mail,
         id_carrera: nuevo_Usuario.id_carrera,
+        id_plan_academico: nuevo_Usuario.id_plan_academico,
         anio_ingreso: nuevo_Usuario.anio_ingreso
     };
 };

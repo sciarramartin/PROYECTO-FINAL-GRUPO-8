@@ -4,8 +4,8 @@ const express = require('express');
 const router = express.Router();
 router.get('/', async (req, res) => {
     try {
-        const { id_carrera } = req.query;
-        const materias = await MateriaService.obtenerTodas(id_carrera);
+        const { id_carrera, id_plan_academico } = req.query;
+        const materias = await MateriaService.obtenerTodas(id_carrera, id_plan_academico);
         res.json(materias);
     } catch (error) {
         console.error(error);
@@ -27,14 +27,14 @@ router.get('/:id', async (req, res) => {
 router.post('/', verificarToken, verificarAdmin, async (req, res) => {
     console.log("POST /materias -> req.body =", req.body);
     try {
-        const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, visible_en_grafo } = req.body;
+        const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = req.body;
 
         if (!codigo || !nombre || !nivel_anio || !cuatrimestre || !id_carrera) {
             return res.status(400).json({ error: 'El código, nombre, nivel/año, cuatrimestre y carrera son obligatorios.' });
         }
 
         const nuevaMateria = await MateriaService.crearMateria({
-            codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, visible_en_grafo
+            codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo
         });
 
         res.status(201).json(nuevaMateria);

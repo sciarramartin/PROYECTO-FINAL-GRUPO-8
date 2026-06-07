@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
+import axios from 'axios';
 import { obtenerTodas, obtenerProgreso, actualizarEstadoMateria } from './services';
 
 const MapaCorrelatividades = () => {
@@ -11,6 +12,8 @@ const MapaCorrelatividades = () => {
 
     const [materias, setMaterias] = useState([]);
     const [progreso, setProgreso] = useState([]);
+    const [planes, setPlanes] = useState([]);
+    const [selectedPlanId, setSelectedPlanId] = useState('');
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
 
@@ -32,17 +35,22 @@ const MapaCorrelatividades = () => {
             const usuarioInfo = sessionStorage.getItem('usuario') || localStorage.getItem('usuario');
             const usuarioObj = usuarioInfo ? JSON.parse(usuarioInfo) : null;
             const id_carrera = usuarioObj?.id_carrera || null;
+            const userPlanId = usuarioObj?.id_plan_academico || null;
 
-            const [materiasData, progresoData] = await Promise.all([
-                obtenerTodas(id_carrera),
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+            const [resPlanes, progresoData] = await Promise.all([
+                axios.get(`${API_URL}/planes-academicos?id_carrera=${id_carrera}`),
                 obtenerProgreso()
             ]);
-            
-            // Filtrar materias que no están visibles
-            const materiasVisibles = materiasData.filter(m => m.visible_en_grafo !== false && m.visible_en_grafo !== 0);
-            
-            setMaterias(materiasVisibles);
+
+            setPlanes(resPlanes.data);
             setProgreso(progresoData);
+
+            let activePlanId = userPlanId;
+            if (!activePlanId && resPlanes.data.length > 0) {
+                activePlanId = resPlanes.data[0].id;
+            }
+            setSelectedPlanId(activePlanId ? activePlanId.toString() : '');
         } catch (err) {
             console.error(err);
             setError('Error al cargar el mapa de correlatividades.');
@@ -54,6 +62,24 @@ const MapaCorrelatividades = () => {
     useEffect(() => {
         cargarDatos();
     }, []);
+
+    useEffect(() => {
+        if (!selectedPlanId) return;
+        const cargarMateriasDelPlan = async () => {
+            try {
+                setCargando(true);
+                const materiasData = await obtenerTodas(null, selectedPlanId);
+                const materiasVisibles = materiasData.filter(m => m.visible_en_grafo !== false && m.visible_en_grafo !== 0);
+                setMaterias(materiasVisibles);
+            } catch (err) {
+                console.error(err);
+                setError('Error al cargar las materias del plan.');
+            } finally {
+                setCargando(false);
+            }
+        };
+        cargarMateriasDelPlan();
+    }, [selectedPlanId]);
 
     const getEstadoCalculado = (materiaId, estadoMateria, mapEstadosProgreso, materiasLista) => {
         if (estadoMateria === 'Aprobada' || estadoMateria === 'Regular' || estadoMateria === 'Cursando') {
@@ -321,7 +347,7 @@ const MapaCorrelatividades = () => {
                 networkRef.current = null;
             }
         };
-    }, [materias]); 
+    }, [materias, cargando]); 
 
     // Al cambiar progreso, repintamos colores
     useEffect(() => {
@@ -366,30 +392,46 @@ const MapaCorrelatividades = () => {
         }
     };
 
-    if (cargando) {
-        return (
-            <div className="flex flex-col items-center justify-center h-[600px] text-slate-700 bg-white rounded-xl shadow-sm border border-slate-200">
-                <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p>Cargando grafo...</p>
-            </div>
-        );
-    }
-
     if (error) {
         return <div className="text-red-500 p-8 bg-red-50 rounded-xl">{error}</div>;
     }
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[85vh] md:h-[75vh] flex flex-col relative">
-            <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10 relative shadow-sm">
+            <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white z-10 relative shadow-sm">
                 <div>
                     <h3 className="text-lg font-semibold text-slate-800">Mi Progreso</h3>
                     <p className="text-sm text-slate-500">Haz clic en una materia para actualizar su estado y ver sus correlativas.</p>
                 </div>
+                {planes.length > 0 && (
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="plan-selector" className="text-sm font-medium text-slate-700 whitespace-nowrap">Plan de Estudio:</label>
+                        <select
+                            id="plan-selector"
+                            value={selectedPlanId}
+                            onChange={(e) => setSelectedPlanId(e.target.value)}
+                            className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-800 font-medium cursor-pointer max-w-xs"
+                        >
+                            {planes.map(p => (
+                                <option key={p.id} value={p.id}>
+                                    {p.nombre}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             {/* Lienzo del Grafo */}
-            <div ref={containerRef} className="flex-1 w-full bg-white relative z-0 outline-none" />
+            <div className="flex-1 w-full bg-white relative z-0 outline-none flex flex-col min-h-[400px]">
+                {cargando && (
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex flex-col items-center justify-center z-30 transition-all">
+                        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <p className="text-sm text-slate-600 font-medium">Cargando grafo...</p>
+                    </div>
+                )}
+                <div ref={containerRef} className="flex-1 w-full h-full" />
+            </div>
             
             {/* Leyenda de Colores */}
             <div className="p-4 border-t border-slate-100 bg-white z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">

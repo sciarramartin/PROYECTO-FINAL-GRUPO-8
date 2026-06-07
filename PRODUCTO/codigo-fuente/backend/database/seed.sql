@@ -51,6 +51,15 @@ VALUES
 );
 
 -- =========================
+-- PLANES ACADEMICOS
+-- =========================
+
+INSERT INTO planes_academicos (id, nombre, id_carrera)
+VALUES
+(1, 'Plan 2008', 1),
+(2, 'Plan 2023', 1);
+
+-- =========================
 -- USUARIOS
 -- =========================
 
@@ -62,7 +71,8 @@ INSERT INTO usuarios (
     nombre_usuario,
     anio_ingreso,
     id_carrera,
-    id_tipo_usuario
+    id_tipo_usuario,
+    id_plan_academico
 )
 VALUES
 (
@@ -73,7 +83,8 @@ VALUES
     'admin',
     2024,
     1,
-    3
+    3,
+    1
 ),
 (
     'alumno@test.com',
@@ -82,6 +93,7 @@ VALUES
     'Perez',
     'jperez',
     2024,
+    1,
     1,
     1
 ),
@@ -93,6 +105,7 @@ VALUES
     'diego',
     2024,
     1,
+    1,
     1
 ),
 (
@@ -102,6 +115,7 @@ VALUES
     'Alegre',
     'tito',
     2024,
+    1,
     1,
     1
 );
@@ -406,4 +420,8 @@ VALUES
 (1, 1, 'La condición de no negatividad asegura que la sucesión de funciones sea acotada inferiormente por 0, lo que permite aplicar el teorema de convergencia en medida. Si no fueran negativas, podríamos tener problemas con la medida de los conjuntos donde crecen.', '2026-06-03 14:15:00', '2026-06-03 14:15:00'),
 (1, 2, 'Muchas gracias, Prof. Roberto Cáceres. Ya me queda mucho más claro con esa analogía.', '2026-06-03 14:22:00', '2026-06-03 14:22:00'),
 (2, 2, 'Excelente, espero que todos usen este foro de forma responsable.', '2026-06-01 10:10:00', '2026-06-01 10:10:00');
+
+-- Asignar todas las materias iniciales al Plan 2008
+UPDATE materias SET id_plan_academico = 1;
+
 
