@@ -84,7 +84,7 @@ VALUES
     2024,
     1,
     3,
-    1
+    2
 ),
 (
     'alumno@test.com',
@@ -95,7 +95,7 @@ VALUES
     2024,
     1,
     1,
-    1
+    2
 ),
 (
     'alumno2@test.com',
@@ -106,7 +106,7 @@ VALUES
     2024,
     1,
     1,
-    1
+    2
 ),
 (
     'alumno3@test.com',
@@ -117,7 +117,7 @@ VALUES
     2024,
     1,
     1,
-    1
+    2
 );
 
 -- ===============================================================
@@ -421,7 +421,7 @@ VALUES
 (1, 2, 'Muchas gracias, Prof. Roberto Cáceres. Ya me queda mucho más claro con esa analogía.', '2026-06-03 14:22:00', '2026-06-03 14:22:00'),
 (2, 2, 'Excelente, espero que todos usen este foro de forma responsable.', '2026-06-01 10:10:00', '2026-06-01 10:10:00');
 
--- Asignar todas las materias iniciales al Plan 2008
-UPDATE materias SET id_plan_academico = 1;
+-- Asignar todas las materias iniciales al Plan 2023
+UPDATE materias SET id_plan_academico = 2;
 
 
