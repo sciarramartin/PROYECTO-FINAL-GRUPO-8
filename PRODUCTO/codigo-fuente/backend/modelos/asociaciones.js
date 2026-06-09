@@ -132,3 +132,6 @@ ForoReaccion.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
 
 Usuario.hasMany(ForoReaccion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 ForoReaccion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+
+ForoComentario.hasMany(ForoReaccion, { foreignKey: 'id_comentario', onDelete: 'CASCADE' });
+ForoReaccion.belongsTo(ForoComentario, { foreignKey: 'id_comentario' });

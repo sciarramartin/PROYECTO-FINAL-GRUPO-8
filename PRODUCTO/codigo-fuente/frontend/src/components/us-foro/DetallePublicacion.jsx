@@ -29,6 +29,14 @@ const DetallePublicacion = () => {
   const [datosHilo, setDatosHilo] = useState({ publicacion: null, comentarios: [] });
   const [cargando, setCargando] = useState(true);
   const [alertaTeammate, setAlertaTeammate] = useState(null);
+  
+  // Estados para Editar, Eliminar y Reaccionar
+  const [editando, setEditando] = useState(false);
+  const [editTitulo, setEditTitulo] = useState("");
+  const [editContenido, setEditContenido] = useState("");
+  const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
+  const [reaccionUsuario, setReaccionUsuario] = useState(null); // 'positivo' o 'negativo'
+
 
   // Obtener ID del usuario actual para comparar si es autor
   let usuarioActual = {};
@@ -73,6 +81,96 @@ const DetallePublicacion = () => {
       hour: "2-digit",
       minute: "2-digit"
     });
+  };
+
+  const puedeEditar = () => {
+    if (!datosHilo.publicacion) return false;
+    const fechaCreacion = new Date(datosHilo.publicacion.createdAt);
+    const ahora = new Date();
+    const difMinutos = (ahora - fechaCreacion) / (1000 * 60);
+    return difMinutos <= 10;
+  };
+
+  const handleReaccionar = async (tipo) => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const res = await axios.post(`${apiUrl}/publicaciones/${postId}/reaccionar`, { tipo }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setDatosHilo(prev => ({
+        ...prev,
+        publicacion: { ...prev.publicacion, votos: res.data.votos }
+      }));
+      
+      if (res.data.mensaje === 'Reacción removida') {
+        setReaccionUsuario(null);
+      } else {
+        setReaccionUsuario(tipo);
+      }
+    } catch (error) {
+      console.error("Error al reaccionar:", error);
+      mostrarMensajeTeammate(error.response?.data?.error || "Error al registrar voto.");
+    }
+  };
+
+  const handleReaccionarComentario = async (comId, tipo) => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const res = await axios.post(`${apiUrl}/publicaciones/comentarios/${comId}/reaccionar`, { tipo }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setDatosHilo(prev => ({
+        ...prev,
+        comentarios: prev.comentarios.map(c => 
+          c.id === comId ? { ...c, votos: res.data.votos } : c
+        )
+      }));
+    } catch (error) {
+      console.error("Error al reaccionar a comentario:", error);
+      mostrarMensajeTeammate(error.response?.data?.error || "Error al registrar voto en comentario.");
+    }
+  };
+
+  const handleGuardarEdicion = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const res = await axios.put(`${apiUrl}/publicaciones/${postId}`, {
+        titulo: editTitulo,
+        contenido: editContenido
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setDatosHilo(prev => ({
+        ...prev,
+        publicacion: res.data.publicacion
+      }));
+      setEditando(false);
+      mostrarMensajeTeammate("Publicación editada correctamente.");
+    } catch (error) {
+      console.error("Error al editar:", error);
+      mostrarMensajeTeammate(error.response?.data?.error || "Error al editar publicación.");
+    }
+  };
+
+  const handleEliminar = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      await axios.delete(`${apiUrl}/publicaciones/${postId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      navigate(`/foros/${materiaId}`);
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      mostrarMensajeTeammate(error.response?.data?.error || "Error al eliminar publicación.");
+      setMostrarConfirmacionEliminar(false);
+    }
   };
 
   const renderAvatarChico = (foto, inicialesStr, sizeClass = "w-8 h-8 text-xs") => {
@@ -134,13 +232,37 @@ const DetallePublicacion = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       
-      {/* Alerta de US Deshabilitada */}
+      {/* Alerta de US Deshabilitada u otros mensajes */}
       {alertaTeammate && (
-        <div className="fixed top-20 right-6 left-6 md:left-auto md:w-96 z-50 bg-amber-50 dark:bg-amber-950/80 border border-amber-250 dark:border-amber-900 text-amber-900 dark:text-amber-300 p-4 rounded-xl shadow-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-4">
-          <FiAlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+        <div className="fixed top-20 right-6 left-6 md:left-auto md:w-96 z-50 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-250 dark:border-indigo-900 text-indigo-900 dark:text-indigo-300 p-4 rounded-xl shadow-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-4">
+          <FiAlertCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-bold">Funcionalidad Excluida</p>
+            <p className="text-xs font-bold">Aviso del Sistema</p>
             <p className="text-[11px] mt-0.5 leading-relaxed">{alertaTeammate}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación */}
+      {mostrarConfirmacionEliminar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95">
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">¿Eliminar publicación?</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Esta acción es irreversible y eliminará todos los comentarios asociados a la misma.</p>
+            <div className="flex items-center justify-end gap-3">
+              <button 
+                onClick={() => setMostrarConfirmacionEliminar(false)}
+                className="px-4 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleEliminar}
+                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition shadow-sm shadow-red-500/20"
+              >
+                Sí, eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -168,18 +290,31 @@ const DetallePublicacion = () => {
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm">
             <div className="flex gap-4">
               
-              {/* Votos (UI Shell) */}
+              {/* Votos (UI Shell activo) */}
               <div className="flex flex-col items-center justify-start gap-1 text-zinc-450 shrink-0">
                 <button 
-                  onClick={() => mostrarMensajeTeammate("El voto está deshabilitado temporalmente para no interferir con la US: 'Reaccionar a publicaciones'.")}
-                  className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 dark:text-zinc-500 transition"
+                  onClick={() => handleReaccionar('positivo')}
+                  className={`p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none transition ${
+                    reaccionUsuario === 'positivo' 
+                      ? 'text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20' 
+                      : 'bg-transparent text-zinc-400 dark:text-zinc-500'
+                  }`}
                 >
                   <FiArrowUp className="w-4 h-4" />
                 </button>
-                <span className="text-xs font-bold">{publicacion.votos || 0}</span>
+                <span className={`text-xs font-bold ${
+                  reaccionUsuario === 'positivo' ? 'text-amber-600 dark:text-amber-500' :
+                  reaccionUsuario === 'negativo' ? 'text-indigo-600 dark:text-indigo-500' : ''
+                }`}>
+                  {publicacion.votos || 0}
+                </span>
                 <button 
-                  onClick={() => mostrarMensajeTeammate("El voto está deshabilitado temporalmente para no interferir con la US: 'Reaccionar a publicaciones'.")}
-                  className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 dark:text-zinc-500 transition"
+                  onClick={() => handleReaccionar('negativo')}
+                  className={`p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none transition ${
+                    reaccionUsuario === 'negativo' 
+                      ? 'text-indigo-600 dark:text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
+                      : 'bg-transparent text-zinc-400 dark:text-zinc-500'
+                  }`}
                 >
                   <FiArrowDown className="w-4 h-4" />
                 </button>
@@ -211,15 +346,48 @@ const DetallePublicacion = () => {
                   </span>
                 </div>
 
-                {/* Título */}
-                <h1 className="text-lg md:text-xl font-extrabold text-zinc-850 dark:text-zinc-50 leading-tight mt-4 mb-2">
-                  {publicacion.titulo}
-                </h1>
-
-                {/* Cuerpo del Mensaje */}
-                <div className="text-xs md:text-sm text-zinc-650 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap mt-3 bg-zinc-50/50 dark:bg-zinc-900/30 p-3 rounded-xl border border-zinc-150/40 dark:border-zinc-800/20">
-                  {publicacion.contenido}
-                </div>
+                {/* Título y Contenido */}
+                {editando ? (
+                  <div className="mt-4 mb-2">
+                    <input 
+                      type="text"
+                      value={editTitulo}
+                      onChange={(e) => setEditTitulo(e.target.value)}
+                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm font-bold text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 mb-3"
+                      placeholder="Título de la publicación"
+                    />
+                    <textarea 
+                      value={editContenido}
+                      onChange={(e) => setEditContenido(e.target.value)}
+                      rows={5}
+                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 resize-y mb-3"
+                      placeholder="Contenido..."
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button 
+                        onClick={() => setEditando(false)}
+                        className="px-3 py-1.5 text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition"
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        onClick={handleGuardarEdicion}
+                        className="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition"
+                      >
+                        Guardar cambios
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h1 className="text-lg md:text-xl font-extrabold text-zinc-850 dark:text-zinc-50 leading-tight mt-4 mb-2">
+                      {publicacion.titulo}
+                    </h1>
+                    <div className="text-xs md:text-sm text-zinc-650 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap mt-3 bg-zinc-50/50 dark:bg-zinc-900/30 p-3 rounded-xl border border-zinc-150/40 dark:border-zinc-800/20">
+                      {publicacion.contenido}
+                    </div>
+                  </>
+                )}
 
                 {/* Etiquetas */}
                 <div className="flex flex-wrap gap-1.5 mt-4">
@@ -327,18 +495,18 @@ const DetallePublicacion = () => {
                       key={comentario.id}
                       className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 flex gap-4 transition shadow-sm"
                     >
-                      {/* Votos Comentario (UI Shell) */}
+                      {/* Votos Comentario */}
                       <div className="flex flex-col items-center justify-start gap-0.5 text-zinc-400 dark:text-zinc-500 shrink-0">
                         <button 
-                          onClick={() => mostrarMensajeTeammate("Las reacciones y votos a comentarios están fuera de los alcances actuales.")}
-                          className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 dark:text-zinc-500 transition"
+                          onClick={() => handleReaccionarComentario(comentario.id, 'positivo')}
+                          className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-amber-500 transition"
                         >
                           <FiArrowUp className="w-3.5 h-3.5" />
                         </button>
-                        <span className="text-[10px] font-bold">{comentario.id % 3 === 0 ? 4 : 1}</span>
+                        <span className="text-[10px] font-bold">{comentario.votos || 0}</span>
                         <button 
-                          onClick={() => mostrarMensajeTeammate("Las reacciones y votos a comentarios están fuera de los alcances actuales.")}
-                          className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 dark:text-zinc-500 transition"
+                          onClick={() => handleReaccionarComentario(comentario.id, 'negativo')}
+                          className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-indigo-500 transition"
                         >
                           <FiArrowDown className="w-3.5 h-3.5" />
                         </button>
@@ -436,23 +604,40 @@ const DetallePublicacion = () => {
             </h3>
             
             <div className="space-y-2">
-              <button 
-                onClick={() => mostrarMensajeTeammate(`La edición está deshabilitada temporalmente para no interferir con la US: 'Editar publicación propia'.` + (esAutorPublicacion ? ' (Esta publicación es tuya)' : ' (Esta publicación es de otro usuario)'))}
-                className="w-full py-2.5 px-3 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-800 cursor-pointer transition flex items-center justify-start gap-2.5"
-              >
-                <FiEdit className="w-4 h-4 text-zinc-400" />
-                <span>Editar publicación</span>
-              </button>
-              
-              <button 
-                onClick={() => mostrarMensajeTeammate(`La eliminación está deshabilitada temporalmente para no interferir con la US: 'Eliminar publicación propia'.` + (esAutorPublicacion ? ' (Esta publicación es tuya)' : ' (Esta publicación es de otro usuario)'))}
-                className="w-full py-2.5 px-3 bg-zinc-50 hover:bg-red-50 dark:bg-zinc-800/50 dark:hover:bg-red-950/20 text-zinc-700 dark:text-zinc-300 hover:text-red-650 dark:hover:text-red-400 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-800 hover:border-red-200 cursor-pointer transition flex items-center justify-start gap-2.5"
-              >
-                <FiTrash2 className="w-4 h-4 text-zinc-400 hover:text-red-500" />
-                <span>Eliminar publicación</span>
-              </button>
+              {esAutorPublicacion && (
+                <>
+                  <button 
+                    onClick={() => {
+                      if (!puedeEditar()) {
+                        mostrarMensajeTeammate("El tiempo límite de 10 minutos para editar esta publicación ha expirado.");
+                        return;
+                      }
+                      setEditTitulo(publicacion.titulo);
+                      setEditContenido(publicacion.contenido);
+                      setEditando(true);
+                    }}
+                    disabled={editando || !puedeEditar()}
+                    className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold border transition flex items-center justify-start gap-2.5 ${
+                      !puedeEditar() 
+                        ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 border-zinc-200 dark:border-zinc-700 cursor-not-allowed'
+                        : 'bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-250 dark:border-zinc-800 cursor-pointer'
+                    }`}
+                  >
+                    <FiEdit className="w-4 h-4 text-zinc-400" />
+                    <span>Editar publicación {!puedeEditar() && '(Expirado)'}</span>
+                  </button>
+                  
+                  <button 
+                    onClick={() => setMostrarConfirmacionEliminar(true)}
+                    className="w-full py-2.5 px-3 bg-zinc-50 hover:bg-red-50 dark:bg-zinc-800/50 dark:hover:bg-red-950/20 text-zinc-700 dark:text-zinc-300 hover:text-red-650 dark:hover:text-red-400 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-800 hover:border-red-200 cursor-pointer transition flex items-center justify-start gap-2.5"
+                  >
+                    <FiTrash2 className="w-4 h-4 text-zinc-400 hover:text-red-500" />
+                    <span>Eliminar publicación</span>
+                  </button>
 
-              <div className="w-full h-[1px] bg-zinc-100 dark:bg-zinc-800 my-2" />
+                  <div className="w-full h-[1px] bg-zinc-100 dark:bg-zinc-800 my-2" />
+                </>
+              )}
 
               <button 
                 onClick={() => mostrarMensajeTeammate("El guardado está fuera de los alcances de la US actual.")}

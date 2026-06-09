@@ -10,7 +10,11 @@ const ForoReaccion = baseDeDatos.define('ForoReaccion', {
     },
     id_publicacion: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
+    },
+    id_comentario: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     },
     id_usuario: {
         type: DataTypes.INTEGER,

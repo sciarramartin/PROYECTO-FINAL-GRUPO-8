@@ -19,6 +19,10 @@ const ForoComentario = baseDeDatos.define('ForoComentario', {
     contenido: {
         type: DataTypes.TEXT,
         allowNull: false
+    },
+    votos: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 }, {
     tableName: 'foro_comentarios',

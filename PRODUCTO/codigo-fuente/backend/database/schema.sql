@@ -310,6 +310,7 @@ CREATE TABLE foro_comentarios (
     id_publicacion INTEGER NOT NULL,
     id_usuario INTEGER NOT NULL,
     contenido TEXT NOT NULL,
+    votos INTEGER DEFAULT 0,
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -321,13 +322,16 @@ CREATE TABLE foro_comentarios (
 -- =========================
 CREATE TABLE foro_reacciones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_publicacion INTEGER NOT NULL,
+    id_publicacion INTEGER,
+    id_comentario INTEGER,
     id_usuario INTEGER NOT NULL,
     tipo TEXT NOT NULL, -- 'positivo' o 'negativo'
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_comentario) REFERENCES foro_comentarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE(id_publicacion, id_usuario)
+    UNIQUE(id_publicacion, id_usuario),
+    UNIQUE(id_comentario, id_usuario)
 );
 

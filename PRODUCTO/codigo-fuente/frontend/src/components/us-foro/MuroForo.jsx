@@ -57,11 +57,31 @@ const MuroForo = () => {
     const difMs = ahora - fecha;
     const difMins = Math.floor(difMs / (1000 * 60));
     const difHoras = Math.floor(difMs / (1000 * 60 * 60));
-    const difDias = Math.floor(difMs / (1000 * 60 * 60 * 24));
+    const difDias = Math.floor(difMs / (1000 * 60 * 24));
 
     if (difMins < 60) return `hace ${Math.max(1, difMins)} min`;
     if (difHoras < 24) return `hace ${difHoras} horas`;
     return `hace ${difDias} días`;
+  };
+
+  const handleReaccionarMuro = async (pubId, tipo) => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const res = await axios.post(`${apiUrl}/publicaciones/${pubId}/reaccionar`, { tipo }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setDatosForo(prev => ({
+        ...prev,
+        publicaciones: prev.publicaciones.map(p => 
+          p.id === pubId ? { ...p, votos: res.data.votos } : p
+        )
+      }));
+    } catch (error) {
+      console.error("Error al reaccionar en muro:", error);
+      mostrarMensajeTeammate(error.response?.data?.error || "Error al registrar voto.");
+    }
   };
 
   // Color de categorías
@@ -142,12 +162,12 @@ const MuroForo = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       
-      {/* Alerta de US Deshabilitada */}
+      {/* Alerta de US Deshabilitada u otros avisos */}
       {alertaTeammate && (
-        <div className="fixed top-20 right-6 left-6 md:left-auto md:w-96 z-50 bg-amber-50 dark:bg-amber-950/80 border border-amber-250 dark:border-amber-900 text-amber-900 dark:text-amber-300 p-4 rounded-xl shadow-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-4">
-          <FiAlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+        <div className="fixed top-20 right-6 left-6 md:left-auto md:w-96 z-50 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-250 dark:border-indigo-900 text-indigo-900 dark:text-indigo-300 p-4 rounded-xl shadow-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-4">
+          <FiAlertCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-bold">Funcionalidad Excluida</p>
+            <p className="text-xs font-bold">Aviso del Sistema</p>
             <p className="text-[11px] mt-0.5 leading-relaxed">{alertaTeammate}</p>
           </div>
         </div>
@@ -250,15 +270,15 @@ const MuroForo = () => {
                     {/* Flechas de Votos (UI Shell para Reaccionar) */}
                     <div className="flex flex-col items-center justify-start gap-1 text-zinc-450 shrink-0">
                       <button 
-                        onClick={() => mostrarMensajeTeammate("Las reacciones y votos de publicaciones están deshabilitadas temporalmente para no interferir con la US: 'Reaccionar a publicaciones'.")}
-                        className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 dark:text-zinc-500 transition"
+                        onClick={() => handleReaccionarMuro(pub.id, 'positivo')}
+                        className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-amber-500 transition"
                       >
                         <FiArrowUp className="w-4 h-4" />
                       </button>
                       <span className="text-xs font-bold">{pub.votos || 0}</span>
                       <button 
-                        onClick={() => mostrarMensajeTeammate("Las reacciones y votos de publicaciones están deshabilitadas temporalmente para no interferir con la US: 'Reaccionar a publicaciones'.")}
-                        className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 dark:text-zinc-500 transition"
+                        onClick={() => handleReaccionarMuro(pub.id, 'negativo')}
+                        className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-indigo-500 transition"
                       >
                         <FiArrowDown className="w-4 h-4" />
                       </button>
