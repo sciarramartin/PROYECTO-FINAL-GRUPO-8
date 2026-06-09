@@ -114,7 +114,7 @@ router.delete('/:id', verificarToken, async (req, res) => {
             return res.status(403).json({ error: 'No tienes permiso para eliminar esta publicación.' });
         }
 
-        await publicacion.destroy(); // onDelete: 'CASCADE' en asociaciones se encarga de los comentarios y reacciones
+        await publicacion.destroy(); // Baja lógica: paranoid: true en el modelo setea deletedAt
 
         return res.json({ mensaje: 'Publicación eliminada correctamente.' });
 

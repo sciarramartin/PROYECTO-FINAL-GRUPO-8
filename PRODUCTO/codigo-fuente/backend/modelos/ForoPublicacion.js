@@ -34,7 +34,8 @@ const ForoPublicacion = baseDeDatos.define('ForoPublicacion', {
     }
 }, {
     tableName: 'foro_publicaciones',
-    timestamps: true
+    timestamps: true,
+    paranoid: true
 });
 
 module.exports = { ForoPublicacion };
