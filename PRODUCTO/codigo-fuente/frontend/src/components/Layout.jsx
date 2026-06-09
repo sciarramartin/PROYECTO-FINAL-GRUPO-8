@@ -74,39 +74,7 @@ const Layout = ({ children }) => {
   const [cantGruposMensajesPendientes, setCantGruposMensajesPendientes] = useState(0);
   const [gruposMensajesPendientes, setGruposMensajesPendientes] = useState([]);
 
-  // Toasts flotantes y notificaciones push
-  const [toasts, setToasts] = useState([]);
 
-  const agregarToast = (titulo, mensaje, ruta) => {
-    const id = Date.now() + Math.random();
-    setToasts(prev => [...prev, { id, titulo, mensaje, ruta }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 5000);
-  };
-
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, []);
-
-  const mostrarNotificacionEscritorio = (titulo, mensaje, ruta) => {
-    if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
-      try {
-        const n = new Notification(titulo, {
-          body: mensaje,
-          icon: "🎓"
-        });
-        n.onclick = () => {
-          window.focus();
-          navigate(ruta);
-        };
-      } catch (e) {
-        console.error("Error al mostrar notificación de escritorio:", e);
-      }
-    }
-  };
 
   let usuario = {};
   try {
@@ -438,9 +406,6 @@ const Layout = ({ children }) => {
         
         if (!esChatConRemitente) {
           cargarMensajesPendientes();
-          const remitenteNombre = mensajeNuevo.Remitente ? `${mensajeNuevo.Remitente.nombre} ${mensajeNuevo.Remitente.apellido}` : "Compañero";
-          agregarToast(`Mensaje de ${remitenteNombre}`, mensajeNuevo.contenido, `/chat-privado/${mensajeNuevo.id_remitente}`);
-          mostrarNotificacionEscritorio(`Mensaje de ${remitenteNombre}`, mensajeNuevo.contenido, `/chat-privado/${mensajeNuevo.id_remitente}`);
         }
       });
 
@@ -451,9 +416,6 @@ const Layout = ({ children }) => {
         const esMuroDeEsteGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && parseInt(pathParts[2], 10) === data.id_grupo;
         if (!esMuroDeEsteGrupo) {
           cargarGruposMensajesPendientes();
-          const autorNombre = data.mensaje?.Autor ? `${data.mensaje.Autor.nombre} ${data.mensaje.Autor.apellido}` : "Alguien";
-          agregarToast(`Nuevo en ${data.nombre_grupo}`, `${autorNombre}: ${data.mensaje.contenido}`, `/grupos/${data.id_grupo}`);
-          mostrarNotificacionEscritorio(`Nuevo en ${data.nombre_grupo}`, `${autorNombre}: ${data.mensaje.contenido}`, `/grupos/${data.id_grupo}`);
         }
       });
 
@@ -478,7 +440,7 @@ const Layout = ({ children }) => {
     localStorage.removeItem("usuario");
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("usuario");
-    window.location.replace("/login");
+    navigate("/login");
   };
 
   return (
@@ -502,13 +464,13 @@ const Layout = ({ children }) => {
             </div>
             <div>
               <p className="text-base font-bold text-zinc-900 dark:text-zinc-50 leading-none">Campus</p>
-              <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium mt-0.5 hidden sm:block">Planificá tu cursada</p>
+              <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium mt-0.5">Planificá tu cursada</p>
             </div>
           </div>
         </div>
 
         {/* BUSCADOR GLOBAL (LUPITA) RESPONSIVE */}
-        <div className="hidden sm:block flex-1 max-w-xs md:max-w-md mx-4 md:mx-12 relative">
+        <div className="flex-1 max-w-xs md:max-w-md mx-4 md:mx-12 relative">
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 pointer-events-none">
               🔍
@@ -935,25 +897,7 @@ const Layout = ({ children }) => {
         </main>
       </div>
 
-      {/* CONTENEDOR DE TOASTS EN TIEMPO REAL */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            onClick={() => {
-              navigate(toast.ruta);
-              setToasts(prev => prev.filter(t => t.id !== toast.id));
-            }}
-            className="pointer-events-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-xl flex flex-col gap-1 cursor-pointer hover:border-indigo-500 transition-all duration-300 animate-in slide-in-from-bottom-5 duration-200"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-lg">💬</span>
-              <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{toast.titulo}</p>
-            </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 pl-6">{toast.mensaje}</p>
-          </div>
-        ))}
-      </div>
+
 
     </div>
   );
