@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { verificarToken } = require('../../middleware/authMiddleware'); 
-const { ForoPublicacion } = require('../../modelos/ForoPublicacion'); 
+//const { ForoPublicacion } = require('../../modelos/ForoPublicacion'); 
+
+const { ForoPublicacion, ForoComentario, Usuario, Materia } = require('../../modelos/asociaciones'); 
 
 // @route   POST /api/publicaciones
 // @desc    Crear una nueva publicación en el foro de una materia
@@ -46,6 +48,30 @@ router.post('/', verificarToken, async (req, res) => {
     }
 });
 
+
+router.get('/:postId', verificarToken, async (req, res) => {
+    try {
+        const { postId } = req.params;
+        
+        // Buscamos solo el registro plano sin ninguna clase de includes o mapeos externos
+        const publicacion = await ForoPublicacion.findByPk(postId);
+        
+        if (!publicacion) {
+            return res.status(404).json({ error: 'No encontrado' });
+        }
+
+        const comentariosGuardados = await ForoComentario.findAll({
+            where: { id_publicacion: postId }
+        });
+        
+        return res.json({
+            publicacion,
+            comentarios: comentariosGuardados
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
 // aca tiene que ir el delete y put
 
 module.exports = router;

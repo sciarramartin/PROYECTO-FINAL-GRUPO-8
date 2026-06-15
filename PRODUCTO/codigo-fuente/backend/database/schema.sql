@@ -266,6 +266,7 @@ CREATE TABLE foro_publicaciones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_materia INTEGER NOT NULL,
     id_usuario INTEGER NOT NULL,
+    --id_autor INTEGER NOT NULL,
     titulo TEXT NOT NULL,
     contenido TEXT NOT NULL,
     categoria TEXT DEFAULT 'General', -- 'Duda', 'Opinión', 'Recurso', etc.
@@ -284,10 +285,12 @@ CREATE TABLE foro_comentarios (
     id_publicacion INTEGER NOT NULL,
     id_usuario INTEGER NOT NULL,
     contenido TEXT NOT NULL,
+    id_comentario_padre INTEGER DEFAULT NULL,
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_comentario_padre) REFERENCES foro_comentarios(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- =========================

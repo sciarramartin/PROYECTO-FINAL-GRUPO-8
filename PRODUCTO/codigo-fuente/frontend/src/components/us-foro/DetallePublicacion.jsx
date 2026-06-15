@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+
 import { 
   FiArrowUp, 
   FiArrowDown, 
@@ -30,6 +31,11 @@ const DetallePublicacion = () => {
   const [cargando, setCargando] = useState(true);
   const [alertaTeammate, setAlertaTeammate] = useState(null);
 
+  const [nuevoComentario, setNuevoComentario] = useState(""); // NUEVA
+  const [enviandoComentario, setEnviandoComentario] = useState(false); // NUEVA
+  // 📁 Buscá los otros useState arriba de todo en DetallePublicacion.jsx y pegá esto:
+  const [comentarioPadreId, setComentarioPadreId] = useState(null);
+
   // Obtener ID del usuario actual para comparar si es autor
   let usuarioActual = {};
   try {
@@ -39,12 +45,60 @@ const DetallePublicacion = () => {
     console.error("Error parseando usuario actual:", e);
   }
 
+  // NUEVA ----------------
+  const controlarEnvioComentario = async (e, idPadre = null) => {
+
+    if (e && e.preventDefault) e.preventDefault(); // Evita que se recargue la página si viene de un formulario
+
+    //e.preventDefault();
+    if (!nuevoComentario.trim()) return;
+
+    setEnviandoComentario(true);
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+      // Enviamos el contenido y el id de la publicación al endpoint de comentarios
+      const response = await axios.post(
+        `${apiUrl}/foro/comentarios`, 
+        {
+          contenido: nuevoComentario,
+          id_publicacion: Number(postId),
+          id_comentario_padre: idPadre
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // Si tu backend devuelve el comentario creado con su "Autor" incluido:
+      setDatosHilo(prev => ({
+        ...prev,
+        comentarios: [...prev.comentarios, response.data.comentario || response.data]
+      }));
+
+      setNuevoComentario(""); // Limpiamos la caja de texto
+    } catch (error) {
+      console.error("Error al publicar el comentario:", error);
+      //mostrarMensajeTeammate("No se pudo publicar el comentario. Asegurate de que el backend tenga la ruta POST /api/foro/comentarios configurada.");
+      if (error.response && error.response.data) {
+        const detalleError = error.response.data.detalle || error.response.data.error || "Sin detalle";
+        alert(`❌ Error del Servidor (500):\n${detalleError}`);
+      } else {
+        alert("❌ No se pudo conectar con el servidor.");
+      }
+    } finally {
+      setEnviandoComentario(false);
+    }
+  };
+  // NUEVA ----------------
+
   useEffect(() => {
     const fetchHilo = async () => {
       try {
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-        const response = await axios.get(`${apiUrl}/foro/publicaciones/${postId}`, {
+        const response = await axios.get(`${apiUrl}/publicaciones/${postId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setDatosHilo(response.data);
@@ -152,7 +206,7 @@ const DetallePublicacion = () => {
         </button>
         <FiChevronRight className="w-3.5 h-3.5 shrink-0" />
         <button onClick={() => navigate(`/foros/${materiaId}`)} className="hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer border-none bg-transparent transition">
-          {publicacion.materia?.nombre || "Foro"}
+          {publicacion.Materia?.nombre || "Foro"}
         </button>
         <FiChevronRight className="w-3.5 h-3.5 shrink-0" />
         <span className="text-zinc-650 dark:text-zinc-350 truncate max-w-[200px] sm:max-w-xs">{publicacion.titulo}</span>
@@ -232,6 +286,8 @@ const DetallePublicacion = () => {
 
                 {/* Footer de Acciones de Publicación */}
                 <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/80 mt-5 pt-4 text-[11px] font-bold text-zinc-450 dark:text-zinc-500">
+                  
+                  
                   <div className="flex items-center gap-1.5">
                     <FiMessageSquare className="w-4 h-4 text-zinc-400" />
                     <span>{comentarios.length} comentarios</span>
@@ -265,11 +321,18 @@ const DetallePublicacion = () => {
             </div>
           </div>
 
-
           {/* Formulario de Comentar (UI Shell) */}
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm">
+          {/* 📁 Reemplazar el bloque de Formulario de Comentar por este: NUEVOOOOOOOO*/}
+          <form 
+            onSubmit={(e) => {
+              controlarEnvioComentario(e, comentarioPadreId);
+              setComentarioPadreId(null); // Limpia el estado para que el próximo comentario sea principal
+            }} 
+            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm"
+          >
             <h3 className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200 mb-3">Comentar</h3>
             <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden focus-within:border-indigo-500 transition duration-150">
+    
               {/* Barra de formato estética */}
               <div className="flex items-center gap-1 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-850 p-2 text-zinc-400">
                 <button type="button" className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-550 border-none bg-transparent cursor-pointer"><FiBold className="w-3.5 h-3.5" /></button>
@@ -280,24 +343,30 @@ const DetallePublicacion = () => {
                 <button type="button" className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-550 border-none bg-transparent cursor-pointer"><FiList className="w-3.5 h-3.5" /></button>
                 <button type="button" className="p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-550 border-none bg-transparent cursor-pointer"><FiSmile className="w-3.5 h-3.5" /></button>
               </div>
+
+              {/* Textarea habilitado y controlado */}
               <textarea
                 rows={3}
                 placeholder="Escribe tu respuesta..."
-                onClick={() => mostrarMensajeTeammate("El envío de comentarios está deshabilitado temporalmente para no interferir con la US de tu compañero: 'Comentar publicación'.")}
-                readOnly
+                value={nuevoComentario}
+                onChange={(e) => setNuevoComentario(e.target.value)}
+                disabled={enviandoComentario}
                 className="w-full p-3 text-xs md:text-sm bg-transparent outline-none border-none text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 resize-y"
               />
             </div>
             <div className="flex justify-between items-center mt-3">
               <span className="text-[10px] text-zinc-400">Presiona para escribir un comentario académico constructivo.</span>
               <button
-                onClick={() => mostrarMensajeTeammate("El envío de comentarios está deshabilitado temporalmente para no interferir con la US de tu compañero: 'Comentar publicación'.")}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition shadow-sm shadow-indigo-500/10"
+                type="submit"
+                disabled={enviandoComentario || !nuevoComentario.trim()}
+                className={`px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition shadow-sm shadow-indigo-500/10 ${
+                  (enviandoComentario || !nuevoComentario.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
+                }`}
               >
-                Publicar comentario
+                {enviandoComentario ? "Publicando..." : "Publicar comentario"}
               </button>
             </div>
-          </div>
+          </form>
 
           {/* Listado de Comentarios Existentes */}
           <div className="space-y-3">
@@ -375,10 +444,20 @@ const DetallePublicacion = () => {
                         {/* Footer del comentario */}
                         <div className="flex items-center justify-start gap-4 mt-3 pt-2.5 border-t border-zinc-100 dark:border-zinc-850/50 text-[10px] font-bold text-zinc-400">
                           <button 
-                            onClick={() => mostrarMensajeTeammate("El responder comentarios anidados corresponde a la US: 'Comentar publicación'.")}
+                            onClick={() => {
+                              // 🎯 Guardamos el ID del comentario al que le querés responder
+                              setComentarioPadreId(comentario.id);
+      
+                              // Le cargamos una referencia en el texto para guiar al usuario
+                              setNuevoComentario(`@Anónimo: `); 
+      
+                              // Hace scroll suave hasta tu formulario de abajo para escribir rápido
+                              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                            }}
+                            type="button"
                             className="hover:text-indigo-650 dark:hover:text-indigo-400 border-none bg-transparent cursor-pointer transition"
                           >
-                            Responder
+                            {comentarioPadreId === comentario.id ? "✍️ Respondiendo..." : "Responder"}
                           </button>
                           <button 
                             onClick={() => mostrarMensajeTeammate("El compartir comentarios está fuera del alcance de la US.")}
@@ -393,9 +472,9 @@ const DetallePublicacion = () => {
                             Reportar
                           </button>
                         </div>
-
                       </div>
                     </div>
+                    
                   );
                 })}
               </div>
@@ -416,7 +495,7 @@ const DetallePublicacion = () => {
             <div className="space-y-3.5 text-xs text-zinc-650 dark:text-zinc-400">
               <div className="flex items-center justify-between gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-2">
                 <span className="font-semibold text-zinc-450">Materia</span>
-                <span className="text-zinc-800 dark:text-zinc-200 font-bold truncate max-w-[150px]">{publicacion.materia?.nombre}</span>
+                <span className="text-zinc-800 dark:text-zinc-200 font-bold truncate max-w-[150px]">{publicacion.Materia?.nombre}</span>
               </div>
               <div className="flex items-center justify-between gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-2">
                 <span className="font-semibold text-zinc-450">Publicado por</span>

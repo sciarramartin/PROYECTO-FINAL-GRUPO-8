@@ -103,9 +103,12 @@ Usuario.hasMany(MensajePrivado, { foreignKey: 'id_destinatario', as: 'MensajesRe
 Usuario.hasOne(Perfil, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 Perfil.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
+//Usuario.hasOne(Perfil, { foreignKey: 'id_usuario', onDelete: 'CASCADE', as: 'Perfil'});
+//Perfil.belongsTo(Usuario, { as: 'Usuario', foreignKey: 'id_usuario' });
+
 // Relaciones de Foro
 Materia.hasMany(ForoPublicacion, { foreignKey: 'id_materia', onDelete: 'CASCADE' });
-ForoPublicacion.belongsTo(Materia, { foreignKey: 'id_materia' });
+ForoPublicacion.belongsTo(Materia, { foreignKey: 'id_materia'});
 
 Usuario.hasMany(ForoPublicacion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 ForoPublicacion.belongsTo(Usuario, { as: 'Autor', foreignKey: 'id_usuario' });
@@ -116,8 +119,29 @@ ForoComentario.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
 Usuario.hasMany(ForoComentario, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 ForoComentario.belongsTo(Usuario, { as: 'Autor', foreignKey: 'id_usuario' });
 
+// Relación Reflexiva (Autoreferencia para las respuestas en hilo con la línea vertical)
+ForoComentario.hasMany(ForoComentario, { foreignKey: 'id_comentario_padre', as: 'Respuestas', onDelete: 'CASCADE' });
+ForoComentario.belongsTo(ForoComentario, { foreignKey: 'id_comentario_padre', as: 'Padre' });
+
 ForoPublicacion.hasMany(ForoReaccion, { foreignKey: 'id_publicacion', onDelete: 'CASCADE' });
 ForoReaccion.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
 
 Usuario.hasMany(ForoReaccion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 ForoReaccion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+
+module.exports = {
+    Usuario,
+    TipoUsuario,
+    Carrera,
+    Materia,
+    EstadoMateria,
+    Amistad,
+    Grupo,
+    GrupoMiembro,
+    GrupoMensaje,
+    MensajePrivado,
+    Perfil,
+    ForoPublicacion,
+    ForoComentario,
+    ForoReaccion
+};

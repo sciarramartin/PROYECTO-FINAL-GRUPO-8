@@ -23,29 +23,55 @@ const inicializarDB = async () => {
         'utf8'
     );
 
-    if (fs.existsSync(DB_PATH)) {
-            fs.unlinkSync(DB_PATH);
-            console.log("Base eliminada");
-    };
+    //if (fs.existsSync(DB_PATH)) {
+            //fs.unlinkSync(DB_PATH);
+            //console.log("Base eliminada");
+    //};
 
-    await new Promise((resolve, reject) => {
-        const db = new sqlite3.Database(DB_PATH);
+    if (!fs.existsSync(DB_PATH)) {
+        console.log("Base de datos no encontrada. Creando e inicializando con estructura y semillas...");
+        
+        await new Promise((resolve, reject) => {
+            const db = new sqlite3.Database(DB_PATH);
 
-        db.exec(schema, (err) => {
-            if (err) return reject(err);
-
-            db.exec(seed, (err) => {
+            db.exec(schema, (err) => {
                 if (err) return reject(err);
 
-                db.close();
-                resolve();
+                db.exec(seed, (err) => {
+                    if (err) return reject(err);
+
+                    db.close();
+                    resolve();
+                });
             });
         });
-    });
+    } else {
+        console.log("Base de datos existente encontrada. Manteniendo los datos...");
+    }
 
+    // Sequelize se conecta directamente al archivo físico que ya existe o se acaba de crear
     await baseDeDatos.authenticate();
 
     console.log('Base de datos inicializada y conectada');
+
+    // await new Promise((resolve, reject) => {
+    //     const db = new sqlite3.Database(DB_PATH);
+
+    //     db.exec(schema, (err) => {
+    //         if (err) return reject(err);
+
+    //         db.exec(seed, (err) => {
+    //             if (err) return reject(err);
+
+    //             db.close();
+    //             resolve();
+    //         });
+    //     });
+    // });
+
+    // await baseDeDatos.authenticate();
+
+    // console.log('Base de datos inicializada y conectada');
 };
 
 module.exports = {
