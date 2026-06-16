@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-//se encarga de dibujar un comentario individual 
-//y, si ese comentario tiene respuestas adentro, se vuelve a llamar a sí mismo metido un nivel más adentro
 
 const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuarioActual }) => {
     const [mostrarFormularioRespuesta, setMostrarFormularioRespuesta] = useState(false);

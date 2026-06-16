@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ComentarioNodo from './ComentarioNodo';
 
-//componente general que se va a incrustar abajo del detalle de la publicación.
-
 const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentarioRaiz, setNuevoComentarioRaiz] = useState("");
