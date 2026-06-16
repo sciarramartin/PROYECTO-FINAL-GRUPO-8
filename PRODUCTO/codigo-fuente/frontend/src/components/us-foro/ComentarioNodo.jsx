@@ -48,11 +48,25 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
 
                     {/* Botonera de acciones */}
                     <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                        <button
+                            type="button"
+                            className="hover:text-green-600 transition"
+                            onClick={() => alert("Funcionalidad en desarrollo")}
+                        >
+                            👍 Me gusta
+                        </button>
                         <button 
                             onClick={() => setMostrarFormularioRespuesta(!mostrarFormularioRespuesta)}
                             className="hover:text-indigo-600 font-medium transition-colors"
                         >
                             ↩ Responder
+                        </button>
+                        <button
+                            type="button"
+                            className="hover:text-orange-600 transition"
+                            onClick={() => alert("Funcionalidad en desarrollo")}
+                        >
+                            🚩 Reportar
                         </button>
                     </div>
                 </div>

@@ -129,6 +129,8 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
                             todasLasRespuestas={comentarios} // Pasamos la bolsa completa para que los nodos busquen sus hijos
                             alResponder={manejarEnviarComentario}
                             idUsuarioActual={idUsuarioActual}
+                            //alVotar={manejarVotoComentario}
+                            //alReportar={manejarReportarComentario}
                         />
                     ))
                 )}
