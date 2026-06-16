@@ -36,9 +36,9 @@ const rutasAmistades = require('./controladores/amistad.controller.js');
 const rutasGrupos = require('./controladores/grupo.controller.js');
 const rutasChatPrivado = require('./controladores/chat-privado.controller.js');
 const rutasPerfil = require('./controladores/perfil.controller.js');
-//const rutasForo = require('./controladores/foro.controller.js');
 const rutasForo = require('./controladores/Foro-controllers/foro.controller.js');
 const rutasPublicacion = require('./controladores/Foro-controllers/publicacion.controller.js');
+const rutasComentario = require('./controladores/Foro-controllers/comentario.controller.js');
 
 
 const http = require('http');
@@ -115,6 +115,7 @@ app.use('/api/chat-privado', rutasChatPrivado);
 app.use('/api/perfiles', rutasPerfil);
 app.use('/api/foro', rutasForo);
 app.use('/api/publicaciones', rutasPublicacion);
+app.use('/api/foro/comentarios', rutasComentario);
 
 // Ruta base
 app.get('/', (req, res) => {

@@ -378,7 +378,6 @@ router.post('/:id/mensajes', verificarToken, async (req, res) => {
             req.io.to(`grupo_${id_grupo}`).emit('nuevo_mensaje_grupo', mensajeCompleto);
             console.log(`[Socket.io] Nuevo mensaje emitido en tiempo real a sala: grupo_${id_grupo}`);
 
-            // Enviar notificaciones a los miembros del grupo que están conectados
             try {
                 const grupo = await Grupo.findByPk(id_grupo, { attributes: ['nombre'] });
                 const miembros = await GrupoMiembro.findAll({
@@ -386,8 +385,9 @@ router.post('/:id/mensajes', verificarToken, async (req, res) => {
                 });
 
                 miembros.forEach(miembro => {
-                    if (miembro.id_usuario !== id_usuario) {
-                        const socketId = req.usuariosConectados?.get(miembro.id_usuario);
+                    const esRemitente = Number(miembro.id_usuario) === Number(id_usuario);
+                    if (!esRemitente) {
+                        const socketId = req.usuariosConectados?.get(Number(miembro.id_usuario)) || req.usuariosConectados?.get(String(miembro.id_usuario));
                         if (socketId) {
                             req.io.to(socketId).emit('nuevo_mensaje_grupo_notificacion', {
                                 id_grupo,

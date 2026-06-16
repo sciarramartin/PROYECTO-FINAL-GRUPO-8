@@ -23,6 +23,20 @@ const ListaGrupos = () => {
 
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
+  const getUsuarioId = () => {
+    try {
+      const uStr = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+      if (uStr && uStr !== "undefined") {
+        const parsed = JSON.parse(uStr);
+        return parsed?.id;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  };
+  const miUsuarioId = getUsuarioId();
+
   const cargarDatos = async () => {
     setCargando(true);
     setError("");
@@ -53,17 +67,26 @@ const ListaGrupos = () => {
       navigate("/login");
     }
 
-    // Escuchar la creación de grupos en tiempo real
+    // Escuchar la creación de grupos y notificaciones de mensajes en tiempo real
     if (window.socket) {
       const manejarGrupoCreado = (nuevoGrupo) => {
         console.log("[Socket.io] Nuevo grupo creado detectado:", nuevoGrupo);
         cargarDatos();
       };
 
+      const manejarNuevaNotificacion = () => {
+        console.log("[Socket.io] Nueva notificación de grupo recibida en lista-grupos, recargando...");
+        cargarDatos();
+      };
+
       window.socket.on("grupo_creado", manejarGrupoCreado);
+      window.socket.on("nuevo_mensaje_grupo_notificacion", manejarNuevaNotificacion);
 
       return () => {
-        window.socket.off("grupo_creado", manejarGrupoCreado);
+        if (window.socket) {
+          window.socket.off("grupo_creado", manejarGrupoCreado);
+          window.socket.off("nuevo_mensaje_grupo_notificacion", manejarNuevaNotificacion);
+        }
       };
     }
   }, []);
@@ -224,10 +247,30 @@ const ListaGrupos = () => {
                       <div className="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-base font-extrabold shrink-0">
                         {inicial}
                       </div>
-                      <div className="min-w-0">
-                        <h3 className="text-xs font-bold text-gray-900 leading-snug truncate">
-                          {grupo.nombre}
-                        </h3>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <h3 className="text-xs font-bold text-gray-900 leading-snug truncate">
+                            {grupo.nombre}
+                          </h3>
+                          {(() => {
+                            const ultMsg = grupo.ultimoMensaje;
+                            if (ultMsg && miUsuarioId && Number(ultMsg.id_usuario) !== Number(miUsuarioId)) {
+                              const ultimosVistos = JSON.parse(localStorage.getItem(`grupo_ultimo_visto_${miUsuarioId}`) || "{}");
+                              let ultimoVistoId = ultimosVistos[grupo.id] || 0;
+                              if (Number(ultimoVistoId) > Number(ultMsg.id)) {
+                                ultimoVistoId = 0;
+                                ultimosVistos[grupo.id] = 0;
+                                localStorage.setItem(`grupo_ultimo_visto_${miUsuarioId}`, JSON.stringify(ultimosVistos));
+                              }
+                              if (Number(ultMsg.id) > Number(ultimoVistoId)) {
+                                return (
+                                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 inline-block animate-pulse" title="Nuevo mensaje pendiente" />
+                                );
+                              }
+                            }
+                            return null;
+                          })()}
+                        </div>
                         <p className="text-[10px] text-gray-400 mt-0.5 truncate">
                           Por: {grupo.Creador ? `${grupo.Creador.nombre} ${grupo.Creador.apellido}` : "Tú"}
                         </p>

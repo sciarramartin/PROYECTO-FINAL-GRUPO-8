@@ -23,6 +23,11 @@ const ForoComentario = baseDeDatos.define('ForoComentario', {
     votos: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    id_comentario_padre: {
+        type: DataTypes.INTEGER,
+        allowNull: true, // 🎯 CRÍTICO: Tiene que ser true para que acepte comentarios principales
+        defaultValue: null
     }
 }, {
     tableName: 'foro_comentarios',

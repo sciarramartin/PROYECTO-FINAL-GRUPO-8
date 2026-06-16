@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verificarToken } = require('../../middleware/authMiddleware'); 
-const { ForoPublicacion } = require('../../modelos/ForoPublicacion'); 
-const { ForoComentario } = require('../../modelos/ForoComentario'); 
-const { ForoReaccion } = require('../../modelos/ForoReaccion'); 
+const { ForoPublicacion, ForoComentario, ForoReaccion, Usuario, Materia } = require('../../modelos/asociaciones');
 
 // @route   POST /api/publicaciones
 // @desc    Crear una nueva publicación en el foro de una materia
@@ -182,6 +180,7 @@ router.post('/:id/reaccionar', verificarToken, async (req, res) => {
         return res.status(500).json({ error: 'Error interno del servidor al reaccionar a la publicación.' });
     }
 });
+
 // @route   POST /api/publicaciones/comentarios/:id/reaccionar
 // @desc    Votar positivo o negativo en un comentario
 // @access  Privado
@@ -238,6 +237,30 @@ router.post('/comentarios/:id/reaccionar', verificarToken, async (req, res) => {
     } catch (error) {
         console.error("Error al reaccionar a comentario:", error);
         return res.status(500).json({ error: 'Error interno del servidor al reaccionar al comentario.' });
+    }
+});
+
+router.get('/:postId', verificarToken, async (req, res) => {
+    try {
+        const { postId } = req.params;
+        
+        // Buscamos solo el registro plano sin ninguna clase de includes o mapeos externos
+        const publicacion = await ForoPublicacion.findByPk(postId);
+        
+        if (!publicacion) {
+            return res.status(404).json({ error: 'No encontrado' });
+        }
+
+        const comentariosGuardados = await ForoComentario.findAll({
+            where: { id_publicacion: postId }
+        });
+        
+        return res.json({
+            publicacion,
+            comentarios: comentariosGuardados
+        });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
     }
 });
 

@@ -221,7 +221,6 @@ const Layout = ({ children }) => {
       console.error("Error al obtener notificaciones de mensajes privados:", error);
     }
   };
-
   // Cargar Mensajes de Grupos no leídos
   const cargarGruposMensajesPendientes = async () => {
     try {
@@ -239,12 +238,14 @@ const Layout = ({ children }) => {
       const unreadGroups = response.data.filter(grupo => {
         const ultMsg = grupo.ultimoMensaje;
         if (!ultMsg) return false;
+        
         // Si el último mensaje es mío, no lo considero pendiente
-        if (ultMsg.id_usuario === userId) return false;
+        const esMio = Number(ultMsg.id_usuario) === Number(userId);
+        if (esMio) return false;
         
         // Si estamos viendo el muro de este grupo actualmente, tampoco es pendiente
         const pathParts = window.location.pathname.split("/");
-        const esMuroGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && parseInt(pathParts[2], 10) === grupo.id;
+        const esMuroGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && Number(pathParts[2]) === Number(grupo.id);
         if (esMuroGrupo) {
           // Actualizar localStorage para que ya no aparezca como unread
           ultimosVistos[grupo.id] = ultMsg.id;
@@ -252,8 +253,14 @@ const Layout = ({ children }) => {
           return false;
         }
 
-        const ultimoVistoId = ultimosVistos[grupo.id] || 0;
-        return ultMsg.id > ultimoVistoId;
+        let ultimoVistoId = ultimosVistos[grupo.id] || 0;
+        if (Number(ultimoVistoId) > Number(ultMsg.id)) {
+          ultimoVistoId = 0;
+          ultimosVistos[grupo.id] = 0;
+          localStorage.setItem(`grupo_ultimo_visto_${userId}`, JSON.stringify(ultimosVistos));
+        }
+
+        return Number(ultMsg.id) > Number(ultimoVistoId);
       });
 
       setGruposMensajesPendientes(unreadGroups);
@@ -410,22 +417,26 @@ const Layout = ({ children }) => {
       });
 
       window.socket.on("nuevo_mensaje_grupo_notificacion", (data) => {
-        console.log("[Socket.io] Recibida notificación de nuevo mensaje de grupo en tiempo real");
+        console.log("[Socket.io Debug] Recibida notificación de nuevo mensaje de grupo en tiempo real:", data);
         // Solo notificar si no estamos viendo este grupo actualmente
         const pathParts = window.location.pathname.split("/");
-        const esMuroDeEsteGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && parseInt(pathParts[2], 10) === data.id_grupo;
+        const esMuroDeEsteGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && Number(pathParts[2]) === Number(data.id_grupo);
+        console.log(`[Socket.io Debug] ¿Es muro de este grupo? ${esMuroDeEsteGrupo}. pathParts[2]: ${pathParts[2]}, data.id_grupo: ${data.id_grupo}`);
         if (!esMuroDeEsteGrupo) {
+          console.log("[Socket.io Debug] No es el muro del grupo actual, cargando mensajes pendientes de grupos...");
           cargarGruposMensajesPendientes();
         }
       });
 
       return () => {
-        window.socket.off("connect");
-        window.socket.off("nueva_solicitud_amistad");
-        window.socket.off("actualizar_amistad");
-        window.socket.off("nueva_invitacion_grupo");
-        window.socket.off("mensaje_privado");
-        window.socket.off("nuevo_mensaje_grupo_notificacion");
+        if (window.socket) {
+          window.socket.off("connect");
+          window.socket.off("nueva_solicitud_amistad");
+          window.socket.off("actualizar_amistad");
+          window.socket.off("nueva_invitacion_grupo");
+          window.socket.off("mensaje_privado");
+          window.socket.off("nuevo_mensaje_grupo_notificacion");
+        }
       };
     }
   }, [usuario?.id]);
@@ -870,6 +881,13 @@ const Layout = ({ children }) => {
                   {esConexiones && cantPendientes + cantMensajesPendientes > 0 && (
                     <span className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
                       {cantPendientes + cantMensajesPendientes}
+                    </span>
+                  )}
+
+                  {/* GLOBITO DE GRUPOS (MENSAJES E INVITACIONES PENDIENTES) */}
+                  {item.path === "/grupos" && cantGruposMensajesPendientes + cantInvitacionesPendientes > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                      {cantGruposMensajesPendientes + cantInvitacionesPendientes}
                     </span>
                   )}
                 </button>
