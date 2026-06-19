@@ -84,9 +84,29 @@ router.put('/:id', verificarToken, async (req, res) => {
         publicacion.contenido = contenido.trim();
         await publicacion.save();
 
+        const publicacionActualizada = await ForoPublicacion.findByPk(id, {
+            include: [
+                {
+                    model: Usuario,
+                    as: 'Autor',
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'id_tipo_usuario'],
+                    include: [
+                        {
+                            model: Perfil,
+                            attributes: ['foto_perfil']
+                        }
+                    ]
+                },
+                {
+                    model: Materia,
+                    attributes: ['id', 'nombre', 'codigo']
+                }
+            ]
+        });
+
         return res.json({
             mensaje: 'Publicación editada correctamente.',
-            publicacion
+            publicacion: publicacionActualizada
         });
 
     } catch (error) {

@@ -80,6 +80,31 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
         }
     };
 
+    const manejarVotoComentario = async (comId, tipo) => {
+        try {
+            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+            
+            const res = await axios.post(
+                `${apiUrl}/publicaciones/comentarios/${comId}/reaccionar`,
+                { tipo },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setComentarios(prev => prev.map(c => 
+                c.id === comId ? { ...c, votos: res.data.votos } : c
+            ));
+
+        } catch (err) {
+            console.error("Error al votar comentario:", err);
+            setError(err.response?.data?.error || "Error al registrar voto en comentario.");
+        }
+    };
+
     // Filtramos los comentarios principales (los que no responden a nadie)
     const comentariosRaiz = comentarios.filter(c => c.id_comentario_padre === null);
 
@@ -129,7 +154,7 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
                             todasLasRespuestas={comentarios} // Pasamos la bolsa completa para que los nodos busquen sus hijos
                             alResponder={manejarEnviarComentario}
                             idUsuarioActual={idUsuarioActual}
-                            //alVotar={manejarVotoComentario}
+                            alVotar={manejarVotoComentario}
                             //alReportar={manejarReportarComentario}
                         />
                     ))

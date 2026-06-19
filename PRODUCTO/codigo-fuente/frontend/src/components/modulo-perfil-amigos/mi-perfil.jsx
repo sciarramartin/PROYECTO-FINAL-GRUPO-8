@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FiArrowUp, FiArrowDown, FiMessageSquare, FiBookmark } from "react-icons/fi";
 
 // Avatares predefinidos (Emojis con fondos vibrantes en HSL)
 const AVATARES_PREDEFINIDOS = [
@@ -86,10 +87,93 @@ const MiPerfil = () => {
   });
 
   // --- SUB-SECCIONES DE VISTA DE PERFIL ---
-  const [seccionActiva, setSeccionActiva] = useState("info"); // "info" o "foro"
+  const [seccionActiva, setSeccionActiva] = useState("info"); // "info", "foro" o "feed"
   const [actividadForo, setActividadForo] = useState({ publicaciones: [], comentarios: [] });
   const [cargandoActividad, setCargandoActividad] = useState(true);
   const [tabActiva, setTabActiva] = useState("publicaciones"); // "publicaciones" o "comentarios"
+
+  // Estados y lógica del Feed estilo Reddit (US 69)
+  const [feedPublicaciones, setFeedPublicaciones] = useState([]);
+  const [cargandoFeed, setCargandoFeed] = useState(false);
+  const [hasMoreFeed, setHasMoreFeed] = useState(true);
+  const [totalFeed, setTotalFeed] = useState(0);
+
+  const cargarFeed = async (reiniciar = false) => {
+    if (cargandoFeed) return;
+    const pageOffset = reiniciar ? 0 : feedPublicaciones.length;
+    
+    setCargandoFeed(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const res = await axios.get(`${apiUrl}/foro/feed`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { limit: 5, offset: pageOffset }
+      });
+      
+      if (reiniciar) {
+        setFeedPublicaciones(res.data.publicaciones);
+      } else {
+        setFeedPublicaciones(prev => [...prev, ...res.data.publicaciones]);
+      }
+      setHasMoreFeed(res.data.hasMore);
+      setTotalFeed(res.data.total);
+    } catch (err) {
+      console.error("Error al cargar feed:", err);
+    } finally {
+      setCargandoFeed(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      cargarActividadForo();
+      cargarFeed(true);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!hasMoreFeed || cargandoFeed) return;
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+        cargarFeed();
+      }
+    };
+    
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasMoreFeed, cargandoFeed, feedPublicaciones.length]);
+
+  const handleReaccionarFeed = async (pubId, tipo) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const res = await axios.post(`${apiUrl}/publicaciones/${pubId}/reaccionar`, { tipo }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setFeedPublicaciones(prev => prev.map(p => 
+        p.id === pubId ? { ...p, votos: res.data.votos } : p
+      ));
+    } catch (error) {
+      console.error("Error al reaccionar en feed:", error);
+    }
+  };
+
+  const handleGuardarFeed = async (pubId) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.post(`${apiUrl}/publicaciones/${pubId}/guardar`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setFeedPublicaciones(prev => prev.map(p => 
+        p.id === pubId ? { ...p, esGuardada: response.data.guardada } : p
+      ));
+      setMensaje(response.data.mensaje);
+      setTimeout(() => setMensaje(""), 4000);
+    } catch (error) {
+      console.error("Error al guardar en feed:", error);
+    }
+  };
 
   const cargarActividadForo = async () => {
     try {
@@ -110,11 +194,7 @@ const MiPerfil = () => {
     }
   };
 
-  useEffect(() => {
-    if (seccionActiva === "foro") {
-      cargarActividadForo();
-    }
-  }, [seccionActiva]);
+
 
   // Carga inicial
   const inicializarDatos = async () => {
@@ -651,10 +731,142 @@ const MiPerfil = () => {
     );
   };
 
+  const renderFeedForo = () => {
+    return (
+      <div className="p-4 sm:p-6 space-y-4 bg-gray-50/20 text-left">
+        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Feed Global del Foro ({totalFeed})</h3>
+        
+        {feedPublicaciones.length === 0 && !cargandoFeed ? (
+          <div className="text-center py-12 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+            <span className="text-4xl block mb-2">📚</span>
+            <p className="text-sm text-gray-500 font-bold">No hay publicaciones en el feed.</p>
+            <p className="text-xs text-gray-400 mt-1">Los foros de tus materias aún no tienen contenido.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {feedPublicaciones.map((pub) => {
+              const nombreCompleto = pub.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido}` : "Usuario Anónimo";
+              const esDocente = pub.Autor?.id_tipo_usuario === 2;
+              const fecha = new Date(pub.createdAt).toLocaleDateString("es-AR", {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+              });
+
+              return (
+                <div 
+                  key={pub.id} 
+                  className="bg-white border border-gray-200 rounded-2xl p-4 flex gap-4 transition shadow-sm hover:shadow-md"
+                >
+                  {/* Reddit-like vote block on the left */}
+                  <div className="flex flex-col items-center justify-start gap-1 text-gray-400 shrink-0 bg-gray-50 px-1.5 py-2 rounded-xl">
+                    <button 
+                      onClick={() => handleReaccionarFeed(pub.id, 'positivo')}
+                      className="p-1 rounded hover:bg-gray-150 text-gray-400 hover:text-amber-500 border-none bg-transparent cursor-pointer transition"
+                    >
+                      <FiArrowUp className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-black text-gray-750">{pub.votos || 0}</span>
+                    <button 
+                      onClick={() => handleReaccionarFeed(pub.id, 'negativo')}
+                      className="p-1 rounded hover:bg-gray-150 text-gray-400 hover:text-indigo-500 border-none bg-transparent cursor-pointer transition"
+                    >
+                      <FiArrowDown className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Main content */}
+                  <div className="min-w-0 flex-1 flex flex-col gap-2">
+                    
+                    {/* Header: Materia, Autor, Date */}
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+                      <span className="font-extrabold text-indigo-650 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100/50">
+                        {pub.Materia?.nombre}
+                      </span>
+                      <span className="text-gray-300">•</span>
+                      <span className="font-semibold text-gray-600">{nombreCompleto}</span>
+                      <span className={`text-[8px] px-1 py-0.2 rounded font-bold uppercase tracking-wider ${
+                        esDocente 
+                          ? 'bg-emerald-100 text-emerald-800' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {esDocente ? 'Docente' : 'Estudiante'}
+                      </span>
+                      <span className="text-gray-300">•</span>
+                      <span>{fecha}</span>
+                      <span className={`ml-auto text-[9px] font-bold px-2 py-0.5 rounded-md border ${
+                        pub.categoria === "Duda"
+                          ? "bg-amber-50 text-amber-600 border-amber-100"
+                          : pub.categoria === "Recurso"
+                          ? "bg-green-50 text-green-600 border-green-100"
+                          : "bg-gray-50 text-gray-600 border-gray-100"
+                      }`}>
+                        {pub.categoria || "General"}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h4 
+                      onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
+                      className="text-sm font-extrabold text-gray-900 hover:text-indigo-600 cursor-pointer transition leading-snug"
+                    >
+                      {pub.titulo}
+                    </h4>
+
+                    {/* Preview Content */}
+                    <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                      {pub.contenido}
+                    </p>
+
+                    {/* Footer Actions */}
+                    <div className="flex items-center gap-4 mt-2 pt-2 border-t border-gray-100 text-[10px] font-bold text-gray-400">
+                      <button 
+                        onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
+                        className="flex items-center gap-1.5 hover:text-indigo-600 border-none bg-transparent cursor-pointer transition"
+                      >
+                        <FiMessageSquare className="w-3.5 h-3.5" />
+                        <span>{pub.cantComentarios || 0} comentarios</span>
+                      </button>
+
+                      <button 
+                        onClick={() => handleGuardarFeed(pub.id)}
+                        className={`flex items-center gap-1.5 border-none bg-transparent cursor-pointer transition ${
+                          pub.esGuardada
+                            ? "text-indigo-650 font-extrabold"
+                            : "hover:text-indigo-600"
+                        }`}
+                      >
+                        <FiBookmark className={`w-3.5 h-3.5 ${pub.esGuardada ? "fill-current" : ""}`} />
+                        <span>{pub.esGuardada ? "Guardada" : "Guardar"}</span>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Loader while scrolling */}
+        {cargandoFeed && (
+          <div className="flex items-center justify-center py-4 gap-2">
+            <div className="w-5 h-5 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+            <span className="text-[11px] text-gray-400 font-bold">Cargando más publicaciones...</span>
+          </div>
+        )}
+
+        {!hasMoreFeed && feedPublicaciones.length > 0 && (
+          <p className="text-center text-[10px] text-gray-400 font-semibold py-4">Has llegado al final de tu feed.</p>
+        )}
+      </div>
+    );
+  };
+
   // --- VISTA DE PERFIL (Por defecto, Lectura limpia con botón de Editar) ---
   if (!editando) {
     return (
-      <div className="max-w-3xl mx-auto px-4 mt-6">
+      <div className="w-full mt-6 space-y-6">
         
         {/* Alerta de guardado exitoso */}
         {mensaje && (
@@ -696,35 +908,31 @@ const MiPerfil = () => {
             </button>
           </div>
 
-          {/* Selector de Sección Principal (Tabs) */}
-          <div className="flex border-b border-gray-150 bg-white">
-            <button
-              type="button"
-              onClick={() => setSeccionActiva("info")}
-              className={`flex-1 py-3 text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
-                seccionActiva === "info"
-                  ? "text-indigo-600 border-b-2 border-indigo-600 font-extrabold"
-                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-50/10"
-              }`}
-            >
-              👤 Información Académica
-            </button>
-            <button
-              type="button"
-              onClick={() => setSeccionActiva("foro")}
-              className={`flex-1 py-3 text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
-                seccionActiva === "foro"
-                  ? "text-indigo-600 border-b-2 border-indigo-600 font-extrabold"
-                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-50/10"
-              }`}
-            >
-              💬 Actividad del Foro
-            </button>
+          {/* Split Content Section: Información Académica a la izquierda, Mi Actividad a la derecha */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-150 bg-white">
+            <div className="flex flex-col">
+              <div className="border-b border-gray-150 px-6 py-3.5 bg-gray-50/40">
+                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                  👤 Información Académica
+                </h3>
+              </div>
+              {renderInfoAcademica()}
+            </div>
+            <div className="flex flex-col">
+              <div className="border-b border-gray-150 px-6 py-3.5 bg-gray-50/40">
+                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                  💬 Mi Actividad en el Foro
+                </h3>
+              </div>
+              {renderActividadForo()}
+            </div>
           </div>
 
-          {/* Renderizado Condicional de la Sección Activa */}
-          {seccionActiva === "info" ? renderInfoAcademica() : renderActividadForo()}
+        </div>
 
+        {/* Feed del Foro debajo, separado de la carta del perfil en su propia tarjeta */}
+        <div className="bg-white rounded-2xl border border-gray-150 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+          {renderFeedForo()}
         </div>
 
       </div>
@@ -733,7 +941,7 @@ const MiPerfil = () => {
 
   // --- MODO EDICIÓN (Se activa al hacer clic en Editar Perfil) ---
   return (
-    <div className="max-w-6xl mx-auto px-2">
+    <div className="w-full mt-6">
       
       {/* Cabecera de Página */}
       <div className="mb-6 flex items-center justify-between">

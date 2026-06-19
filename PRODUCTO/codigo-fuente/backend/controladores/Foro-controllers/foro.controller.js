@@ -200,6 +200,72 @@ router.get('/materias/:materiaId/mis-aportes', verificarToken, async (req, res) 
     }
 });
 
+// GET /api/foro/feed - Obtener un feed paginado de todas las materias ordenado por relevancia (votos, luego fecha)
+router.get('/feed', verificarToken, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = parseInt(req.query.offset) || 0;
+
+        const { count, rows: publicaciones } = await ForoPublicacion.findAndCountAll({
+            limit,
+            offset,
+            include: [
+                {
+                    model: Usuario,
+                    as: 'Autor',
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'id_tipo_usuario'],
+                    include: [
+                        {
+                            model: Perfil,
+                            attributes: ['foto_perfil']
+                        }
+                    ]
+                },
+                {
+                    model: Materia,
+                    attributes: ['id', 'nombre', 'codigo']
+                }
+            ],
+            order: [['votos', 'DESC'], ['createdAt', 'DESC']]
+        });
+
+        // Formatear con la cantidad de comentarios y si está guardada para el usuario actual
+        const publicacionesConStats = await Promise.all(publicaciones.map(async (pub) => {
+            const cantComentarios = await ForoComentario.count({
+                where: { id_publicacion: pub.id }
+            });
+
+            const guardada = await ForoPublicacionGuardada.findOne({
+                where: { id_usuario: req.usuario.id, id_publicacion: pub.id }
+            });
+
+            return {
+                id: pub.id,
+                titulo: pub.titulo,
+                contenido: pub.contenido,
+                categoria: pub.categoria,
+                votos: pub.votos,
+                createdAt: pub.createdAt,
+                updatedAt: pub.updatedAt,
+                id_materia: pub.id_materia,
+                Autor: pub.Autor,
+                Materia: pub.Materia,
+                cantComentarios,
+                esGuardada: !!guardada
+            };
+        }));
+
+        res.json({
+            total: count,
+            publicaciones: publicacionesConStats,
+            hasMore: offset + limit < count
+        });
+    } catch (error) {
+        console.error('Error al obtener feed del foro:', error);
+        res.status(500).json({ error: 'Error interno al obtener el feed del foro.' });
+    }
+});
+
 // GET /api/foro/publicaciones/:postId - Obtener detalle completo de una publicación y sus comentarios
 router.get('/publicaciones/:postId', verificarToken, async (req, res) => {
     try {

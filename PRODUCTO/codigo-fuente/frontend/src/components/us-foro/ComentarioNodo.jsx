@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { FiArrowUp, FiArrowDown } from 'react-icons/fi';
 
-const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuarioActual }) => {
+const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuarioActual, alVotar }) => {
     const [mostrarFormularioRespuesta, setMostrarFormularioRespuesta] = useState(false);
     const [textoRespuesta, setTextoRespuesta] = useState("");
 
@@ -46,24 +47,37 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                     
                     <p className="text-gray-700 text-sm whitespace-pre-wrap">{comentario.contenido}</p>
 
-                    {/* Botonera de acciones */}
-                    <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                        <button
-                            type="button"
-                            className="hover:text-green-600 transition"
-                            onClick={() => alert("Funcionalidad en desarrollo")}
-                        >
-                            👍 Me gusta
-                        </button>
+                    {/* Botonera de acciones (con valoración e íconos premium) */}
+                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                        <div className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200/70 transition px-2 py-0.5 rounded-full font-bold">
+                            <button
+                                type="button"
+                                onClick={() => alVotar && alVotar(comentario.id, 'positivo')}
+                                className="hover:text-amber-500 transition border-none bg-transparent cursor-pointer p-0.5 flex items-center"
+                            >
+                                <FiArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="text-[10px] text-gray-700 min-w-[8px] text-center">{comentario.votos || 0}</span>
+                            <button
+                                type="button"
+                                onClick={() => alVotar && alVotar(comentario.id, 'negativo')}
+                                className="hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-0.5 flex items-center"
+                            >
+                                <FiArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+
                         <button 
+                            type="button"
                             onClick={() => setMostrarFormularioRespuesta(!mostrarFormularioRespuesta)}
-                            className="hover:text-indigo-600 font-medium transition-colors"
+                            className="hover:text-indigo-650 font-semibold transition-colors border-none bg-transparent cursor-pointer flex items-center gap-1"
                         >
                             ↩ Responder
                         </button>
+
                         <button
                             type="button"
-                            className="hover:text-orange-600 transition"
+                            className="hover:text-orange-600 transition border-none bg-transparent cursor-pointer flex items-center gap-1"
                             onClick={() => alert("Funcionalidad en desarrollo")}
                         >
                             🚩 Reportar
@@ -74,7 +88,7 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
 
             {/* Formulario desplegable para escribir la respuesta */}
             {mostrarFormularioRespuesta && (
-                <form onSubmit={manejarEnvioRespuesta} className="ml-11 mt-2 flex gap-2">
+                <form onSubmit={manejarEnvioRespuesta} className="ml-6 sm:ml-11 mt-2 flex gap-2">
                     <input
                         type="text"
                         placeholder="Escribe una respuesta..."
@@ -90,9 +104,9 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
 
             {/* 🔗 SECCIÓN RECURSIVA: Las respuestas anidadas con la línea vertical estilo Reddit */}
             {misHijos.length > 0 && (
-                <div className="flex ml-4 mt-2">
+                <div className="flex ml-2 sm:ml-4 mt-2">
                     {/* 🛠️ LA LÍNEA VERTICAL DEL HILO */}
-                    <div className="w-0.5 bg-gray-300 hover:bg-indigo-400 transition-colors cursor-pointer mr-4 ml-3 rounded" />
+                    <div className="w-0.5 bg-gray-300 hover:bg-indigo-400 transition-colors cursor-pointer mr-2 ml-1 sm:mr-4 sm:ml-3 rounded" />
                     
                     {/* Renderizamos recursivamente los hijos adentro de este mismo bloque */}
                     <div className="flex-1">
@@ -103,6 +117,7 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                                 todasLasRespuestas={todasLasRespuestas}
                                 alResponder={alResponder}
                                 idUsuarioActual={idUsuarioActual}
+                                alVotar={alVotar}
                             />
                         ))}
                     </div>
