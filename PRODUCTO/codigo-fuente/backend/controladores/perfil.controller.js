@@ -81,6 +81,7 @@ router.get('/:id/foro-actividad', verificarToken, async (req, res) => {
             include: [
                 {
                     model: ForoPublicacion,
+                    required: true, // Excluye comentarios de publicaciones que fueron eliminadas
                     attributes: ['id', 'titulo', 'id_materia'],
                     include: [
                         {
