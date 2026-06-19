@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verificarToken } = require('../../middleware/authMiddleware'); 
-const { ForoPublicacion, ForoComentario, ForoReaccion, Usuario, Materia } = require('../../modelos/asociaciones');
+const { ForoPublicacion, ForoComentario, ForoReaccion, Usuario, Materia, Perfil } = require('../../modelos/asociaciones');
 
 // @route   POST /api/publicaciones
 // @desc    Crear una nueva publicación en el foro de una materia
@@ -244,15 +244,46 @@ router.get('/:postId', verificarToken, async (req, res) => {
     try {
         const { postId } = req.params;
         
-        // Buscamos solo el registro plano sin ninguna clase de includes o mapeos externos
-        const publicacion = await ForoPublicacion.findByPk(postId);
+        const publicacion = await ForoPublicacion.findByPk(postId, {
+            include: [
+                {
+                    model: Usuario,
+                    as: 'Autor',
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'id_tipo_usuario'],
+                    include: [
+                        {
+                            model: Perfil,
+                            attributes: ['foto_perfil']
+                        }
+                    ]
+                },
+                {
+                    model: Materia,
+                    attributes: ['id', 'nombre', 'codigo']
+                }
+            ]
+        });
         
         if (!publicacion) {
             return res.status(404).json({ error: 'No encontrado' });
         }
 
         const comentariosGuardados = await ForoComentario.findAll({
-            where: { id_publicacion: postId }
+            where: { id_publicacion: postId },
+            include: [
+                {
+                    model: Usuario,
+                    as: 'Autor',
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'id_tipo_usuario'],
+                    include: [
+                        {
+                            model: Perfil,
+                            attributes: ['foto_perfil']
+                        }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'ASC']]
         });
         
         return res.json({
