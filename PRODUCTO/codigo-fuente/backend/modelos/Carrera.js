@@ -1,6 +1,6 @@
 // modelos/Carrera.js
 const { DataTypes } = require('sequelize');
-const { baseDeDatos } = require('../configuracion/base-de-datos');
+const { baseDeDatos } = require('../database/base-de-datos');
 
 const Carrera = baseDeDatos.define('Carrera', {
     id: {

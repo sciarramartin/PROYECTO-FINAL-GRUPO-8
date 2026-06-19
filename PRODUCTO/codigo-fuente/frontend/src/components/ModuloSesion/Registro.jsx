@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useMostrarContraseña } from './mostrarContrasena';
 
@@ -18,6 +18,32 @@ const Registro = () => {
     // traemos el estado y la función desde mostrarContrasena.js
     const { mostrarContraseña, alternarVisibilidad } = useMostrarContraseña();
 
+    const [planes, setPlanes] = useState([]);
+    const [id_plan_academico, setIdPlanAcademico] = useState("");
+
+    const API_BASE_URL = "http://localhost:3000/api";
+
+    useEffect(() => {
+        if (!id_carrera) {
+            setPlanes([]);
+            setIdPlanAcademico("");
+            return;
+        }
+        axios.get(`${API_BASE_URL}/planes-academicos?id_carrera=${id_carrera}`)
+            .then(res => {
+                setPlanes(res.data);
+                if (res.data.length > 0) {
+                    setIdPlanAcademico(res.data[0].id.toString());
+                } else {
+                    setIdPlanAcademico("");
+                }
+            })
+            .catch(err => {
+                console.error("Error al obtener planes:", err);
+                setPlanes([]);
+            });
+    }, [id_carrera]);
+
     // Conseguimos el año actual dinámicamente (ej. 2026)
     const anioActual = new Date().getFullYear();
     // Generamos un arreglo de años (por ejemplo, los últimos 15 años)
@@ -34,6 +60,7 @@ const Registro = () => {
             !contraseña ||
             !confirmarContraseña ||
             !id_carrera ||
+            !id_plan_academico ||
             !anio_ingreso
         ) {
             setError("Completá todos los campos");
@@ -41,7 +68,7 @@ const Registro = () => {
         }
         setCargando(true);
         try { 
-            await axios.post("http://localhost:3000/api/usuarios/registro", {
+            await axios.post(`${API_BASE_URL}/usuarios/registro`, {
                 nombre,
                 apellido,
                 nombre_usuario,
@@ -49,6 +76,7 @@ const Registro = () => {
                 contraseña,
                 confirmarContraseña,
                 id_carrera: Number(id_carrera),
+                id_plan_academico: Number(id_plan_academico),
                 anio_ingreso: Number(anio_ingreso)
             });
             setMensaje("Usuario registrado correctamente");
@@ -164,7 +192,7 @@ const Registro = () => {
                     <select
                         value={id_carrera}
                         onChange={(e) => setIdCarrera(e.target.value)}
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 outline-none"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 outline-none text-sm text-gray-700"
                     >
                         <option value="">Seleccioná una carrera</option>
                         <option value="1">Ingeniería en Sistemas</option>
@@ -177,6 +205,23 @@ const Registro = () => {
                         <option value="8">Ingeniería Metalúrgica</option>
                     </select>
                 </div>
+
+                {/* Plan Académico */}
+                {id_carrera && (
+                    <div className="mb-4">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Plan Académico</label>
+                        <select
+                            value={id_plan_academico}
+                            onChange={(e) => setIdPlanAcademico(e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 outline-none text-sm text-gray-700"
+                        >
+                            <option value="">Seleccioná un plan</option>
+                            {planes.map(p => (
+                                <option key={p.id} value={p.id}>{p.nombre}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
                 {/* Año */}
                 <div className="mb-4">

@@ -21,4 +21,13 @@ const verificarToken = (req, res, next) => {
     }
 };
 
-module.exports = { verificarToken };
+const verificarAdmin = (req, res, next) => {
+    // Se asume que este middleware se ejecuta DESPUÉS de verificarToken
+    if (req.usuario && req.usuario.id_tipo_usuario === 3) {
+        next();
+    } else {
+        return res.status(403).json({ mensaje: 'Acceso denegado. Se requiere rol de Administrador.' });
+    }
+};
+
+module.exports = { verificarToken, verificarAdmin };

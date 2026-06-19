@@ -4,6 +4,16 @@ const router = express.Router();
 const { Carrera } = require('../modelos/Carrera');
 
 // Definimos la ruta POST directamente sobre el router
+router.get('/', async (req, res) => {
+    try {
+        const carreras = await Carrera.findAll();
+        res.json(carreras);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: 'Error al obtener carreras.' });
+    }
+});
+
 router.post('/', async (req, res) => {
     try {
         const { nombre, facultad } = req.body;
@@ -25,6 +35,17 @@ router.post('/', async (req, res) => {
         if (error.name === 'SequelizeUniqueConstraintError') {
             return res.status(409).json({ mensaje: 'Esa carrera ya está registrada.' });
         }
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+});
+
+// GET /api/carreras
+router.get('/', async (req, res) => {
+    try {
+        const carreras = await Carrera.findAll();
+        return res.status(200).json(carreras);
+    } catch (error) {
+        console.error("Error al obtener carreras:", error);
         return res.status(500).json({ mensaje: 'Error interno del servidor.' });
     }
 });

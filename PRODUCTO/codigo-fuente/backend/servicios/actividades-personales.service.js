@@ -30,20 +30,20 @@ const findAllByUserId = async (idUsuario) => {
 
 function generarColorRandom() {
     const colores = [
-        '#FFB3BA', // Rosa pastel
+        '#D08B9B', // Rosa pastel
         '#C5E99B', // Verde menta pastel
         '#B5E3FF', // Azul cielo pastel
-        '#FFD1B3', // Durazno pastel
+        '#E9C772', // Durazno pastel
         '#E0BBE4', // Lila pastel
         '#FFF5BA', // Amarillo pastel
         '#B5F5E3', // Verde agua pastel
         '#FFCCD9'  // Rosado pastel
     ];
-    
+
     return colores[Math.floor(Math.random() * colores.length)];
 }
 
-const create = async (actividadData) => {
+const create = async (actividadData, idUsuario) => {
     try {
         let { nombre, horaInicio, duracion, dias, color } = actividadData;
 
@@ -73,7 +73,7 @@ const create = async (actividadData) => {
             duracion, 
             dias, 
             color,
-            id_usuario: actividadData.idUsuario || 1 // O como manejes la autenticación
+            id_usuario: idUsuario // O como manejes la autenticación
         });
         return mapToCamelCase(nuevoRegistro);
     } catch (error) {
@@ -135,7 +135,12 @@ const update = async (idUsuario, id, actividadData) => {
         });
         
         // Obtener actividad actualizada
-        const actividadActualizada = await Actividad.findByPk(id);
+        const actividadActualizada = await Actividad.findOne({
+            where: {
+                id_usuario: idUsuario,
+                id: id
+            }
+        });
         return mapToCamelCase(actividadActualizada);
         
     } catch (error) {
@@ -144,13 +149,17 @@ const update = async (idUsuario, id, actividadData) => {
 };
 
 // DELETE - Eliminar una actividad por ID
-const deleteById = async (id) => {
+const deleteById = async (id, idUsuario) => {
     try {
         // Verificar si la actividad existe
         const actividadExistente = await Actividad.findByPk(id);
         
         if (!actividadExistente) {
             throw new Error('Actividad no encontrada');
+        }
+
+        if (actividadExistente.id_usuario != idUsuario) {
+            throw new Error('no permitido');
         }
         
         // Eliminar la actividad

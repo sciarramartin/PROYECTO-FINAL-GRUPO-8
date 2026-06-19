@@ -24,34 +24,49 @@ const tieneCiclo = async (materiaDestinoId, materiaRequisitoId, visitados = new 
 };
 
 const crearMateria = async (datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = datos;
 
     // 1. Crear la materia principal
     const nuevaMateria = await Materia.create({
         codigo,
         nombre,
         nivel_anio,
-        cuatrimestre
+        cuatrimestre,
+        id_carrera,
+        id_plan_academico,
+        visible_en_grafo: visible_en_grafo ?? false
     });
 
-    // 2. Si vienen correlativas, asignarlas (validando ciclos por si acaso, aunque siendo nueva no debería tener)
+    // 2. Si vienen correlativas, asignarlas con su tipo de requisito
     if (correlativas && correlativas.length > 0) {
-        for (const reqId of correlativas) {
-            if (await tieneCiclo(nuevaMateria.id, reqId)) {
+        for (const req of correlativas) {
+            if (await tieneCiclo(nuevaMateria.id, req.id)) {
                 // Hacemos rollback manual eliminando la materia recién creada
                 await nuevaMateria.destroy();
-                throw new Error(`Dependencia circular detectada con la materia ID: ${reqId}`);
+                throw new Error(`Dependencia circular detectada con la materia ID: ${req.id}`);
             }
         }
-        await nuevaMateria.setCorrelativas(correlativas);
+        // Construimos el array de relaciones para la tabla intermedia
+        for (const req of correlativas) {
+            await nuevaMateria.addCorrelativa(req.id, { through: { tipo_requisito: req.tipo_requisito || 'regular' }});
+        }
     }
 
-    return await Materia.findByPk(nuevaMateria.id, { include: 'correlativas' });
+    return await Materia.findByPk(nuevaMateria.id, { 
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    });
 };
 
-const obtenerTodas = async () => {
+const obtenerTodas = async (id_carrera, id_plan_academico) => {
+    const where = {};
+    if (id_plan_academico) {
+        where.id_plan_academico = id_plan_academico;
+    } else if (id_carrera) {
+        where.id_carrera = id_carrera;
+    }
     return await Materia.findAll({
-        include: 'correlativas',
+        where,
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } },
         order: [
             ['nivel_anio', 'ASC'],
             ['cuatrimestre', 'ASC']
@@ -60,13 +75,15 @@ const obtenerTodas = async () => {
 };
 
 const obtenerPorId = async (id) => {
-    const materia = await Materia.findByPk(id, { include: 'correlativas' });
+    const materia = await Materia.findByPk(id, { 
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    });
     if (!materia) throw new Error('Materia no encontrada');
     return materia;
 };
 
 const actualizarMateria = async (id, datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = datos;
     const materia = await Materia.findByPk(id);
 
     if (!materia) throw new Error('Materia no encontrada');
@@ -76,21 +93,30 @@ const actualizarMateria = async (id, datos) => {
         codigo: codigo || materia.codigo,
         nombre: nombre || materia.nombre,
         nivel_anio: nivel_anio || materia.nivel_anio,
-        cuatrimestre: cuatrimestre || materia.cuatrimestre
+        cuatrimestre: cuatrimestre || materia.cuatrimestre,
+        id_carrera: id_carrera !== undefined ? id_carrera : materia.id_carrera,
+        id_plan_academico: id_plan_academico !== undefined ? id_plan_academico : materia.id_plan_academico,
+        visible_en_grafo: visible_en_grafo !== undefined ? visible_en_grafo : materia.visible_en_grafo
     });
 
     // Actualizar correlativas si se envían
     if (correlativas) {
         // Validar ciclos para cada nueva correlativa
-        for (const reqId of correlativas) {
-            if (await tieneCiclo(materia.id, reqId)) {
-                throw new Error(`No se puede guardar: Genera una dependencia circular con la materia ID: ${reqId}`);
+        for (const req of correlativas) {
+            if (await tieneCiclo(materia.id, req.id)) {
+                throw new Error(`No se puede guardar: Genera una dependencia circular con la materia ID: ${req.id}`);
             }
         }
-        await materia.setCorrelativas(correlativas);
+        // Limpiamos las viejas y agregamos las nuevas con su tipo
+        await materia.setCorrelativas([]);
+        for (const req of correlativas) {
+            await materia.addCorrelativa(req.id, { through: { tipo_requisito: req.tipo_requisito || 'regular' }});
+        }
     }
 
-    return await Materia.findByPk(id, { include: 'correlativas' });
+    return await Materia.findByPk(id, { 
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    });
 };
 
 const eliminarMateria = async (id) => {

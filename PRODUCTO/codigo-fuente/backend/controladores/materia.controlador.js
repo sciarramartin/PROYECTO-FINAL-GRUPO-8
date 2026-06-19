@@ -1,10 +1,11 @@
 const MateriaService = require('../servicios/materia.servicio');
+const { verificarToken, verificarAdmin } = require('../middleware/authMiddleware');
 const express = require('express');
 const router = express.Router();
-
 router.get('/', async (req, res) => {
     try {
-        const materias = await MateriaService.obtenerTodas();
+        const { id_carrera, id_plan_academico } = req.query;
+        const materias = await MateriaService.obtenerTodas(id_carrera, id_plan_academico);
         res.json(materias);
     } catch (error) {
         console.error(error);
@@ -23,16 +24,17 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', verificarToken, verificarAdmin, async (req, res) => {
+    console.log("POST /materias -> req.body =", req.body);
     try {
-        const { codigo, nombre, nivel_anio, cuatrimestre, correlativas } = req.body;
+        const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = req.body;
 
-        if (!codigo || !nombre || !nivel_anio || !cuatrimestre) {
-            return res.status(400).json({ error: 'El código, nombre, nivel/año y cuatrimestre son obligatorios.' });
+        if (!codigo || !nombre || !nivel_anio || !cuatrimestre || !id_carrera) {
+            return res.status(400).json({ error: 'El código, nombre, nivel/año, cuatrimestre y carrera son obligatorios.' });
         }
 
         const nuevaMateria = await MateriaService.crearMateria({
-            codigo, nombre, nivel_anio, cuatrimestre, correlativas
+            codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo
         });
 
         res.status(201).json(nuevaMateria);
@@ -46,7 +48,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', verificarToken, verificarAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const datos = req.body;
@@ -62,7 +64,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verificarToken, verificarAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         await MateriaService.eliminarMateria(id);

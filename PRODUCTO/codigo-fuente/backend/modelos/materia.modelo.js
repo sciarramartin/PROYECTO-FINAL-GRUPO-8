@@ -1,8 +1,8 @@
 // modelos/Materia.js
 const { DataTypes } = require('sequelize');
-const { baseDeDatos } = require('../configuracion/base-de-datos');
+const { baseDeDatos } = require('../database/base-de-datos');
 
-const Materia = baseDeDatos.define('Materia', {
+const Materia = baseDeDatos.define('materia', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -24,16 +24,48 @@ const Materia = baseDeDatos.define('Materia', {
     cuatrimestre: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    visible_en_grafo: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    id_carrera: {
+        type: DataTypes.INTEGER,
+        allowNull: true // True temporalmente para compatibilidad hacia atrás
+    },
+    id_plan_academico: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 }, {
     tableName: 'materias',
     timestamps: false
 });
 
+const CorrelativaXMateria = baseDeDatos.define('correlativas_x_materia', {
+    materia_base_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+    },
+    materia_correlativa_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+    },
+    tipo_requisito: {
+        type: DataTypes.STRING,
+        defaultValue: 'regular', // 'regular' o 'aprobada'
+        allowNull: false
+    }
+}, {
+    tableName: 'correlativas_x_materia',
+    timestamps: false
+});
+
 // Asociación M:N (Self-referencing) para Correlativas
 Materia.belongsToMany(Materia, {
     as: 'correlativas',
-    through: 'correlativas_x_materia',
+    through: CorrelativaXMateria,
     foreignKey: 'materia_base_id',
     otherKey: 'materia_correlativa_id',
     timestamps: false
@@ -41,10 +73,10 @@ Materia.belongsToMany(Materia, {
 
 Materia.belongsToMany(Materia, {
     as: 'es_correlativa_de',
-    through: 'correlativas_x_materia',
+    through: CorrelativaXMateria,
     foreignKey: 'materia_correlativa_id',
     otherKey: 'materia_base_id',
     timestamps: false
 });
 
-module.exports = { Materia };
+module.exports = { Materia, CorrelativaXMateria };

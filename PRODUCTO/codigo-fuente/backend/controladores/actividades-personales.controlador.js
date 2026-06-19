@@ -1,11 +1,11 @@
 const Actividad = require('../servicios/actividades-personales.service');
 const express = require('express');
 const router = express.Router();
+const { verificarToken } = require('../middleware/authMiddleware');
 
-
-router.get("/:idUsuario", async (req, res) => {
+router.get("/", verificarToken, async (req, res) => {
     try {
-        const registros = await Actividad.findAllByUserId(req.params.idUsuario);
+        const registros = await Actividad.findAllByUserId(req.usuario.id);
         console.log("Registros encontrados:", registros);
         res.json(registros);
     } catch (error) {
@@ -13,10 +13,11 @@ router.get("/:idUsuario", async (req, res) => {
     }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", verificarToken, async (req, res) => {
     try {
-        const nuevoRegistro = await Actividad.create(req.body);
-        
+
+        const nuevoRegistro = await Actividad.create(req.body, req.usuario.id);
+
         res.status(201).json(nuevoRegistro);
     } catch (error) {
         console.error(error);
@@ -24,12 +25,12 @@ router.post("/", async (req, res) => {
     }
 });
 
-router.put("/:idUsuario/:id", async (req, res) => {
+router.put("/:id", verificarToken, async (req, res) => {
     try {
-        const { idUsuario, id } = req.params;
+        const { id } = req.params;
         const datosActualizados = req.body;
         
-        const actividadActualizada = await Actividad.update(idUsuario, id, datosActualizados);
+        const actividadActualizada = await Actividad.update(req.usuario.id, id, datosActualizados);
         
         if (!actividadActualizada) {
             return res.status(404).json({ error: 'Registro no encontrado.' });
@@ -42,11 +43,11 @@ router.put("/:idUsuario/:id", async (req, res) => {
     }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
-        
-        const actividadEliminada = await Actividad.deleteById(id);
+
+        const actividadEliminada = await Actividad.deleteById(id, req.usuario.id);
         
         if (!actividadEliminada) {
             return res.status(404).json({ error: 'Registro no encontrado.' });

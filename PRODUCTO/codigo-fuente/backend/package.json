@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "iniciar": "node servidor.js",
-    "seed": "node scripts/seed-materias.js"
+    "seed": "node -e \"require('./database/base-de-datos').inicializarDB().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1)})\""
   },
   "keywords": [],
   "author": "",
@@ -19,6 +19,7 @@
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.7",
     "sequelize": "^6.37.8",
+    "socket.io": "^4.8.3",
     "sqlite3": "^6.0.1"
   }
 }
