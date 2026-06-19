@@ -13,6 +13,8 @@ const { Perfil } = require('./Perfil');
 const { ForoPublicacion } = require('./ForoPublicacion');
 const { ForoComentario } = require('./ForoComentario');
 const { ForoReaccion } = require('./ForoReaccion');
+const { ForoPublicacionGuardada } = require('./ForoPublicacionGuardada');
+const { ForoReporte } = require('./ForoReporte');
 const { PlanAcademico } = require('./PlanAcademico');
 
 Usuario.belongsTo(TipoUsuario, {
@@ -143,6 +145,20 @@ ForoReaccion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 ForoComentario.hasMany(ForoReaccion, { foreignKey: 'id_comentario', onDelete: 'CASCADE' });
 ForoReaccion.belongsTo(ForoComentario, { foreignKey: 'id_comentario' });
 
+// Relación de Publicaciones Guardadas
+Usuario.hasMany(ForoPublicacionGuardada, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+ForoPublicacionGuardada.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+
+ForoPublicacion.hasMany(ForoPublicacionGuardada, { foreignKey: 'id_publicacion', onDelete: 'CASCADE' });
+ForoPublicacionGuardada.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
+
+// Relación de Reportes de Publicaciones
+Usuario.hasMany(ForoReporte, { foreignKey: 'id_usuario_reportador', as: 'ReportesEnviados', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(Usuario, { foreignKey: 'id_usuario_reportador', as: 'Reportador' });
+
+ForoPublicacion.hasMany(ForoReporte, { foreignKey: 'id_publicacion', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
+
 module.exports = {
     Usuario,
     TipoUsuario,
@@ -157,5 +173,8 @@ module.exports = {
     Perfil,
     ForoPublicacion,
     ForoComentario,
-    ForoReaccion
+    ForoReaccion,
+    ForoPublicacionGuardada,
+    ForoReporte
 };
+

@@ -52,6 +52,14 @@ const inicializarDB = async () => {
     // Sequelize se conecta directamente al archivo físico que ya existe o se acaba de crear
     await baseDeDatos.authenticate();
 
+    // Asegurar que la tabla de guardados exista
+    const { ForoPublicacionGuardada } = require('../modelos/ForoPublicacionGuardada');
+    await ForoPublicacionGuardada.sync();
+
+    // Asegurar que la tabla de reportes exista
+    const { ForoReporte } = require('../modelos/ForoReporte');
+    await ForoReporte.sync();
+
     console.log('Base de datos inicializada y conectada');
 
     // await new Promise((resolve, reject) => {

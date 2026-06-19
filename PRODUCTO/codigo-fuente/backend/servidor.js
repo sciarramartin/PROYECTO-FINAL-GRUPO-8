@@ -17,6 +17,8 @@ require('./modelos/Perfil');
 require('./modelos/ForoPublicacion');
 require('./modelos/ForoComentario');
 require('./modelos/ForoReaccion');
+require('./modelos/ForoPublicacionGuardada');
+require('./modelos/ForoReporte');
 
 require('./modelos/asociaciones');
 
