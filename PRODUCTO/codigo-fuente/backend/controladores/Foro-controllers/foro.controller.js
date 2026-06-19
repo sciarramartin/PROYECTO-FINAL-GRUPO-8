@@ -39,10 +39,26 @@ router.get('/materias', verificarToken, async (req, res) => {
 router.get('/materias/:materiaId/publicaciones', verificarToken, async (req, res) => {
     try {
         const { materiaId } = req.params;
+        const { orden } = req.query;
 
         const materia = await Materia.findByPk(materiaId);
         if (!materia) {
             return res.status(404).json({ error: 'Materia no encontrada' });
+        }
+
+        // Configurar orden principal y secundario
+        let orderCondition;
+        switch (orden) {
+            case 'votos':
+                // Si hay empate en votos, mostrar las más recientes primero
+                orderCondition = [['votos', 'DESC'], ['createdAt', 'DESC']];
+                break;
+            case 'reciente':
+                orderCondition = [['createdAt', 'DESC']];
+                break;
+            default:
+                orderCondition = [['createdAt', 'DESC']];
+                break;
         }
 
         const publicaciones = await ForoPublicacion.findAll({
@@ -60,9 +76,8 @@ router.get('/materias/:materiaId/publicaciones', verificarToken, async (req, res
                     ]
                 }
             ],
-            order: [['createdAt', 'DESC']]
+            order: orderCondition
         });
-
         // Formatear con la cantidad de comentarios para cada publicación
         const publicacionesConComentarios = await Promise.all(publicaciones.map(async (pub) => {
             const cantComentarios = await ForoComentario.count({
