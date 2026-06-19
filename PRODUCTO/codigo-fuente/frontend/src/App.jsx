@@ -21,6 +21,8 @@ const ChatPrivado = lazy(() => import('./components/us-11-chat-privado/chat-priv
 const ListaForos = lazy(() => import('./components/us-foro/ListaForos'));
 const MuroForo = lazy(() => import('./components/us-foro/MuroForo'));
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
+const MisGuardados = lazy(() => import('./components/us-foro/MisGuardados'));
+const Reportes = lazy(() => import('./components/us-foro/Reportes'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -122,6 +124,22 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <MiPerfil />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/mis-guardados" element={
+            <RutaPrivada>
+              <Layout>
+                <MisGuardados />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/reportes" element={
+            <RutaPrivada>
+              <Layout>
+                <Reportes />
               </Layout>
             </RutaPrivada>
           } />

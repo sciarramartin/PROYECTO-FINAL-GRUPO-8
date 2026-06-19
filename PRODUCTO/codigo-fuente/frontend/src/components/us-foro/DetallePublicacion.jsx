@@ -33,6 +33,11 @@ const DetallePublicacion = () => {
   const [cargando, setCargando] = useState(true);
   const [alertaTeammate, setAlertaTeammate] = useState(null);
   
+  // Estados para reporte de publicaciones
+  const [modalReportarAbierto, setModalReportarAbierto] = useState(false);
+  const [descripcionReporte, setDescripcionReporte] = useState("");
+  const [errorReporte, setErrorReporte] = useState("");
+  
   // Estados para Editar, Eliminar y Reaccionar
   const [editando, setEditando] = useState(false);
   const [editTitulo, setEditTitulo] = useState("");
@@ -175,6 +180,68 @@ const DetallePublicacion = () => {
     }
   };
 
+  const handleGuardarPublicacion = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.post(`${apiUrl}/publicaciones/${postId}/guardar`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setDatosHilo(prev => ({
+        ...prev,
+        publicacion: {
+          ...prev.publicacion,
+          esGuardada: response.data.guardada
+        }
+      }));
+
+      mostrarMensajeTeammate(response.data.mensaje);
+    } catch (error) {
+      console.error("Error al guardar/desguardar publicación:", error);
+      mostrarMensajeTeammate("Error al procesar la solicitud de guardado.");
+    }
+  };
+
+  const abrirModalReportar = () => {
+    setDescripcionReporte("");
+    setErrorReporte("");
+    setModalReportarAbierto(true);
+  };
+
+  const cerrarModalReportar = () => {
+    setModalReportarAbierto(false);
+    setDescripcionReporte("");
+    setErrorReporte("");
+  };
+
+  const enviarReporte = async () => {
+    if (!descripcionReporte.trim()) {
+      setErrorReporte("El motivo del reporte es obligatorio.");
+      return;
+    }
+    if (descripcionReporte.trim().length < 5) {
+      setErrorReporte("El motivo del reporte debe tener al menos 5 caracteres.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      await axios.post(`${apiUrl}/publicaciones/${postId}/reportar`, {
+        descripcion: descripcionReporte
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      mostrarMensajeTeammate("Reporte enviado a los administradores con éxito.");
+      cerrarModalReportar();
+    } catch (error) {
+      console.error("Error al enviar reporte:", error);
+      mostrarMensajeTeammate(error.response?.data?.error || "Error al enviar el reporte.");
+    }
+  };
+
   const renderAvatarChico = (foto, inicialesStr, sizeClass = "w-8 h-8 text-xs") => {
     if (!foto) {
       return (
@@ -276,7 +343,7 @@ const DetallePublicacion = () => {
         </button>
         <FiChevronRight className="w-3.5 h-3.5 shrink-0" />
         <button onClick={() => navigate(`/foros/${materiaId}`)} className="hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer border-none bg-transparent transition">
-          {publicacion.Materia?.nombre || "Foro"}
+          {publicacion.Materia?.nombre || publicacion.materium?.nombre || publicacion.materia?.nombre || "Foro"}
         </button>
         <FiChevronRight className="w-3.5 h-3.5 shrink-0" />
         <span className="text-zinc-650 dark:text-zinc-350 truncate max-w-[200px] sm:max-w-xs">{publicacion.titulo}</span>
@@ -411,11 +478,15 @@ const DetallePublicacion = () => {
 
                   <div className="flex items-center gap-4">
                     <button 
-                      onClick={() => mostrarMensajeTeammate("El guardado está fuera de los alcances de la US actual.")}
-                      className="flex items-center gap-1.5 hover:text-indigo-650 dark:hover:text-indigo-400 border-none bg-transparent cursor-pointer transition"
+                      onClick={handleGuardarPublicacion}
+                      className={`flex items-center gap-1.5 border-none bg-transparent cursor-pointer transition ${
+                        publicacion.esGuardada
+                          ? "text-indigo-600 dark:text-indigo-450 hover:text-indigo-700 font-extrabold"
+                          : "hover:text-indigo-600 dark:hover:text-indigo-400"
+                      }`}
                     >
-                      <FiBookmark className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Guardar</span>
+                      <FiBookmark className={`w-3.5 h-3.5 ${publicacion.esGuardada ? "fill-current" : ""}`} />
+                      <span className="hidden sm:inline">{publicacion.esGuardada ? "Guardada" : "Guardar"}</span>
                     </button>
                     <button 
                       onClick={() => mostrarMensajeTeammate("Compartir está fuera de los alcances de la US actual.")}
@@ -555,7 +626,7 @@ const DetallePublicacion = () => {
             <div className="space-y-3.5 text-xs text-zinc-650 dark:text-zinc-400">
               <div className="flex items-center justify-between gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-2">
                 <span className="font-semibold text-zinc-450">Materia</span>
-                <span className="text-zinc-800 dark:text-zinc-200 font-bold truncate max-w-[150px]">{publicacion.Materia?.nombre}</span>
+                <span className="text-zinc-800 dark:text-zinc-200 font-bold truncate max-w-[150px]">{publicacion.Materia?.nombre || publicacion.materium?.nombre || publicacion.materia?.nombre || "Foro"}</span>
               </div>
               <div className="flex items-center justify-between gap-2 border-b border-zinc-100 dark:border-zinc-850 pb-2">
                 <span className="font-semibold text-zinc-450">Publicado por</span>
@@ -611,11 +682,15 @@ const DetallePublicacion = () => {
               )}
 
               <button 
-                onClick={() => mostrarMensajeTeammate("El guardado está fuera de los alcances de la US actual.")}
-                className="w-full py-2.5 px-3 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-800 cursor-pointer transition flex items-center justify-start gap-2.5"
+                onClick={handleGuardarPublicacion}
+                className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-800 cursor-pointer transition flex items-center justify-start gap-2.5 ${
+                  publicacion.esGuardada
+                    ? "bg-indigo-50 hover:bg-indigo-105 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-extrabold border-indigo-200"
+                    : "bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                }`}
               >
-                <FiBookmark className="w-4 h-4 text-zinc-400" />
-                <span>Guardar publicación</span>
+                <FiBookmark className={`w-4 h-4 ${publicacion.esGuardada ? "text-indigo-600 fill-indigo-600 dark:text-indigo-400 dark:fill-indigo-400" : "text-zinc-400"}`} />
+                <span>{publicacion.esGuardada ? "Publicación guardada" : "Guardar publicación"}</span>
               </button>
               <button 
                 onClick={() => mostrarMensajeTeammate("Compartir está fuera de los alcances de la US actual.")}
@@ -625,7 +700,7 @@ const DetallePublicacion = () => {
                 <span>Compartir enlace</span>
               </button>
               <button 
-                onClick={() => mostrarMensajeTeammate("Reportar está fuera del alcance de la US actual.")}
+                onClick={abrirModalReportar}
                 className="w-full py-2.5 px-3 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-800 cursor-pointer transition flex items-center justify-start gap-2.5"
               >
                 <FiFlag className="w-4 h-4 text-zinc-400" />
@@ -655,6 +730,55 @@ const DetallePublicacion = () => {
 
       </div>
 
+      {/* Modal de Reportar */}
+      {modalReportarAbierto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <div>
+              <h3 className="text-base font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
+                <FiAlertCircle className="w-5 h-5 text-red-500" />
+                Reportar Publicación
+              </h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Por favor, describe detalladamente el motivo por el cual estás reportando esta publicación. Un administrador revisará tu reporte.
+              </p>
+            </div>
+            
+            <textarea
+              value={descripcionReporte}
+              onChange={(e) => {
+                setDescripcionReporte(e.target.value);
+                setErrorReporte("");
+              }}
+              placeholder="Escribe el motivo del reporte aquí (obligatorio)..."
+              rows={4}
+              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100"
+            />
+            
+            {errorReporte && (
+              <p className="text-[11px] font-bold text-red-500 flex items-center gap-1">
+                <FiAlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {errorReporte}
+              </p>
+            )}
+            
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                onClick={cerrarModalReportar}
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold border-none cursor-pointer transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={enviarReporte}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition shadow-md shadow-red-500/10"
+              >
+                Enviar Reporte
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

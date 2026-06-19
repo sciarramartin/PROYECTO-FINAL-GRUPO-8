@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const perfilService = require('../servicios/perfil.service');
 const { verificarToken } = require('../middleware/authMiddleware');
+const { Usuario, ForoPublicacion, ForoComentario, Materia } = require('../modelos/asociaciones');
+
 
 // 1. GET /api/perfiles/mi-perfil
 // Obtener el perfil propio del usuario autenticado
@@ -45,6 +47,59 @@ router.get('/:id', verificarToken, async (req, res) => {
     } catch (error) {
         console.error('Error al obtener perfil público:', error);
         return res.status(error.status || 500).json({ error: error.message || 'Error al obtener el perfil de este estudiante.' });
+    }
+});
+
+// 4. GET /api/perfiles/:id/foro-actividad
+// Obtener las publicaciones y comentarios en foros hechos por el usuario
+router.get('/:id/foro-actividad', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const idUsuario = id === 'mi-perfil' ? req.usuario.id : Number(id);
+
+        // Validar que el usuario exista
+        const usuario = await Usuario.findByPk(idUsuario);
+        if (!usuario) {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }
+
+        // Obtener publicaciones del usuario
+        const publicaciones = await ForoPublicacion.findAll({
+            where: { id_usuario: idUsuario },
+            include: [
+                {
+                    model: Materia,
+                    attributes: ['id', 'nombre', 'codigo']
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        // Obtener comentarios del usuario
+        const comentarios = await ForoComentario.findAll({
+            where: { id_usuario: idUsuario },
+            include: [
+                {
+                    model: ForoPublicacion,
+                    attributes: ['id', 'titulo', 'id_materia'],
+                    include: [
+                        {
+                            model: Materia,
+                            attributes: ['id', 'nombre', 'codigo']
+                        }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        return res.status(200).json({
+            publicaciones,
+            comentarios
+        });
+    } catch (error) {
+        console.error('Error al obtener la actividad de foro del usuario:', error);
+        return res.status(500).json({ error: 'Error al obtener la actividad del foro.' });
     }
 });
 
