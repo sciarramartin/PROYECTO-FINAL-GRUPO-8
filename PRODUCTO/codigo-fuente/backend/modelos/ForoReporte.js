@@ -16,6 +16,10 @@ const ForoReporte = baseDeDatos.define('ForoReporte', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    id_comentario: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     descripcion: {
         type: DataTypes.TEXT,
         allowNull: false

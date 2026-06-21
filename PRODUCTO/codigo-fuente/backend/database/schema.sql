@@ -360,12 +360,14 @@ CREATE TABLE foro_reportes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_usuario_reportador INTEGER NOT NULL,
     id_publicacion INTEGER NOT NULL,
+    id_comentario INTEGER DEFAULT NULL,
     descripcion TEXT NOT NULL,
     resuelto BOOLEAN NOT NULL DEFAULT 0,
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario_reportador) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_comentario) REFERENCES foro_comentarios(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 

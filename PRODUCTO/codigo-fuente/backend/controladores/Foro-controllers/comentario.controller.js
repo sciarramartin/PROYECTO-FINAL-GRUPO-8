@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-//const { ForoComentario, Usuario } = require('../../modelos/asociaciones');
-const { Usuario } = require('../../modelos/Usuario');
-const { ForoComentario } = require('../../modelos/ForoComentario');
+const { ForoComentario, Usuario, ForoReporte } = require('../../modelos/asociaciones');
 
 // Middleware para verificar autenticación (asumo que usan uno similar en el grupo)
 // Si su middleware se llama distinto, adaptalo (ej. verificarToken)
@@ -82,6 +80,42 @@ router.put('/:id', verificarToken, async (req, res) => {
     } catch (error) {
         console.error("Error al editar comentario:", error);
         res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
+// @route   POST /api/foro/comentarios/:id/reportar
+// @desc    Reportar un comentario
+// @access  Privado
+router.post('/:id/reportar', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { descripcion } = req.body;
+        const id_usuario_reportador = req.usuario.id;
+
+        if (!descripcion || !descripcion.trim()) {
+            return res.status(400).json({ error: 'La descripción del reporte es obligatoria.' });
+        }
+
+        if (descripcion.trim().length < 5) {
+            return res.status(400).json({ error: 'El motivo del reporte debe tener al menos 5 caracteres.' });
+        }
+
+        const comentario = await ForoComentario.findByPk(id);
+        if (!comentario) {
+            return res.status(404).json({ error: 'Comentario no encontrado.' });
+        }
+
+        const reporte = await ForoReporte.create({
+            id_usuario_reportador,
+            id_publicacion: comentario.id_publicacion,
+            id_comentario: id,
+            descripcion: descripcion.trim()
+        });
+
+        return res.status(201).json({ mensaje: 'Comentario reportado con éxito.', reporte });
+    } catch (error) {
+        console.error("Error al reportar comentario:", error);
+        return res.status(500).json({ error: 'Error al procesar el reporte del comentario.' });
     }
 });
 

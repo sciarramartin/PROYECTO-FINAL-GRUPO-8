@@ -337,6 +337,17 @@ router.get('/reportes', verificarToken, async (req, res) => {
                             attributes: ['id', 'nombre', 'codigo']
                         }
                     ]
+                },
+                {
+                    model: ForoComentario,
+                    as: 'Comentario',
+                    include: [
+                        {
+                            model: Usuario,
+                            as: 'Autor',
+                            attributes: ['id', 'nombre', 'apellido', 'nombre_usuario']
+                        }
+                    ]
                 }
             ],
             order: [['createdAt', 'DESC']]

@@ -159,6 +159,9 @@ ForoReporte.belongsTo(Usuario, { foreignKey: 'id_usuario_reportador', as: 'Repor
 ForoPublicacion.hasMany(ForoReporte, { foreignKey: 'id_publicacion', onDelete: 'CASCADE' });
 ForoReporte.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
 
+ForoComentario.hasMany(ForoReporte, { foreignKey: 'id_comentario', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(ForoComentario, { foreignKey: 'id_comentario', as: 'Comentario' });
+
 module.exports = {
     Usuario,
     TipoUsuario,
