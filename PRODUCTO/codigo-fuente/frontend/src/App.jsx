@@ -11,7 +11,7 @@ const Registro = lazy(() => import('./components/ModuloSesion/Registro'));
 const Horario = lazy(() => import('./components/Us-8-Actividades-Personales/Horario'));
 const ModuloCorrelativas = lazy(() => import('./components/Us-9-Registrar-Correlativas'));
 const MapaCorrelatividades = lazy(() => import('./components/US-10-Consultar-correlativas/MapaCorrelatividades'));
-const Planificador = lazy(()=> import('./components/Us-7-Generar-planificacion/Planificador'));
+const Planificador = lazy(() => import('./components/Us-7-Generar-planificacion/Planificador'));
 const PerfilPublico = lazy(() => import('./components/modulo-perfil-amigos/perfil-publico'));
 const MisConexiones = lazy(() => import('./components/modulo-perfil-amigos/mis-conexiones'));
 const MiPerfil = lazy(() => import('./components/modulo-perfil-amigos/mi-perfil'));
@@ -19,8 +19,10 @@ const ListaGrupos = lazy(() => import('./components/us-10-grupos/lista-grupos'))
 const MuroGrupo = lazy(() => import('./components/us-10-grupos/muro-grupo'));
 const ChatPrivado = lazy(() => import('./components/us-11-chat-privado/chat-privado'));
 const ListaForos = lazy(() => import('./components/us-foro/ListaForos'));
-const ListaMateriales = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/ListaMateriales'));
 const MuroForo = lazy(() => import('./components/us-foro/MuroForo'));
+const ListaMateriales = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/ListaMateriales'));
+const MuroMaterialEstudio = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/MuroMaterialEstudio'));
+
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
 
 const RutaPrivada = ({ children }) => {
@@ -45,7 +47,7 @@ const App = () => {
               </Layout>
             </RutaPrivada>
           } />
-          
+
           {/* Rutas de Correlatividades */}
           <Route path="/correlativas" element={
             <RutaPrivada>
@@ -66,7 +68,7 @@ const App = () => {
           <Route path="/Horario" element={
             <RutaPrivada>
               <Layout>
-                <Horario/>
+                <Horario />
               </Layout>
             </RutaPrivada>
           } />
@@ -74,7 +76,7 @@ const App = () => {
           <Route path="/Planificador" element={
             <RutaPrivada>
               <Layout>
-                <Planificador/>
+                <Planificador />
               </Layout>
             </RutaPrivada>
           } />
@@ -157,6 +159,14 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <ListaMateriales />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/repositorio/:id" element={
+            <RutaPrivada>
+              <Layout>
+                <MuroMaterialEstudio />
               </Layout>
             </RutaPrivada>
           } />

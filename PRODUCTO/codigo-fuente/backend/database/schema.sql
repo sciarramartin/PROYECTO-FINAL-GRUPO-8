@@ -345,6 +345,7 @@ CREATE TABLE foro_reacciones (
 -- =========================
 CREATE TABLE materiales_estudio (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ubicacion TEXT NOT NULL,
     id_materia INTEGER NOT NULL,
     titulo TEXT NOT NULL,
     etiquetas TEXT,

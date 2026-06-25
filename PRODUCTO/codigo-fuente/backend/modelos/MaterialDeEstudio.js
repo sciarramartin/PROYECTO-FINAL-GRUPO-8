@@ -8,6 +8,10 @@ const MaterialDeEstudio = baseDeDatos.define('MaterialDeEstudio', {
         primaryKey: true,
         autoIncrement: true
     },
+    ubicacion: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
     id_materia: {
         type: DataTypes.INTEGER,
         allowNull: false
