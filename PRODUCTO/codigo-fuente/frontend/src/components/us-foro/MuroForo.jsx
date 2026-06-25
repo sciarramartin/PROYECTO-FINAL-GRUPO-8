@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import CrearPublicacion from "./CrearPublicacion";
 import axios from "axios";
 import { 
@@ -21,6 +21,7 @@ import {
 const MuroForo = () => {
   const { materiaId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [datosForo, setDatosForo] = useState({ materia: {}, publicaciones: [] });
   const [cargando, setCargando] = useState(true);
   const [vistaActual, setVistaActual] = useState('muro'); //sino crear
@@ -39,6 +40,12 @@ const MuroForo = () => {
   const [misAportes, setMisAportes] = useState({ publicaciones: [], comentarios: [] });
   const [cargandoMisAportes, setCargandoMisAportes] = useState(false);
 
+  // Estados para filtro por etiquetas
+  const [etiquetasForum, setEtiquetasForum] = useState([]);
+  const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState(null);
+  const [buscadorTags, setBuscadorTags] = useState("");
+  const [dropdownTagsAbierto, setDropdownTagsAbierto] = useState(false);
+
   const fetchMisAportes = async () => {
     setCargandoMisAportes(true);
     try {
@@ -52,6 +59,19 @@ const MuroForo = () => {
       console.error("Error al obtener mis aportes:", error);
     } finally {
       setCargandoMisAportes(false);
+    }
+  };
+
+  const fetchEtiquetas = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.get(`${apiUrl}/foro/materias/${materiaId}/etiquetas`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEtiquetasForum(response.data);
+    } catch (error) {
+      console.error("Error al obtener etiquetas del foro:", error);
     }
   };
 
@@ -78,7 +98,17 @@ const MuroForo = () => {
     };
 
     fetchForo();
-  }, [materiaId]);
+    fetchEtiquetas();
+    
+    if (location.state && location.state.tagFiltrado) {
+      setEtiquetaSeleccionada(location.state.tagFiltrado);
+      window.history.replaceState(null, '');
+    } else {
+      setEtiquetaSeleccionada(null);
+    }
+    setBuscadorTags("");
+    setDropdownTagsAbierto(false);
+  }, [materiaId, location.state]);
 
   
   const reorganizarPublicaciones = async (filtro) => {
@@ -254,6 +284,7 @@ const MuroForo = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDatosForo(response.data);
+      fetchEtiquetas();
       if (subTabActiva === "mis-publicaciones") {
         fetchMisAportes();
       }
@@ -276,6 +307,18 @@ const MuroForo = () => {
         />
     );
   }
+
+  const publicacionesFiltradas = etiquetaSeleccionada
+    ? publicaciones.filter(pub => 
+        pub.Etiquetas && pub.Etiquetas.some(tag => tag.nombre.toLowerCase() === etiquetaSeleccionada.toLowerCase())
+      )
+    : publicaciones;
+
+  const misPublicacionesFiltradas = etiquetaSeleccionada
+    ? misAportes.publicaciones.filter(pub => 
+        pub.Etiquetas && pub.Etiquetas.some(tag => tag.nombre.toLowerCase() === etiquetaSeleccionada.toLowerCase())
+      )
+    : misAportes.publicaciones;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -327,6 +370,104 @@ const MuroForo = () => {
               <span>Crear publicación</span>
             </button>
           </div>
+
+          {/* Panel de Filtro de Etiquetas */}
+          <div className="flex flex-wrap gap-2 items-center justify-between bg-zinc-50 dark:bg-zinc-800/40 p-3 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 mb-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-bold text-zinc-550 dark:text-zinc-400 shrink-0">Filtrar por etiqueta:</span>
+              
+              {/* Desplegable personalizado para Etiquetas con Buscador y Scroll */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setDropdownTagsAbierto(!dropdownTagsAbierto)}
+                  className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-750 rounded-xl text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:border-indigo-500 transition flex items-center gap-1.5 select-none cursor-pointer"
+                >
+                  <span className={etiquetaSeleccionada ? "text-indigo-655 dark:text-indigo-400 font-bold" : ""}>
+                    {etiquetaSeleccionada || "Todas las etiquetas"}
+                  </span>
+                  <span className="text-[10px] text-zinc-400">▼</span>
+                </button>
+
+                {dropdownTagsAbierto && (
+                  <div className="absolute left-0 mt-1.5 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-30 p-2 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                    {/* Campo de búsqueda dentro del desplegable */}
+                    <input
+                      type="text"
+                      placeholder="Buscar etiqueta..."
+                      value={buscadorTags}
+                      onChange={(e) => setBuscadorTags(e.target.value)}
+                      className="w-full px-2.5 py-1.5 border border-zinc-150 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 bg-zinc-50/50 dark:bg-zinc-950/50"
+                    />
+
+                    {/* Contenedor de scroll con las etiquetas */}
+                    <div className="max-h-48 overflow-y-auto flex flex-col gap-0.5 scrollbar-thin scrollbar-thumb-zinc-200">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEtiquetaSeleccionada(null);
+                          setDropdownTagsAbierto(false);
+                          setBuscadorTags("");
+                        }}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer ${
+                          !etiquetaSeleccionada 
+                            ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 font-bold" 
+                            : "hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-350"
+                        }`}
+                      >
+                        Todas las etiquetas
+                      </button>
+
+                      {etiquetasForum
+                        .filter(tag => tag.toLowerCase().includes(buscadorTags.toLowerCase()))
+                        .map((tag) => {
+                          const estaSeleccionada = etiquetaSeleccionada === tag;
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => {
+                                setEtiquetaSeleccionada(tag);
+                                setDropdownTagsAbierto(false);
+                                setBuscadorTags("");
+                              }}
+                              className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer truncate ${
+                                estaSeleccionada 
+                                  ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 font-bold" 
+                                  : "hover:bg-zinc-50 dark:hover:bg-zinc-800/80 text-zinc-650 dark:text-zinc-350"
+                              }`}
+                            >
+                              {tag}
+                            </button>
+                          );
+                        })}
+                      
+                      {etiquetasForum.filter(tag => tag.toLowerCase().includes(buscadorTags.toLowerCase())).length === 0 && (
+                        <div className="text-[10px] text-zinc-400 dark:text-zinc-500 text-center py-2">
+                          No se encontraron etiquetas
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Indicador de filtro activo con botón de limpiar */}
+            {etiquetaSeleccionada && (
+              <div className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-955/40 text-indigo-600 dark:text-indigo-400 px-2.5 py-1 rounded-xl text-xs font-bold animate-in zoom-in-95">
+                <span>Filtrando por: {etiquetaSeleccionada}</span>
+                <button
+                  type="button"
+                  onClick={() => setEtiquetaSeleccionada(null)}
+                  className="hover:text-indigo-800 dark:hover:text-indigo-300 font-extrabold ml-1 cursor-pointer focus:outline-none text-[11px]"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Pestañas de Vista y Orden (UI Shell) */}
           <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-1 gap-2">
             <div className="flex items-center gap-2 sm:gap-4 text-xs font-bold overflow-x-auto whitespace-nowrap scrollbar-none min-w-0">
@@ -390,9 +531,26 @@ const MuroForo = () => {
                   Aún no hay dudas ni aportes publicados en esta materia. ¡Sé el primero en crear una discusión académica!
                 </p>
               </div>
+            ) : publicacionesFiltradas.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3">
+                  <FiMessageCircle className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200 text-center">Sin resultados</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
+                  No encontramos aportes con la etiqueta <span className="font-bold text-indigo-600 dark:text-indigo-400">{etiquetaSeleccionada}</span>.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setEtiquetaSeleccionada(null)}
+                  className="mt-3 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-650 text-xs font-bold rounded-xl transition cursor-pointer"
+                >
+                  Quitar filtro de etiqueta
+                </button>
+              </div>
             ) : (
               <div className="space-y-3">
-                {publicaciones.map((pub) => {
+                {publicacionesFiltradas.map((pub) => {
                   const nombreCompleto = pub.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido}` : "Usuario Anónimo";
                   const iniciales = pub.Autor ? `${pub.Autor.nombre[0]}${pub.Autor.apellido[0]}`.toUpperCase() : "US";
                   const esDocente = pub.Autor?.id_tipo_usuario === 2;
@@ -456,6 +614,24 @@ const MuroForo = () => {
                           <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
                             {pub.contenido}
                           </p>
+                          {/* Etiquetas de la publicación */}
+                          {pub.Etiquetas && pub.Etiquetas.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {pub.Etiquetas.map((tag) => (
+                                <button 
+                                  key={tag.id || tag.nombre} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEtiquetaSeleccionada(tag.nombre);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }}
+                                  className="text-[9px] bg-zinc-100 hover:bg-indigo-50 dark:bg-zinc-800/80 dark:hover:bg-indigo-950/30 text-zinc-600 hover:text-indigo-650 dark:text-zinc-400 dark:hover:text-indigo-400 px-2 py-0.5 rounded-full font-semibold transition border-none cursor-pointer"
+                                >
+                                  {tag.nombre}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Pie de la tarjeta */}
@@ -523,22 +699,39 @@ const MuroForo = () => {
                 <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3 animate-bounce">
                   <FiFlag className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-zinc-850 dark:text-zinc-200 text-center">Sin publicaciones ni comentarios</h3>
+                <h3 className="text-base font-bold text-zinc-855 dark:text-zinc-200 text-center">Sin publicaciones ni comentarios</h3>
                 <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
                   Aún no has creado publicaciones ni comentarios en este foro. ¡Anímate a participar!
                 </p>
               </div>
+            ) : (etiquetaSeleccionada && misPublicacionesFiltradas.length === 0) ? (
+              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3">
+                  <FiMessageCircle className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200 text-center">Sin resultados</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
+                  Ninguna de tus publicaciones tiene la etiqueta <span className="font-bold text-indigo-600 dark:text-indigo-400">{etiquetaSeleccionada}</span>.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setEtiquetaSeleccionada(null)}
+                  className="mt-3 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-650 text-xs font-bold rounded-xl transition cursor-pointer"
+                >
+                  Quitar filtro de etiqueta
+                </button>
+              </div>
             ) : (
               <div className="space-y-6">
                 {/* Publicaciones creadas por mí */}
-                {misAportes.publicaciones.length > 0 && (
+                {misPublicacionesFiltradas.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="text-xs font-extrabold uppercase tracking-wider text-indigo-655 dark:text-indigo-400 flex items-center gap-1.5 px-1">
                       <FiMessageSquare className="w-4 h-4" />
-                      {`Tus publicaciones (${misAportes.publicaciones.length})`}
+                      {`Tus publicaciones (${misPublicacionesFiltradas.length})`}
                     </h3>
                     <div className="space-y-3">
-                      {misAportes.publicaciones.map((pub) => {
+                      {misPublicacionesFiltradas.map((pub) => {
                         const nombreCompleto = pub.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido}` : "Usuario Anónimo";
                         const iniciales = pub.Autor ? `${pub.Autor.nombre[0]}${pub.Autor.apellido[0]}`.toUpperCase() : "US";
                         const esDocente = pub.Autor?.id_tipo_usuario === 2;
@@ -601,6 +794,24 @@ const MuroForo = () => {
                                 <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
                                   {pub.contenido}
                                 </p>
+                                {/* Etiquetas de la publicación */}
+                                {pub.Etiquetas && pub.Etiquetas.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-2">
+                                    {pub.Etiquetas.map((tag) => (
+                                      <button 
+                                        key={tag.id || tag.nombre} 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setEtiquetaSeleccionada(tag.nombre);
+                                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className="text-[9px] bg-zinc-100 hover:bg-indigo-50 dark:bg-zinc-800/80 dark:hover:bg-indigo-950/30 text-zinc-600 hover:text-indigo-655 dark:text-zinc-400 dark:hover:text-indigo-400 px-2 py-0.5 rounded-full font-semibold transition border-none cursor-pointer"
+                                      >
+                                        {tag.nombre}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
 
                               {/* Pie de la tarjeta */}

@@ -456,13 +456,19 @@ const DetallePublicacion = () => {
                 )}
 
                 {/* Etiquetas */}
-                <div className="flex flex-wrap gap-1.5 mt-4">
-                  {["Teoremas", "Límites", "Integrales"].map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-450 text-[10px] font-bold rounded">
-                      #{tag.toLowerCase()}
-                    </span>
-                  ))}
-                </div>
+                {publicacion.Etiquetas && publicacion.Etiquetas.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {publicacion.Etiquetas.map((tag) => (
+                      <button 
+                        key={tag.id || tag.nombre} 
+                        onClick={() => navigate(`/foros/${materiaId}`, { state: { tagFiltrado: tag.nombre } })}
+                        className="px-2 py-0.5 bg-zinc-100 hover:bg-indigo-55/80 dark:bg-zinc-800 dark:hover:bg-indigo-950/30 text-zinc-550 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400 text-[10px] font-bold rounded transition border-none cursor-pointer"
+                      >
+                        {tag.nombre}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Footer de Acciones de Publicación */}
                 <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/80 mt-5 pt-4 text-[11px] font-bold text-zinc-450 dark:text-zinc-500">
