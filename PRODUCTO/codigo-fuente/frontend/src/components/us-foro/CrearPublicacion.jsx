@@ -456,9 +456,12 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
                                 ))}
                             </div>
 
-                            <p className="text-xs text-gray-600 whitespace-pre-wrap mt-1 min-h-[40px]">
-                                {contenido || 'Este es un ejemplo de cómo se verá tu publicación en el foro una vez que sea publicada.'}
-                            </p>
+                            <div 
+                                className="text-xs text-gray-600 whitespace-pre-wrap mt-1 min-h-[40px]"
+                                dangerouslySetInnerHTML={{ 
+                                    __html: contenido || 'Este es un ejemplo de cómo se verá tu publicación en el foro una vez que sea publicada.' 
+                                }}
+                            />
                             
                             <div className="text-[10px] text-gray-400 border-t border-gray-100 pt-2 mt-2 flex items-center gap-1">
                                 📅 {new Date().toLocaleDateString()} • <span className="text-indigo-500 font-medium">Ahora</span>
