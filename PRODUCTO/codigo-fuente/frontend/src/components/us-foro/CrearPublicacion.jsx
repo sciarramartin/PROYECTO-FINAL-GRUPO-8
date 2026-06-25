@@ -7,46 +7,36 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
     const [mensajeConfirmacion, setMensajeConfirmacion] = useState('');
     const [error, setError] = useState('');
 
-    const textareaRef = useRef(null);
+    const editorRef = useRef(null);
+
+    const ejecutarComando = (comando, valor = null) => {
+        document.execCommand(comando, false, valor);
+        if (editorRef.current) {
+            setContenido(editorRef.current.innerHTML);
+        }
+    };
 
     const aplicarFormato = (tipo) => {
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const textoCompleto = textarea.value;
-        const textoSeleccionado = textoCompleto.substring(start, end);
-
-        let textoFormateado = "";
-        switch (tipo) {
-            case "negrita":
-                textoFormateado = `**${textoSeleccionado || "texto"}**`;
-                break;
-            case "italic":
-                textoFormateado = `*${textoSeleccionado || "texto"}*`;
-                break;
-            case "subrayado":
-                textoFormateado = `__${textoSeleccionado || "texto"}__`;
-                break;
-            case "link":
-                textoFormateado = `[${textoSeleccionado || "texto"}](url)`;
-                break;
-            case "imagen":
-                textoFormateado = `![${textoSeleccionado || "descripcion"}](url_imagen)`;
-                break;
-            default:
-                return;
+        if (tipo === "negrita") {
+            ejecutarComando("bold");
+        } else if (tipo === "italic") {
+            ejecutarComando("italic");
+        } else if (tipo === "subrayado") {
+            ejecutarComando("underline");
+        } else if (tipo === "link") {
+            const url = prompt("Introduce la URL del enlace:");
+            if (url) ejecutarComando("createLink", url);
+        } else if (tipo === "imagen") {
+            const url = prompt("Introduce la URL de la imagen:");
+            if (url) ejecutarComando("insertImage", url);
         }
+    };
 
-        const nuevoContenido = textoCompleto.substring(0, start) + textoFormateado + textoCompleto.substring(end);
-        setContenido(nuevoContenido);
-
-        setTimeout(() => {
-            textarea.focus();
-            const offset = (tipo === "negrita" || tipo === "subrayado") ? 2 : 1;
-            textarea.setSelectionRange(start + offset, start + offset + (textoSeleccionado || "texto").length);
-        }, 0);
+    const obtenerLongitudTextoSinTags = (html) => {
+        if (!html) return 0;
+        const temp = document.createElement("div");
+        temp.innerHTML = html;
+        return temp.textContent.length || temp.innerText.length || 0;
     };
 
     // Estado para etiquetas
@@ -165,6 +155,9 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
             // Limpiamos el formulario
             setTitulo('');
             setContenido('');
+            if (editorRef.current) {
+                editorRef.current.innerHTML = '';
+            }
             setEtiquetasLista([]);
 
             // Esperamos 2 segundos para que el usuario vea el cartel verde de éxito y volvemos al muro
@@ -335,6 +328,13 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
                     </div>
 
                     <div>
+                        <style>{`
+                            .rich-editor:empty:before {
+                                content: attr(placeholder);
+                                color: #a1a1aa;
+                                cursor: text;
+                            }
+                        `}</style>
                         <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Contenido *</label>
                         <div className="flex gap-2 p-2 border border-b-0 border-gray-200 bg-gray-50 rounded-t-xl text-xs text-gray-500 font-mono select-none">
                             <span onClick={() => aplicarFormato("negrita")} className="font-bold px-1.5 cursor-pointer hover:text-black">B</span>
@@ -343,16 +343,14 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
                             <span onClick={() => aplicarFormato("link")} className="px-1.5 border-l border-gray-300 cursor-pointer hover:text-black">🔗</span>
                             <span onClick={() => aplicarFormato("imagen")} className="px-1.5 cursor-pointer hover:text-black">🖼️</span>
                         </div>
-                        <textarea 
-                            ref={textareaRef}
-                            rows="8" 
-                            placeholder="Escribe aquí tu publicación..." 
-                            value={contenido}
-                            onChange={(e) => setContenido(e.target.value)}
-                            maxLength={4000}
-                            className="w-full p-3 border border-gray-200 rounded-b-xl text-xs outline-none focus:border-indigo-500 resize-none transition-all"
+                        <div 
+                            ref={editorRef}
+                            contentEditable
+                            placeholder="Escribe aquí tu publicación..."
+                            onInput={(e) => setContenido(e.currentTarget.innerHTML)}
+                            className="rich-editor w-full p-3 border border-gray-200 rounded-b-xl text-xs outline-none focus:border-indigo-500 min-h-[150px] overflow-y-auto bg-white dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
                         />
-                        <span className="text-[10px] text-gray-400 float-right mt-1">{contenido.length}/4000</span>
+                        <span className="text-[10px] text-gray-400 float-right mt-1">{obtenerLongitudTextoSinTags(contenido)}/4000</span>
                     </div>
 
                     <div className="flex justify-end gap-2 mt-2">

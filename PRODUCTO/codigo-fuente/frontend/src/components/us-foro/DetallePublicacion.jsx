@@ -46,47 +46,36 @@ const DetallePublicacion = () => {
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [reaccionUsuario, setReaccionUsuario] = useState(null); // 'positivo' o 'negativo'
 
-  const textareaRef = useRef(null);
+  const editorRef = useRef(null);
+
+  const ejecutarComando = (comando, valor = null) => {
+    document.execCommand(comando, false, valor);
+    if (editorRef.current) {
+      setEditContenido(editorRef.current.innerHTML);
+    }
+  };
 
   const aplicarFormato = (tipo) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const textoCompleto = textarea.value;
-    const textoSeleccionado = textoCompleto.substring(start, end);
-
-    let textoFormateado = "";
-    switch (tipo) {
-      case "negrita":
-        textoFormateado = `**${textoSeleccionado || "texto"}**`;
-        break;
-      case "italic":
-        textoFormateado = `*${textoSeleccionado || "texto"}*`;
-        break;
-      case "subrayado":
-        textoFormateado = `__${textoSeleccionado || "texto"}__`;
-        break;
-      case "link":
-        textoFormateado = `[${textoSeleccionado || "texto"}](url)`;
-        break;
-      case "imagen":
-        textoFormateado = `![${textoSeleccionado || "descripcion"}](url_imagen)`;
-        break;
-      default:
-        return;
+    if (tipo === "negrita") {
+      ejecutarComando("bold");
+    } else if (tipo === "italic") {
+      ejecutarComando("italic");
+    } else if (tipo === "subrayado") {
+      ejecutarComando("underline");
+    } else if (tipo === "link") {
+      const url = prompt("Introduce la URL del enlace:");
+      if (url) ejecutarComando("createLink", url);
+    } else if (tipo === "imagen") {
+      const url = prompt("Introduce la URL de la imagen:");
+      if (url) ejecutarComando("insertImage", url);
     }
-
-    const nuevoContenido = textoCompleto.substring(0, start) + textoFormateado + textoCompleto.substring(end);
-    setEditContenido(nuevoContenido);
-
-    setTimeout(() => {
-      textarea.focus();
-      const offset = (tipo === "negrita" || tipo === "subrayado") ? 2 : 1;
-      textarea.setSelectionRange(start + offset, start + offset + (textoSeleccionado || "texto").length);
-    }, 0);
   };
+
+  useEffect(() => {
+    if (editando && editorRef.current) {
+      editorRef.current.innerHTML = editContenido;
+    }
+  }, [editando]);
 
   // Obtener ID del usuario actual para comparar si es autor
   let usuarioActual = {};
@@ -501,13 +490,19 @@ const DetallePublicacion = () => {
                         🖼️
                       </span>
                     </div>
-                    <textarea 
-                      ref={textareaRef}
-                      value={editContenido}
-                      onChange={(e) => setEditContenido(e.target.value)}
-                      rows={5}
-                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-b-lg px-3 py-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 resize-y mb-3"
+                    <style>{`
+                      .rich-editor:empty:before {
+                        content: attr(placeholder);
+                        color: #a1a1aa;
+                        cursor: text;
+                      }
+                    `}</style>
+                    <div 
+                      ref={editorRef}
+                      contentEditable
                       placeholder="Contenido..."
+                      onInput={(e) => setEditContenido(e.currentTarget.innerHTML)}
+                      className="rich-editor w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-b-lg px-3 py-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 min-h-[150px] overflow-y-auto mb-3"
                     />
                     <div className="flex justify-end gap-2">
                       <button 
@@ -529,9 +524,10 @@ const DetallePublicacion = () => {
                     <h1 className="text-lg md:text-xl font-extrabold text-zinc-850 dark:text-zinc-50 leading-tight mt-4 mb-2">
                       {publicacion.titulo}
                     </h1>
-                    <div className="text-xs md:text-sm text-zinc-650 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap mt-3 bg-zinc-50/50 dark:bg-zinc-900/30 p-3 rounded-xl border border-zinc-150/40 dark:border-zinc-800/20">
-                      {publicacion.contenido}
-                    </div>
+                    <div 
+                      className="text-xs md:text-sm text-zinc-650 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap mt-3 bg-zinc-50/50 dark:bg-zinc-900/30 p-3 rounded-xl border border-zinc-150/40 dark:border-zinc-800/20"
+                      dangerouslySetInnerHTML={{ __html: publicacion.contenido }}
+                    />
                   </>
                 )}
 

@@ -733,9 +733,10 @@ const MuroForo = () => {
                           >
                             {pub.titulo}
                           </button>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
-                            {pub.contenido}
-                          </p>
+                          <p 
+                            className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: pub.contenido }}
+                          />
                           {/* Etiquetas de la publicación */}
                           {pub.Etiquetas && pub.Etiquetas.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
@@ -918,9 +919,10 @@ const MuroForo = () => {
                                 >
                                   {pub.titulo}
                                 </button>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
-                                  {pub.contenido}
-                                </p>
+                                <p 
+                                  className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed"
+                                  dangerouslySetInnerHTML={{ __html: pub.contenido }}
+                                />
                                 {/* Etiquetas de la publicación */}
                                 {pub.Etiquetas && pub.Etiquetas.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mt-2">

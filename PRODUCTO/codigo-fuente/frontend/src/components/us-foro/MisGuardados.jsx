@@ -270,9 +270,10 @@ const MisGuardados = () => {
                   </h3>
 
                   {/* Body Snippet */}
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-2 leading-relaxed">
-                    {pub.contenido}
-                  </p>
+                  <p 
+                    className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-2 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: pub.contenido }}
+                  />
                 </div>
 
                 {/* Footer */}
