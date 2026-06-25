@@ -370,4 +370,16 @@ CREATE TABLE foro_reportes (
     FOREIGN KEY (id_comentario) REFERENCES foro_comentarios(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- =========================
+-- ETIQUETAS DE PUBLICACIONES
+-- =========================
+CREATE TABLE foro_etiquetas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_publicacion INTEGER NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 

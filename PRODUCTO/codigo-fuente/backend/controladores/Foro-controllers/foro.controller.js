@@ -7,6 +7,7 @@ const { ForoComentario } = require('../../modelos/ForoComentario');
 const { Usuario } = require('../../modelos/Usuario');
 const { Perfil } = require('../../modelos/Perfil');
 const { ForoPublicacionGuardada } = require('../../modelos/ForoPublicacionGuardada');
+const { ForoEtiqueta } = require('../../modelos/ForoEtiqueta');
 
 // GET /api/foro/materias - Obtener todas las materias y estadísticas de sus foros
 router.get('/materias', verificarToken, async (req, res) => {
@@ -75,6 +76,11 @@ router.get('/materias/:materiaId/publicaciones', verificarToken, async (req, res
                             attributes: ['foto_perfil']
                         }
                     ]
+                },
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
                 }
             ],
             order: orderCondition
@@ -100,7 +106,8 @@ router.get('/materias/:materiaId/publicaciones', verificarToken, async (req, res
                 id_materia: pub.id_materia,
                 Autor: pub.Autor,
                 cantComentarios,
-                esGuardada: !!guardada
+                esGuardada: !!guardada,
+                Etiquetas: pub.Etiquetas || []
             };
         }));
 
@@ -143,6 +150,11 @@ router.get('/materias/:materiaId/mis-aportes', verificarToken, async (req, res) 
                             attributes: ['foto_perfil']
                         }
                     ]
+                },
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
                 }
             ],
             order: [['createdAt', 'DESC']]
@@ -166,7 +178,8 @@ router.get('/materias/:materiaId/mis-aportes', verificarToken, async (req, res) 
                 id_materia: pub.id_materia,
                 Autor: pub.Autor,
                 cantComentarios,
-                esGuardada: !!guardada
+                esGuardada: !!guardada,
+                Etiquetas: pub.Etiquetas || []
             };
         }));
 

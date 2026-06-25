@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { verificarToken } = require('../../middleware/authMiddleware'); 
-const { ForoPublicacion, ForoComentario, ForoReaccion, Usuario, Materia, ForoPublicacionGuardada, Perfil, ForoReporte } = require('../../modelos/asociaciones');
+const { ForoPublicacion, ForoComentario, ForoReaccion, Usuario, Materia, ForoPublicacionGuardada, Perfil, ForoReporte, ForoEtiqueta } = require('../../modelos/asociaciones');
 
 // @route   POST /api/publicaciones
 // @desc    Crear una nueva publicación en el foro de una materia
 // @access  Privado
 router.post('/', verificarToken, async (req, res) => {
     try {
-        const { id_materia, titulo, contenido, categoria } = req.body;
+        const { id_materia, titulo, contenido, categoria, etiquetas } = req.body;
         if (!titulo || titulo.trim() === "") {
             return res.status(400).json({ 
                 error: 'El sistema requiere un título obligatorio para continuar.' 
@@ -33,9 +33,35 @@ router.post('/', verificarToken, async (req, res) => {
             votos: 0
         });
 
+        if (Array.isArray(etiquetas) && etiquetas.length > 0) {
+            const tagsToInsert = etiquetas
+                .map(t => t.trim())
+                .filter(t => t.length > 0)
+                .map(t => t.startsWith('#') ? t : `#${t}`);
+            
+            const uniqueTags = [...new Set(tagsToInsert)];
+
+            for (const tag of uniqueTags) {
+                await ForoEtiqueta.create({
+                    id_publicacion: nuevaPublicacion.id,
+                    nombre: tag
+                });
+            }
+        }
+
+        const publicacionCreada = await ForoPublicacion.findByPk(nuevaPublicacion.id, {
+            include: [
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
+                }
+            ]
+        });
+
         return res.status(201).json({
             mensaje: '¡Publicación creada con éxito!',
-            publicacion: nuevaPublicacion
+            publicacion: publicacionCreada
         });
 
     } catch (error) {
@@ -100,6 +126,11 @@ router.put('/:id', verificarToken, async (req, res) => {
                 {
                     model: Materia,
                     attributes: ['id', 'nombre', 'codigo']
+                },
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
                 }
             ]
         });
@@ -286,6 +317,11 @@ router.get('/guardadas', verificarToken, async (req, res) => {
                         {
                             model: Materia,
                             attributes: ['id', 'nombre', 'codigo']
+                        },
+                        {
+                            model: ForoEtiqueta,
+                            as: 'Etiquetas',
+                            attributes: ['id', 'nombre']
                         }
                     ]
                 }
@@ -452,6 +488,41 @@ router.post('/:id/guardar', verificarToken, async (req, res) => {
     }
 });
 
+// @route   GET /api/publicaciones/etiquetas/populares
+// @desc    Obtener 5 etiquetas aleatorias de las 15 más usadas
+// @access  Privado
+router.get('/etiquetas/populares', verificarToken, async (req, res) => {
+    try {
+        const Sequelize = require('sequelize');
+        const popularTags = await ForoEtiqueta.findAll({
+            attributes: [
+                'nombre',
+                [Sequelize.fn('COUNT', Sequelize.col('nombre')), 'cantidad']
+            ],
+            group: ['nombre'],
+            order: [[Sequelize.literal('cantidad'), 'DESC']],
+            limit: 15
+        });
+
+        if (popularTags.length === 0) {
+            return res.json([]);
+        }
+
+        const tagNames = popularTags.map(t => t.nombre);
+
+        // Mezclar de manera aleatoria (shuffle)
+        const shuffled = tagNames.sort(() => 0.5 - Math.random());
+
+        // Seleccionar máximo 5 etiquetas
+        const selectedTags = shuffled.slice(0, 5);
+
+        return res.json(selectedTags);
+    } catch (error) {
+        console.error("Error al obtener etiquetas populares:", error);
+        return res.status(500).json({ error: 'Error al obtener etiquetas populares.' });
+    }
+});
+
 // @route   GET /api/publicaciones/:postId
 // @desc    Obtener detalle de una publicación con sus comentarios y si está guardada
 // @access  Privado
@@ -475,6 +546,11 @@ router.get('/:postId', verificarToken, async (req, res) => {
                 {
                     model: Materia,
                     attributes: ['id', 'nombre', 'codigo']
+                },
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
                 }
             ]
         });

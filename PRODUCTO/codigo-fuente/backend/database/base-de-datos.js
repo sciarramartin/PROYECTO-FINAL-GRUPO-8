@@ -60,6 +60,10 @@ const inicializarDB = async () => {
     const { ForoReporte } = require('../modelos/ForoReporte');
     await ForoReporte.sync();
 
+    // Asegurar que la tabla de etiquetas exista
+    const { ForoEtiqueta } = require('../modelos/ForoEtiqueta');
+    await ForoEtiqueta.sync();
+
     console.log('Base de datos inicializada y conectada');
 
     // await new Promise((resolve, reject) => {
