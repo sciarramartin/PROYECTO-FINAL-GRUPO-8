@@ -48,11 +48,26 @@ const DetallePublicacion = () => {
 
   const editorRef = useRef(null);
 
+  const [formatState, setFormatState] = useState({
+    bold: false,
+    italic: false,
+    underline: false
+  });
+
+  const actualizarEstadosFormato = () => {
+    setFormatState({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+      underline: document.queryCommandState("underline")
+    });
+  };
+
   const ejecutarComando = (comando, valor = null) => {
     document.execCommand(comando, false, valor);
     if (editorRef.current) {
       setEditContenido(editorRef.current.innerHTML);
     }
+    actualizarEstadosFormato();
   };
 
   const aplicarFormato = (tipo) => {
@@ -455,35 +470,35 @@ const DetallePublicacion = () => {
                     />
                     <div className="flex gap-2 p-2 border border-b-0 border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 rounded-t-lg text-xs text-zinc-550 dark:text-zinc-400 font-mono select-none">
                       <span 
-                        onClick={() => aplicarFormato("negrita")} 
-                        className="font-bold px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
+                        onMouseDown={(e) => { e.preventDefault(); aplicarFormato("negrita"); }} 
+                        className={`font-bold px-1.5 cursor-pointer rounded transition ${formatState.bold ? 'bg-zinc-200 text-black dark:bg-zinc-700 dark:text-white font-extrabold' : 'hover:text-black dark:hover:text-white'}`}
                         title="Negrita"
                       >
                         B
                       </span>
                       <span 
-                        onClick={() => aplicarFormato("italic")} 
-                        className="italic px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
+                        onMouseDown={(e) => { e.preventDefault(); aplicarFormato("italic"); }} 
+                        className={`italic px-1.5 cursor-pointer rounded transition ${formatState.italic ? 'bg-zinc-200 text-black dark:bg-zinc-700 dark:text-white font-extrabold' : 'hover:text-black dark:hover:text-white'}`}
                         title="Cursiva"
                       >
                         I
                       </span>
                       <span 
-                        onClick={() => aplicarFormato("subrayado")} 
-                        className="underline px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
+                        onMouseDown={(e) => { e.preventDefault(); aplicarFormato("subrayado"); }} 
+                        className={`underline px-1.5 cursor-pointer rounded transition ${formatState.underline ? 'bg-zinc-200 text-black dark:bg-zinc-700 dark:text-white font-extrabold' : 'hover:text-black dark:hover:text-white'}`}
                         title="Subrayado"
                       >
                         U
                       </span>
                       <span 
-                        onClick={() => aplicarFormato("link")} 
+                        onMouseDown={(e) => { e.preventDefault(); aplicarFormato("link"); }} 
                         className="px-1.5 border-l border-zinc-300 dark:border-zinc-600 cursor-pointer hover:text-black dark:hover:text-white"
                         title="Enlace"
                       >
                         🔗
                       </span>
                       <span 
-                        onClick={() => aplicarFormato("imagen")} 
+                        onMouseDown={(e) => { e.preventDefault(); aplicarFormato("imagen"); }} 
                         className="px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
                         title="Imagen"
                       >
@@ -502,6 +517,9 @@ const DetallePublicacion = () => {
                       contentEditable
                       placeholder="Contenido..."
                       onInput={(e) => setEditContenido(e.currentTarget.innerHTML)}
+                      onKeyUp={actualizarEstadosFormato}
+                      onMouseUp={actualizarEstadosFormato}
+                      onClick={actualizarEstadosFormato}
                       className="rich-editor w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-b-lg px-3 py-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 min-h-[150px] overflow-y-auto mb-3"
                     />
                     <div className="flex justify-end gap-2">

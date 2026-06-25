@@ -9,11 +9,26 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
 
     const editorRef = useRef(null);
 
+    const [formatState, setFormatState] = useState({
+        bold: false,
+        italic: false,
+        underline: false
+    });
+
+    const actualizarEstadosFormato = () => {
+        setFormatState({
+            bold: document.queryCommandState("bold"),
+            italic: document.queryCommandState("italic"),
+            underline: document.queryCommandState("underline")
+        });
+    };
+
     const ejecutarComando = (comando, valor = null) => {
         document.execCommand(comando, false, valor);
         if (editorRef.current) {
             setContenido(editorRef.current.innerHTML);
         }
+        actualizarEstadosFormato();
     };
 
     const aplicarFormato = (tipo) => {
@@ -337,17 +352,50 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
                         `}</style>
                         <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Contenido *</label>
                         <div className="flex gap-2 p-2 border border-b-0 border-gray-200 bg-gray-50 rounded-t-xl text-xs text-gray-500 font-mono select-none">
-                            <span onClick={() => aplicarFormato("negrita")} className="font-bold px-1.5 cursor-pointer hover:text-black">B</span>
-                            <span onClick={() => aplicarFormato("italic")} className="italic px-1.5 cursor-pointer hover:text-black">I</span>
-                            <span onClick={() => aplicarFormato("subrayado")} className="underline px-1.5 cursor-pointer hover:text-black">U</span>
-                            <span onClick={() => aplicarFormato("link")} className="px-1.5 border-l border-gray-300 cursor-pointer hover:text-black">🔗</span>
-                            <span onClick={() => aplicarFormato("imagen")} className="px-1.5 cursor-pointer hover:text-black">🖼️</span>
+                            <span 
+                                onMouseDown={(e) => { e.preventDefault(); aplicarFormato("negrita"); }} 
+                                className={`font-bold px-1.5 cursor-pointer rounded transition ${formatState.bold ? 'bg-gray-200 text-black font-extrabold' : 'hover:text-black'}`}
+                                title="Negrita"
+                            >
+                                B
+                            </span>
+                            <span 
+                                onMouseDown={(e) => { e.preventDefault(); aplicarFormato("italic"); }} 
+                                className={`italic px-1.5 cursor-pointer rounded transition ${formatState.italic ? 'bg-gray-200 text-black font-extrabold' : 'hover:text-black'}`}
+                                title="Cursiva"
+                            >
+                                I
+                            </span>
+                            <span 
+                                onMouseDown={(e) => { e.preventDefault(); aplicarFormato("subrayado"); }} 
+                                className={`underline px-1.5 cursor-pointer rounded transition ${formatState.underline ? 'bg-gray-200 text-black font-extrabold' : 'hover:text-black'}`}
+                                title="Subrayado"
+                            >
+                                U
+                            </span>
+                            <span 
+                                onMouseDown={(e) => { e.preventDefault(); aplicarFormato("link"); }} 
+                                className="px-1.5 border-l border-gray-300 cursor-pointer hover:text-black"
+                                title="Enlace"
+                            >
+                                🔗
+                            </span>
+                            <span 
+                                onMouseDown={(e) => { e.preventDefault(); aplicarFormato("imagen"); }} 
+                                className="px-1.5 cursor-pointer hover:text-black"
+                                title="Imagen"
+                            >
+                                🖼️
+                            </span>
                         </div>
                         <div 
                             ref={editorRef}
                             contentEditable
                             placeholder="Escribe aquí tu publicación..."
                             onInput={(e) => setContenido(e.currentTarget.innerHTML)}
+                            onKeyUp={actualizarEstadosFormato}
+                            onMouseUp={actualizarEstadosFormato}
+                            onClick={actualizarEstadosFormato}
                             className="rich-editor w-full p-3 border border-gray-200 rounded-b-xl text-xs outline-none focus:border-indigo-500 min-h-[150px] overflow-y-auto bg-white dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
                         />
                         <span className="text-[10px] text-gray-400 float-right mt-1">{obtenerLongitudTextoSinTags(contenido)}/4000</span>
