@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionCreada, onCancelar }) => {
     const [titulo, setTitulo] = useState('');
@@ -6,6 +6,48 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
     const [categoria, setCategoria] = useState('Duda'); // 'General', 'Duda', 'Opinión', 'Recurso'
     const [mensajeConfirmacion, setMensajeConfirmacion] = useState('');
     const [error, setError] = useState('');
+
+    const textareaRef = useRef(null);
+
+    const aplicarFormato = (tipo) => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const textoCompleto = textarea.value;
+        const textoSeleccionado = textoCompleto.substring(start, end);
+
+        let textoFormateado = "";
+        switch (tipo) {
+            case "negrita":
+                textoFormateado = `**${textoSeleccionado || "texto"}**`;
+                break;
+            case "italic":
+                textoFormateado = `*${textoSeleccionado || "texto"}*`;
+                break;
+            case "subrayado":
+                textoFormateado = `__${textoSeleccionado || "texto"}__`;
+                break;
+            case "link":
+                textoFormateado = `[${textoSeleccionado || "texto"}](url)`;
+                break;
+            case "imagen":
+                textoFormateado = `![${textoSeleccionado || "descripcion"}](url_imagen)`;
+                break;
+            default:
+                return;
+        }
+
+        const nuevoContenido = textoCompleto.substring(0, start) + textoFormateado + textoCompleto.substring(end);
+        setContenido(nuevoContenido);
+
+        setTimeout(() => {
+            textarea.focus();
+            const offset = (tipo === "negrita" || tipo === "subrayado") ? 2 : 1;
+            textarea.setSelectionRange(start + offset, start + offset + (textoSeleccionado || "texto").length);
+        }, 0);
+    };
 
     // Estado para etiquetas
     const [nuevaEtiqueta, setNuevaEtiqueta] = useState('');
@@ -295,13 +337,14 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
                     <div>
                         <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Contenido *</label>
                         <div className="flex gap-2 p-2 border border-b-0 border-gray-200 bg-gray-50 rounded-t-xl text-xs text-gray-500 font-mono select-none">
-                            <span className="font-bold px-1.5 cursor-pointer hover:text-black">B</span>
-                            <span className="italic px-1.5 cursor-pointer hover:text-black">I</span>
-                            <span className="underline px-1.5 cursor-pointer hover:text-black">U</span>
-                            <span className="px-1.5 border-l border-gray-300">🔗</span>
-                            <span className="px-1.5">🖼️</span>
+                            <span onClick={() => aplicarFormato("negrita")} className="font-bold px-1.5 cursor-pointer hover:text-black">B</span>
+                            <span onClick={() => aplicarFormato("italic")} className="italic px-1.5 cursor-pointer hover:text-black">I</span>
+                            <span onClick={() => aplicarFormato("subrayado")} className="underline px-1.5 cursor-pointer hover:text-black">U</span>
+                            <span onClick={() => aplicarFormato("link")} className="px-1.5 border-l border-gray-300 cursor-pointer hover:text-black">🔗</span>
+                            <span onClick={() => aplicarFormato("imagen")} className="px-1.5 cursor-pointer hover:text-black">🖼️</span>
                         </div>
                         <textarea 
+                            ref={textareaRef}
                             rows="8" 
                             placeholder="Escribe aquí tu publicación..." 
                             value={contenido}

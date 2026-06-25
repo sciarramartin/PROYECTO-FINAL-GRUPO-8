@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -45,6 +45,48 @@ const DetallePublicacion = () => {
   const [editContenido, setEditContenido] = useState("");
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [reaccionUsuario, setReaccionUsuario] = useState(null); // 'positivo' o 'negativo'
+
+  const textareaRef = useRef(null);
+
+  const aplicarFormato = (tipo) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const textoCompleto = textarea.value;
+    const textoSeleccionado = textoCompleto.substring(start, end);
+
+    let textoFormateado = "";
+    switch (tipo) {
+      case "negrita":
+        textoFormateado = `**${textoSeleccionado || "texto"}**`;
+        break;
+      case "italic":
+        textoFormateado = `*${textoSeleccionado || "texto"}*`;
+        break;
+      case "subrayado":
+        textoFormateado = `__${textoSeleccionado || "texto"}__`;
+        break;
+      case "link":
+        textoFormateado = `[${textoSeleccionado || "texto"}](url)`;
+        break;
+      case "imagen":
+        textoFormateado = `![${textoSeleccionado || "descripcion"}](url_imagen)`;
+        break;
+      default:
+        return;
+    }
+
+    const nuevoContenido = textoCompleto.substring(0, start) + textoFormateado + textoCompleto.substring(end);
+    setEditContenido(nuevoContenido);
+
+    setTimeout(() => {
+      textarea.focus();
+      const offset = (tipo === "negrita" || tipo === "subrayado") ? 2 : 1;
+      textarea.setSelectionRange(start + offset, start + offset + (textoSeleccionado || "texto").length);
+    }, 0);
+  };
 
   // Obtener ID del usuario actual para comparar si es autor
   let usuarioActual = {};
@@ -422,11 +464,49 @@ const DetallePublicacion = () => {
                       className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm font-bold text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 mb-3"
                       placeholder="Título de la publicación"
                     />
+                    <div className="flex gap-2 p-2 border border-b-0 border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 rounded-t-lg text-xs text-zinc-550 dark:text-zinc-400 font-mono select-none">
+                      <span 
+                        onClick={() => aplicarFormato("negrita")} 
+                        className="font-bold px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
+                        title="Negrita"
+                      >
+                        B
+                      </span>
+                      <span 
+                        onClick={() => aplicarFormato("italic")} 
+                        className="italic px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
+                        title="Cursiva"
+                      >
+                        I
+                      </span>
+                      <span 
+                        onClick={() => aplicarFormato("subrayado")} 
+                        className="underline px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
+                        title="Subrayado"
+                      >
+                        U
+                      </span>
+                      <span 
+                        onClick={() => aplicarFormato("link")} 
+                        className="px-1.5 border-l border-zinc-300 dark:border-zinc-600 cursor-pointer hover:text-black dark:hover:text-white"
+                        title="Enlace"
+                      >
+                        🔗
+                      </span>
+                      <span 
+                        onClick={() => aplicarFormato("imagen")} 
+                        className="px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
+                        title="Imagen"
+                      >
+                        🖼️
+                      </span>
+                    </div>
                     <textarea 
+                      ref={textareaRef}
                       value={editContenido}
                       onChange={(e) => setEditContenido(e.target.value)}
                       rows={5}
-                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 resize-y mb-3"
+                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-b-lg px-3 py-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-indigo-500 resize-y mb-3"
                       placeholder="Contenido..."
                     />
                     <div className="flex justify-end gap-2">
