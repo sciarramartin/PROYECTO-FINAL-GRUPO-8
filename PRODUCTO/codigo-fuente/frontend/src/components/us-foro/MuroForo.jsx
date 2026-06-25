@@ -321,10 +321,10 @@ const MuroForo = () => {
             </div>
             <button
               onClick={() => setVistaActual('crear')}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
             >
-              <FiPlus className="w-4 h-4" />
-              Crear publicación
+              <FiPlus className="w-4 h-4 shrink-0" />
+              <span>Crear publicación</span>
             </button>
           </div>
           {/* Pestañas de Vista y Orden (UI Shell) */}

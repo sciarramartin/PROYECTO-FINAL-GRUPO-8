@@ -33,8 +33,9 @@ const DetallePublicacion = () => {
   const [cargando, setCargando] = useState(true);
   const [alertaTeammate, setAlertaTeammate] = useState(null);
   
-  // Estados para reporte de publicaciones
+  // Estados para reporte de publicaciones/comentarios
   const [modalReportarAbierto, setModalReportarAbierto] = useState(false);
+  const [comentarioIdAReportar, setComentarioIdAReportar] = useState(null);
   const [descripcionReporte, setDescripcionReporte] = useState("");
   const [errorReporte, setErrorReporte] = useState("");
   
@@ -188,7 +189,8 @@ const DetallePublicacion = () => {
     }
   };
 
-  const abrirModalReportar = () => {
+  const abrirModalReportar = (comentarioId = null) => {
+    setComentarioIdAReportar(comentarioId);
     setDescripcionReporte("");
     setErrorReporte("");
     setModalReportarAbierto(true);
@@ -196,6 +198,7 @@ const DetallePublicacion = () => {
 
   const cerrarModalReportar = () => {
     setModalReportarAbierto(false);
+    setComentarioIdAReportar(null);
     setDescripcionReporte("");
     setErrorReporte("");
   };
@@ -213,11 +216,20 @@ const DetallePublicacion = () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      await axios.post(`${apiUrl}/publicaciones/${postId}/reportar`, {
-        descripcion: descripcionReporte
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      
+      if (comentarioIdAReportar) {
+        await axios.post(`${apiUrl}/foro/comentarios/${comentarioIdAReportar}/reportar`, {
+          descripcion: descripcionReporte
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await axios.post(`${apiUrl}/publicaciones/${postId}/reportar`, {
+          descripcion: descripcionReporte
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
 
       mostrarMensajeTeammate("Reporte enviado a los administradores con éxito.");
       cerrarModalReportar();
@@ -496,6 +508,7 @@ const DetallePublicacion = () => {
           <SeccionComentarios 
             idPublicacion={postId} 
             idUsuarioActual={usuarioActual.id}
+            alReportar={(comentarioId) => abrirModalReportar(comentarioId)}
           />
 
         </div>
@@ -623,10 +636,10 @@ const DetallePublicacion = () => {
             <div>
               <h3 className="text-base font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
                 <FiAlertCircle className="w-5 h-5 text-red-500" />
-                Reportar Publicación
+                {comentarioIdAReportar ? "Reportar Comentario" : "Reportar Publicación"}
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                Por favor, describe detalladamente el motivo por el cual estás reportando esta publicación. Un administrador revisará tu reporte.
+                Por favor, describe detalladamente el motivo por el cual estás reportando {comentarioIdAReportar ? "este comentario" : "esta publicación"}. Un administrador revisará tu reporte.
               </p>
             </div>
             

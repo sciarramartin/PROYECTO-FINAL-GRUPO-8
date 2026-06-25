@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ComentarioNodo from './ComentarioNodo';
 
-const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
+const SeccionComentarios = ({ idPublicacion, idUsuarioActual, alReportar }) => {
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentarioRaiz, setNuevoComentarioRaiz] = useState("");
     const [error, setError] = useState("");
@@ -155,7 +155,7 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
                             alResponder={manejarEnviarComentario}
                             idUsuarioActual={idUsuarioActual}
                             alVotar={manejarVotoComentario}
-                            //alReportar={manejarReportarComentario}
+                            alReportar={alReportar}
                         />
                     ))
                 )}

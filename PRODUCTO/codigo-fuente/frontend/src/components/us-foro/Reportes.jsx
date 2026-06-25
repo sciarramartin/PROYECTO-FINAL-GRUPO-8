@@ -115,7 +115,14 @@ const Reportes = () => {
     const reportadorNombre = r.Reportador ? `${r.Reportador.nombre} ${r.Reportador.apellido} ${r.Reportador.nombre_usuario}` : "";
     const reportadorNormalizado = normalizarTexto(reportadorNombre);
 
-    const autorNombre = pub.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido} ${pub.Autor.nombre_usuario}` : "";
+    const comentarioContenido = r.Comentario ? normalizarTexto(r.Comentario.contenido) : "";
+    const comentarioAutorNombre = r.Comentario && r.Comentario.Autor 
+      ? normalizarTexto(`${r.Comentario.Autor.nombre} ${r.Comentario.Autor.apellido} ${r.Comentario.Autor.nombre_usuario}`)
+      : "";
+
+    const autorNombre = r.Comentario && r.Comentario.Autor
+      ? `${r.Comentario.Autor.nombre} ${r.Comentario.Autor.apellido} ${r.Comentario.Autor.nombre_usuario}`
+      : (pub.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido} ${pub.Autor.nombre_usuario}` : "");
     const autorNormalizado = normalizarTexto(autorNombre);
 
     const materiaNombre = pub.Materia?.nombre || "";
@@ -125,6 +132,8 @@ const Reportes = () => {
       motivo.includes(query) || 
       pubTitulo.includes(query) || 
       pubContenido.includes(query) || 
+      comentarioContenido.includes(query) ||
+      comentarioAutorNombre.includes(query) ||
       reportadorNormalizado.includes(query) || 
       autorNormalizado.includes(query) ||
       materiaNormalizada.includes(query)
@@ -354,9 +363,12 @@ const Reportes = () => {
             const reportadorNombre = rep.Reportador 
               ? `${rep.Reportador.nombre} ${rep.Reportador.apellido}` 
               : "Usuario Anónimo";
-            const autorNombre = pub.Autor 
-              ? `${pub.Autor.nombre} ${pub.Autor.apellido}` 
-              : "Usuario Anónimo";
+            const autorNombre = rep.Comentario && rep.Comentario.Autor
+              ? `${rep.Comentario.Autor.nombre} ${rep.Comentario.Autor.apellido}`
+              : (pub.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido}` : "Usuario Anónimo");
+            const autorUsuario = rep.Comentario && rep.Comentario.Autor
+              ? rep.Comentario.Autor.nombre_usuario
+              : (pub.Autor ? pub.Autor.nombre_usuario : "");
             
             return (
               <div
@@ -375,8 +387,8 @@ const Reportes = () => {
                     </div>
                     <FiChevronRight className="hidden sm:block text-zinc-400" />
                     <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-650 dark:text-zinc-350 px-2 py-0.5 rounded-full font-bold">
-                      {renderMiniAvatar(pub.Autor, "from-indigo-500 to-blue-600")}
-                      <span>Reportado: {autorNombre} (@{pub.Autor?.nombre_usuario})</span>
+                      {renderMiniAvatar(rep.Comentario ? rep.Comentario.Autor : pub.Autor, "from-indigo-500 to-blue-600")}
+                      <span>Reportado: {autorNombre} {autorUsuario ? `(@${autorUsuario})` : ""}</span>
                     </div>
                   </div>
                   
@@ -414,22 +426,37 @@ const Reportes = () => {
                   </p>
                 </div>
 
-                {/* Bottom section: publication snippet */}
+                {/* Bottom section: publication snippet or comment snippet */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 border rounded uppercase tracking-wider ${getColoresCategoria(pub.categoria)}`}>
-                      {pub.categoria || "General"}
+                    <span className={`text-[9px] font-extrabold px-1.5 py-0.5 border rounded uppercase tracking-wider ${
+                      rep.Comentario ? "bg-amber-50 border-amber-100 text-amber-600 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-450" : getColoresCategoria(pub.categoria)
+                    }`}>
+                      {rep.Comentario ? "Comentario" : (pub.categoria || "General")}
                     </span>
                     <span className="text-[9px] bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded font-bold">
                       {materiaNombre}
                     </span>
                   </div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white leading-tight">
-                    {pub.titulo || "Publicación sin título"}
-                  </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-450 line-clamp-2 leading-relaxed">
-                    {pub.contenido || "Sin contenido."}
-                  </p>
+                  {rep.Comentario ? (
+                    <>
+                      <div className="text-xs bg-zinc-50 dark:bg-zinc-900/30 p-2.5 rounded-lg border border-zinc-150 dark:border-zinc-800/20 text-zinc-700 dark:text-zinc-350 italic">
+                        "{rep.Comentario.contenido}"
+                      </div>
+                      <p className="text-[10px] text-zinc-450 dark:text-zinc-500 font-semibold">
+                        En la publicación: <span className="underline">{pub.titulo || "Publicación sin título"}</span>
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-sm font-bold text-zinc-900 dark:text-white leading-tight">
+                        {pub.titulo || "Publicación sin título"}
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-450 line-clamp-2 leading-relaxed">
+                        {pub.contenido || "Sin contenido."}
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 {/* Action buttons */}

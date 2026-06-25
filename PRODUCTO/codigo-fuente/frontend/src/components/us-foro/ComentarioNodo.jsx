@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { FiArrowUp, FiArrowDown } from 'react-icons/fi';
+import { FiArrowUp, FiArrowDown, FiMessageSquare, FiFlag } from 'react-icons/fi';
 
-const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuarioActual, alVotar }) => {
+const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuarioActual, alVotar, alReportar }) => {
     const [mostrarFormularioRespuesta, setMostrarFormularioRespuesta] = useState(false);
     const [textoRespuesta, setTextoRespuesta] = useState("");
 
@@ -70,17 +70,19 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                         <button 
                             type="button"
                             onClick={() => setMostrarFormularioRespuesta(!mostrarFormularioRespuesta)}
-                            className="hover:text-indigo-650 font-semibold transition-colors border-none bg-transparent cursor-pointer flex items-center gap-1"
+                            className="hover:text-indigo-650 font-semibold transition-colors border-none bg-transparent cursor-pointer flex items-center gap-1.5"
                         >
-                            ↩ Responder
+                            <FiMessageSquare className="w-3.5 h-3.5" />
+                            Responder
                         </button>
 
                         <button
                             type="button"
-                            className="hover:text-orange-600 transition border-none bg-transparent cursor-pointer flex items-center gap-1"
-                            onClick={() => alert("Funcionalidad en desarrollo")}
+                            className="hover:text-red-650 transition border-none bg-transparent cursor-pointer flex items-center gap-1.5"
+                            onClick={() => alReportar && alReportar(comentario.id)}
                         >
-                            🚩 Reportar
+                            <FiFlag className="w-3.5 h-3.5" />
+                            Reportar
                         </button>
                     </div>
                 </div>
@@ -118,6 +120,7 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                                 alResponder={alResponder}
                                 idUsuarioActual={idUsuarioActual}
                                 alVotar={alVotar}
+                                alReportar={alReportar}
                             />
                         ))}
                     </div>
