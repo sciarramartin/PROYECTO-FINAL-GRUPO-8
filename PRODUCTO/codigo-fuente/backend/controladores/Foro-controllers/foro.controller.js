@@ -125,6 +125,34 @@ router.get('/materias/:materiaId/publicaciones', verificarToken, async (req, res
     }
 });
 
+// GET /api/foro/materias/:materiaId/etiquetas - Obtener todas las etiquetas únicas de las publicaciones de una materia
+router.get('/materias/:materiaId/etiquetas', verificarToken, async (req, res) => {
+    try {
+        const { materiaId } = req.params;
+        const Sequelize = require('sequelize');
+        
+        const etiquetas = await ForoEtiqueta.findAll({
+            include: [
+                {
+                    model: ForoPublicacion,
+                    where: { id_materia: materiaId },
+                    attributes: []
+                }
+            ],
+            attributes: [
+                [Sequelize.fn('DISTINCT', Sequelize.col('ForoEtiqueta.nombre')), 'nombre']
+            ],
+            raw: true
+        });
+
+        const listaNombres = etiquetas.map(e => e.nombre).filter(Boolean);
+        res.json(listaNombres);
+    } catch (error) {
+        console.error('Error al obtener etiquetas de la materia:', error);
+        res.status(500).json({ error: 'Error interno del servidor al obtener etiquetas' });
+    }
+});
+
 // GET /api/foro/materias/:materiaId/mis-aportes - Obtener aportes (publicaciones y comentarios) del usuario actual
 router.get('/materias/:materiaId/mis-aportes', verificarToken, async (req, res) => {
     try {
