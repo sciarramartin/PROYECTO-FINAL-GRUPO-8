@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { FiArrowUp, FiArrowDown, FiMessageSquare, FiFlag } from 'react-icons/fi';
+import { FiArrowUp, FiArrowDown, FiMessageSquare, FiFlag, FiTrash2 } from 'react-icons/fi';
 
-const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuarioActual, alVotar, alReportar }) => {
+const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuarioActual, idPublicacionAutor, alVotar, alReportar, alEliminar }) => {
     const [mostrarFormularioRespuesta, setMostrarFormularioRespuesta] = useState(false);
     const [textoRespuesta, setTextoRespuesta] = useState("");
+    const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
 
     // 🔍 Filtramos todas las respuestas cuyo padre sea ESTE comentario actual
     const misHijos = todasLasRespuestas.filter(r => r.id_comentario_padre === comentario.id);
+
+    const esAutorComentario = comentario.id_usuario === idUsuarioActual || comentario.Autor?.id === idUsuarioActual;
+    const esAutorPublicacion = idPublicacionAutor === idUsuarioActual;
+    const puedeEliminar = esAutorComentario || esAutorPublicacion;
 
     // Formatear fecha linda (Ej: 13/6/2026 16:30)
     const fechaFormateada = new Date(comentario.createdAt).toLocaleString([], {
@@ -84,6 +89,17 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                             <FiFlag className="w-3.5 h-3.5" />
                             Reportar
                         </button>
+
+                        {puedeEliminar && (
+                            <button
+                                type="button"
+                                className="hover:text-red-650 hover:font-bold transition border-none bg-transparent cursor-pointer flex items-center gap-1.5"
+                                onClick={() => setConfirmandoEliminar(true)}
+                            >
+                                <FiTrash2 className="w-3.5 h-3.5" />
+                                Eliminar
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -119,10 +135,37 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                                 todasLasRespuestas={todasLasRespuestas}
                                 alResponder={alResponder}
                                 idUsuarioActual={idUsuarioActual}
+                                idPublicacionAutor={idPublicacionAutor}
                                 alVotar={alVotar}
                                 alReportar={alReportar}
+                                alEliminar={alEliminar}
                             />
                         ))}
+                    </div>
+                </div>
+            )}
+            {/* Modal de Confirmación de Eliminación de Comentario (Estilo Premium igual al de Publicación) */}
+            {confirmandoEliminar && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95">
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">¿Eliminar comentario?</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Esta acción es irreversible y eliminará el comentario y todas sus respuestas asociadas.</p>
+                        <div className="flex items-center justify-end gap-3">
+                            <button 
+                                type="button"
+                                onClick={() => setConfirmandoEliminar(false)}
+                                className="px-4 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition border-none bg-transparent cursor-pointer"
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                type="button"
+                                onClick={() => { alEliminar && alEliminar(comentario.id); setConfirmandoEliminar(false); }}
+                                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition shadow-sm shadow-red-500/20 border-none cursor-pointer"
+                            >
+                                Sí, eliminar
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

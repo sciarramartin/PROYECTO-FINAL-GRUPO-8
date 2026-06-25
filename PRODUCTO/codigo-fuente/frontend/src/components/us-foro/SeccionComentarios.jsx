@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ComentarioNodo from './ComentarioNodo';
 
-const SeccionComentarios = ({ idPublicacion, idUsuarioActual, alReportar }) => {
+const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor, alReportar }) => {
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentarioRaiz, setNuevoComentarioRaiz] = useState("");
     const [error, setError] = useState("");
@@ -105,6 +105,45 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, alReportar }) => {
         }
     };
 
+    const manejarEliminarComentario = async (comId) => {
+        setError("");
+        try {
+            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+            
+            await axios.delete(
+                `${apiUrl}/foro/comentarios/${comId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setComentarios((prev) => {
+                const idsAEliminar = new Set([comId]);
+                let prevSize = 0;
+                while (idsAEliminar.size !== prevSize) {
+                    prevSize = idsAEliminar.size;
+                    prev.forEach(c => {
+                        if (c.id_comentario_padre && idsAEliminar.has(c.id_comentario_padre)) {
+                            idsAEliminar.add(c.id);
+                        }
+                    });
+                }
+                return prev.filter(c => !idsAEliminar.has(c.id));
+            });
+
+            setMensajeExito("¡Comentario eliminado con éxito!");
+            setTimeout(() => {
+                setMensajeExito("");
+            }, 3000);
+        } catch (err) {
+            console.error("Error al eliminar comentario:", err);
+            setError(err.response?.data?.error || err.message || "Error al eliminar comentario.");
+        }
+    };
+
     // Filtramos los comentarios principales (los que no responden a nadie)
     const comentariosRaiz = comentarios.filter(c => c.id_comentario_padre === null);
 
@@ -154,8 +193,10 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, alReportar }) => {
                             todasLasRespuestas={comentarios} // Pasamos la bolsa completa para que los nodos busquen sus hijos
                             alResponder={manejarEnviarComentario}
                             idUsuarioActual={idUsuarioActual}
+                            idPublicacionAutor={idPublicacionAutor}
                             alVotar={manejarVotoComentario}
                             alReportar={alReportar}
+                            alEliminar={manejarEliminarComentario}
                         />
                     ))
                 )}

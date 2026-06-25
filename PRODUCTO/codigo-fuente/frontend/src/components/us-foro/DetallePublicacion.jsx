@@ -514,6 +514,7 @@ const DetallePublicacion = () => {
           <SeccionComentarios 
             idPublicacion={postId} 
             idUsuarioActual={usuarioActual.id}
+            idPublicacionAutor={publicacion?.Autor?.id || publicacion?.id_usuario}
             alReportar={(comentarioId) => abrirModalReportar(comentarioId)}
           />
 
