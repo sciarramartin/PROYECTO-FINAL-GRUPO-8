@@ -424,4 +424,11 @@ VALUES
 -- Asignar todas las materias iniciales al Plan 2023
 UPDATE materias SET id_plan_academico = 2;
 
-
+-- ===============================================================
+-- MATERIALES DE ESTUDIO SEED
+-- ===============================================================
+INSERT INTO materiales_estudio (id_materia, id_usuario, titulo, etiquetas, fecha_de_publicacion, likes)
+VALUES
+(1, 2, 'Apunte completo Análisis Matemático I', '["analisis","resumen","primer parcial"]', '2026-06-20 10:00:00', 15),
+(2, 2, 'Ejercicios resueltos Álgebra', '["algebra","vectores","matrices"]', '2026-06-21 11:30:00', 8),
+(3, 1, 'Guía Práctica Química General', '["quimica","laboratorio","formulas"]', '2026-06-22 15:45:00', 24);

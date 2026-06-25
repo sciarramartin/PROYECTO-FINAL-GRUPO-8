@@ -19,6 +19,7 @@ const ListaGrupos = lazy(() => import('./components/us-10-grupos/lista-grupos'))
 const MuroGrupo = lazy(() => import('./components/us-10-grupos/muro-grupo'));
 const ChatPrivado = lazy(() => import('./components/us-11-chat-privado/chat-privado'));
 const ListaForos = lazy(() => import('./components/us-foro/ListaForos'));
+const ListaMateriales = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/ListaMateriales'));
 const MuroForo = lazy(() => import('./components/us-foro/MuroForo'));
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
 
@@ -147,6 +148,15 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <DetallePublicacion />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          {/* Rutas del repositorio material de estiduo */}
+          <Route path="/repositorio" element={
+            <RutaPrivada>
+              <Layout>
+                <ListaMateriales />
               </Layout>
             </RutaPrivada>
           } />
