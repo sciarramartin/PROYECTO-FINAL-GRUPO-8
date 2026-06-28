@@ -29,7 +29,7 @@ const inicializarDB = async () => {
     if (FORCE_RESET && fs.existsSync(DB_PATH)) {
         try {
             fs.unlinkSync(DB_PATH);
-            console.log("⚠️ [DB] Base de datos eliminada automáticamente (DB_FORCE_RESET=true)");
+            console.log(" [DB] Base de datos eliminada automáticamente (DB_FORCE_RESET=true)");
         } catch (error) {
             console.error("Error al eliminar la base de datos:", error);
         }
@@ -37,7 +37,7 @@ const inicializarDB = async () => {
 
     // Si no existe (porque se borró recién o porque es la primera vez), se crea de cero
     if (!fs.existsSync(DB_PATH)) {
-        console.log("🚀 [DB] Base de datos no encontrada. Creando e inicializando con estructura y semillas...");
+        console.log(" [DB] Base de datos no encontrada. Creando e inicializando con estructura y semillas...");
         
         await new Promise((resolve, reject) => {
             const db = new sqlite3.Database(DB_PATH);
@@ -54,12 +54,12 @@ const inicializarDB = async () => {
             });
         });
     } else {
-        console.log("📦 [DB] Base de datos existente encontrada. Manteniendo los datos locales...");
+        console.log(" [DB] Base de datos existente encontrada. Manteniendo los datos locales...");
     }
 
     // Sequelize se conecta directamente al archivo físico que ya existe o se acaba de crear
     await baseDeDatos.authenticate();
-    console.log('✅ Base de datos inicializada y conectada con Sequelize');
+    console.log('Base de datos inicializada y conectada con Sequelize');
 };
 
 module.exports = {
