@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FiSearch, FiInfo, FiCornerDownRight, FiHeart, FiBookOpen, FiTag } from "react-icons/fi";
+import { FiSearch, FiInfo, FiCornerDownRight, FiHeart, FiBookOpen, FiTag, FiPlus } from "react-icons/fi";
 
 const ListaMateriales = () => {
   const [materiales, setMateriales] = useState([]);
@@ -11,10 +11,11 @@ const ListaMateriales = () => {
 
   // Estados para filtro y relaciones de etiquetas
   const [etiquetaFiltro, setEtiquetaFiltro] = useState("");
-  const [sugerencias, setSugerencias] = useState([]);
+  const [sugerencias, setSugerencias] = useState({ porTexto: [], porRelacion: [] });
+  const [etiquetasSeleccionadas, setEtiquetasSeleccionadas] = useState([]);
+  const [todosLosTags, setTodosLosTags] = useState([]); // caché local
   const [cargandoSugerencias, setCargandoSugerencias] = useState(false);
   const [mostrarDesplegable, setMostrarDesplegable] = useState(false);
-  const [etiquetasSeleccionadas, setEtiquetasSeleccionadas] = useState([]);
 
   useEffect(() => {
     const fetchMateriales = async () => {
@@ -25,53 +26,27 @@ const ListaMateriales = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Mapeamos los datos con un formateador robusto para soportar diferentes formatos de claves JSON
+        // La API ahora devuelve camelCase directamente desde el servicio
         const mappedData = response.data.map((item) => {
-          const id = item.id !== undefined ? item.id : (item.id_material || item.idMaterial || Math.random());
+          const materiaNombre =
+            item.materia?.nombre ||
+            (typeof item.materia === "string" ? item.materia : "") ||
+            "";
 
-          let materiaNombre = "";
-          if (item.materia) {
-            if (typeof item.materia === "object") {
-              materiaNombre = item.materia.nombre || item.materia.id || "";
-            } else {
-              materiaNombre = item.materia;
-            }
-          } else if (item.id_materia || item.materiaId) {
-            materiaNombre = item.id_materia || item.materiaId;
-          }
-
-          const titulo = item.titulo || item.nombre || "Sin título";
-
-          let etiquetas = [];
-          if (Array.isArray(item.etiquetas)) {
-            etiquetas = item.etiquetas;
-          } else if (typeof item.etiquetas === "string") {
-            try {
-              const parsed = JSON.parse(item.etiquetas);
-              if (Array.isArray(parsed)) {
-                etiquetas = parsed;
-              } else {
-                etiquetas = [parsed];
-              }
-            } catch (e) {
-              etiquetas = item.etiquetas.split(/[,,; ]+/).filter(Boolean);
-            }
-          }
-
-          const autor = item.autor || "";
-          const idUsuario = item["id usuario"] || item.id_usuario || item.idUsuario || item.usuarioId || item.autorId || "";
-          const fechaPublicacion = item["fecha de publicación"] || item.fecha_publicacion || item.fecha_de_publicacion || item.fechaPublicacion || item.fecha || "";
-          const likes = item.likes !== undefined ? item.likes : (item.cantLikes || 0);
+          const autorNombre =
+            item.autor?.nombreCompleto ||
+            (typeof item.autor === "string" ? item.autor : "") ||
+            "Anónimo";
 
           return {
-            id,
+            id: item.id,
             materiaNombre,
-            titulo,
-            etiquetas,
-            autor,
-            idUsuario,
-            fechaPublicacion,
-            likes
+            titulo: item.titulo || "Sin título",
+            etiquetas: Array.isArray(item.etiquetas) ? item.etiquetas : [],
+            autor: autorNombre,
+            idUsuario: item.idUsuario,
+            fechaPublicacion: item.fechaPublicacion,
+            likes: item.likes ?? 0,
           };
         });
 
@@ -86,35 +61,97 @@ const ListaMateriales = () => {
     fetchMateriales();
   }, []);
 
+  // Cargar todos los tags UNA sola vez al montar
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+        const res = await axios.get(`${apiUrl}/repositorio/tags/todos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const ranking = res.data?.ranking;
+        // Asegurarse que sea array antes de guardar
+        setTodosLosTags(Array.isArray(ranking) ? ranking : []);
+      } catch (e) {
+        console.error("Error cargando tags:", e);
+        setTodosLosTags([]); // garantizar array en caso de error
+      }
+    };
+    fetchTodos();
+  }, []);
   // Efecto para consultar las relaciones de etiquetas al escribir (debounced 300ms)
   useEffect(() => {
+    const texto = etiquetaFiltro.trim().toLowerCase();
+
+    if (!texto) {
+      setSugerencias({ porTexto: [], porRelacion: [] });
+      return;
+    }
+
     const fetchSugerencias = async () => {
-      if (!etiquetaFiltro.trim()) {
-        setSugerencias([]);
-        return;
-      }
       setCargandoSugerencias(true);
       try {
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-        const response = await axios.get(`${apiUrl}/repositorio/tags/relacion`, {
-          params: { tag1: etiquetaFiltro.trim() },
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setSugerencias(response.data.ranking || []);
+
+        // ── SECCIÓN 1: filtrado local por texto ──────────────────────────
+        const listaSegura = Array.isArray(todosLosTags) ? todosLosTags : [];
+        const coincidencias = listaSegura
+          .filter(({ tag }) =>
+            tag.toLowerCase().includes(texto) &&
+            !etiquetasSeleccionadas.includes(tag)
+          )
+          .slice(0, 6)
+          .map(({ tag, count }) => ({ tag, count }));
+
+        // ── SECCIÓN 2: relacionados a los ya seleccionados ───────────────
+        let relacionados = [];
+        if (etiquetasSeleccionadas.length > 0) {
+          // Una llamada por cada tag seleccionado
+          const llamadas = etiquetasSeleccionadas.map(tagSel =>
+            axios.get(`${apiUrl}/repositorio/tags/relacion`, {
+              params: { tag1: tagSel },
+              headers: { Authorization: `Bearer ${token}` }
+            }).then(r => r.data.ranking || []).catch(() => [])
+          );
+
+          const rankings = await Promise.all(llamadas);
+
+          // Fusionar: acumular cantidad por tag en un Map
+          const acumulado = new Map();
+          rankings.forEach(ranking => {
+            ranking.forEach(({ tag, count }) => {
+              acumulado.set(tag, (acumulado.get(tag) || 0) + count);
+            });
+          });
+
+          // Filtrar: que contenga el texto escrito, que no esté ya seleccionado
+          // y que no esté ya en sección 1, luego ordenar por relevancia
+          const yaEnSeccion1 = new Set(coincidencias);
+          relacionados = [...acumulado.entries()]
+            .filter(([tag]) =>
+              tag.toLowerCase().includes(texto) &&
+              !etiquetasSeleccionadas.includes(tag) &&
+              !yaEnSeccion1.has(tag)
+            )
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([tag, count]) => ({ tag, count }));
+        }
+
+        setSugerencias({ porTexto: coincidencias, porRelacion: relacionados });
       } catch (error) {
-        console.error("Error al obtener relaciones de etiquetas:", error);
+        console.error("Error al obtener sugerencias:", error);
       } finally {
         setCargandoSugerencias(false);
       }
     };
 
-    const timer = setTimeout(() => {
-      fetchSugerencias();
-    }, 300);
-
+    const timer = setTimeout(fetchSugerencias, 300);
     return () => clearTimeout(timer);
-  }, [etiquetaFiltro]);
+  }, [etiquetaFiltro, etiquetasSeleccionadas, todosLosTags]);
 
   // Filtrado de materias por búsqueda (ignora acentos)
   const normalizarTexto = (texto) => {
@@ -186,16 +223,25 @@ const ListaMateriales = () => {
     <div className="max-w-6xl mx-auto px-4 py-6">
 
       {/* Encabezado */}
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-          <FiBookOpen className="w-6 h-6" />
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <FiBookOpen className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Apuntes de la red</h1>
+            <p className="text-sm text-zinc-550 dark:text-zinc-400">
+              Busca y consulta material de estudio compartido por otros estudiantes. Filtra por título, materia o etiquetas.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Apuntes de la red</h1>
-          <p className="text-sm text-zinc-550 dark:text-zinc-400">
-            Busca y consulta material de estudio compartido por otros estudiantes. Filtra por título, materia o etiquetas.
-          </p>
-        </div>
+        <button
+          onClick={() => navigate('/repositorio/agregar')}
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-sm cursor-pointer shrink-0"
+        >
+          <FiPlus className="w-4 h-4" />
+          Agregar material
+        </button>
       </div>
 
       {/* Grid de Búsqueda y Etiquetas */}
@@ -246,49 +292,76 @@ const ListaMateriales = () => {
           />
 
           {/* Desplegable de sugerencias */}
-          {mostrarDesplegable && (etiquetaFiltro.trim() !== "") && (
+          {mostrarDesplegable && etiquetaFiltro.trim() !== "" && (
             <div className="absolute right-0 left-0 mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 max-h-60 overflow-y-auto">
               {cargandoSugerencias ? (
-                <div className="p-3 text-xs text-zinc-400 dark:text-zinc-500 text-center flex items-center justify-center gap-1.5">
-                  <span className="animate-spin">⌛</span> Buscando relación...
-                </div>
-              ) : sugerencias.length === 0 ? (
-                <div className="p-3 text-xs text-zinc-400 dark:text-zinc-500 text-center">
-                  Sin etiquetas relacionadas
+                <div className="p-3 text-xs text-zinc-400 text-center flex items-center justify-center gap-1.5">
+                  <span className="animate-spin">⌛</span> Buscando...
                 </div>
               ) : (
-                <div className="py-1">
-                  <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800">
-                    Etiquetas en común con "{etiquetaFiltro}"
-                  </div>
-                  {sugerencias.map((sug, idx) => (
+                <>
+                  {/* SECCIÓN 1 */}
+                  {sugerencias.porTexto.map((sug, idx) => (
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => {
-                        const tagToAdd = sug.tag;
-                        if (!etiquetasSeleccionadas.includes(tagToAdd)) {
-                          setEtiquetasSeleccionadas(prev => [...prev, tagToAdd]);
-                        }
-                        const primaryTag = etiquetaFiltro.trim().toLowerCase();
-                        if (!etiquetasSeleccionadas.includes(primaryTag)) {
-                          setEtiquetasSeleccionadas(prev => [...prev, primaryTag]);
+                      onMouseDown={() => {
+                        if (!etiquetasSeleccionadas.includes(sug.tag)) {
+                          setEtiquetasSeleccionadas(prev => [...prev, sug.tag]);
                         }
                         setEtiquetaFiltro("");
                         setMostrarDesplegable(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-xs text-zinc-700 dark:text-zinc-350 font-medium flex items-center justify-between border-none cursor-pointer transition"
+                      className="w-full text-left px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-xs text-zinc-700 dark:text-zinc-300 font-medium flex items-center justify-between cursor-pointer transition"
                     >
                       <span className="flex items-center gap-1.5">
                         <FiTag className="w-3 h-3 text-indigo-500" />
                         #{sug.tag}
                       </span>
-                      <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400 font-semibold">
-                        {sug.count} {sug.count === 1 ? 'en común' : 'en común'}
+                      <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full text-zinc-500 font-semibold">
+                        {sug.count} {sug.count === 1 ? "uso" : "usos"}
                       </span>
                     </button>
                   ))}
-                </div>
+
+                  {/* SECCIÓN 2: relacionados a los seleccionados */}
+                  {sugerencias.porRelacion.length > 0 && (
+                    <div className="py-1 border-t border-zinc-100 dark:border-zinc-800">
+                      <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800">
+                        Relacionado con tus etiquetas
+                      </div>
+                      {sugerencias.porRelacion.map((sug, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onMouseDown={() => {
+                            if (!etiquetasSeleccionadas.includes(sug.tag)) {
+                              setEtiquetasSeleccionadas(prev => [...prev, sug.tag]);
+                            }
+                            setEtiquetaFiltro("");
+                            setMostrarDesplegable(false);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-xs text-zinc-700 dark:text-zinc-300 font-medium flex items-center justify-between cursor-pointer transition"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <FiTag className="w-3 h-3 text-indigo-500" />
+                            #{sug.tag}
+                          </span>
+                          <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full text-zinc-500 font-semibold">
+                            con #{sug.relacionadoCon} · {sug.cantidad}×
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Sin resultados */}
+                  {sugerencias.porTexto.length === 0 && sugerencias.porRelacion.length === 0 && (
+                    <div className="p-3 text-xs text-zinc-400 text-center">
+                      Sin sugerencias para "{etiquetaFiltro}"
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -361,30 +434,26 @@ const ListaMateriales = () => {
                       <span className="text-[11px] text-zinc-450 dark:text-zinc-500">
                         Por: {material.autor || "Anónimo"} • {formatearFecha(material.fechaPublicacion)}
                       </span>
-                      {material.etiquetas.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1.5">
-                          {material.etiquetas.map((tag, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 text-[10px] font-semibold rounded-md border border-indigo-100/20"
-                            >
-                              #{tag.trim()}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+
                     </div>
                   </div>
                 </div>
 
-                {/* Centro: Likes (3 columnas) */}
+                {/* Centro: */}
                 <div className="md:col-span-3 flex items-center md:justify-center text-xs font-semibold text-zinc-650 dark:text-zinc-300">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50/50 dark:bg-rose-950/10 text-rose-600 dark:text-rose-455 rounded-xl border border-rose-100/20">
-                    <FiHeart className="w-4 h-4 text-rose-500 fill-rose-500/20" />
-                    <div>
-                      <span className="block font-bold text-left md:text-center">{material.likes}</span>
-                      <span className="text-[10px] text-zinc-450 dark:text-zinc-500 font-medium leading-none">Likes</span>
-                    </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 text-base ">
+                    {material.etiquetas.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {material.etiquetas.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 text-[10px] font-semibold rounded-md border border-indigo-100/20"
+                          >
+                            #{tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

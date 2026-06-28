@@ -11,22 +11,14 @@ const {
     eliminarMaterial,
     obtenerRutaParaDescarga
 } = require('../servicios/material.servicio');
+const { MaterialReaccion } = require('../modelos/materialReaccion');
 const { verificarToken } = require('../middleware/authMiddleware');
 
-// ─── Helper compartido para parsear etiquetas ─────────────────────────────────
-function parsearEtiquetas(etiquetas) {
-    if (!etiquetas) return [];
-    try {
-        const parsed = JSON.parse(etiquetas);
-        return Array.isArray(parsed) ? parsed : [parsed];
-    } catch {
-        return etiquetas.split(/[,,; ]+/).filter(Boolean);
-    }
-}
-
-// ─── Helper para normalizar etiquetas a lowercase ────────────────────────────
-function parsearEtiquetasNormalizadas(etiquetas) {
-    return parsearEtiquetas(etiquetas).map(t => t.toLowerCase().trim());
+// ─── Helpers para el endpoint de relación de etiquetas ──────────────────────
+// (el servicio ya se encarga del parseo general; estos solo se usan localmente)
+function parsearEtiquetasNormalizadas(etiquetasArray) {
+    if (!Array.isArray(etiquetasArray)) return [];
+    return etiquetasArray.map(t => t.toLowerCase().trim());
 }
 
 /**
@@ -35,22 +27,9 @@ function parsearEtiquetasNormalizadas(etiquetas) {
  */
 router.get('/', verificarToken, async (req, res) => {
     try {
-        const materiales = await listarMateriales(); // <-- usa el servicio unificado
-
-        const mapped = materiales.map((item) => ({
-            id: item.id,
-            materia: item.materia ? item.materia.nombre : "",
-            titulo: item.titulo,
-            etiquetas: parsearEtiquetas(item.etiquetas),
-            autor: item.Autor
-                ? `${item.Autor.nombre} ${item.Autor.apellido}`.trim()
-                : "Anónimo",
-            "id usuario": item.id_usuario,
-            "fecha de publicación": item.fecha_de_publicacion,
-            likes: item.likes
-        }));
-
-        res.json(mapped);
+        // El servicio devuelve directamente camelCase con relaciones incluidas
+        const materiales = await listarMateriales();
+        res.json(materiales);
     } catch (error) {
         console.error("Error al obtener materiales de estudio:", error);
         res.status(500).json({ error: 'Hubo un error al obtener los materiales de estudio.' });
@@ -69,6 +48,7 @@ router.get('/tags/relacion', verificarToken, async (req, res) => {
             return res.status(400).json({ error: "El parámetro tag1 es obligatorio" });
         }
 
+        // El servicio devuelve camelCase: item.etiquetas ya es un array parseado
         const materiales = await listarMateriales();
         const t1 = tag1.toLowerCase().trim();
 
@@ -105,12 +85,38 @@ router.get('/tags/relacion', verificarToken, async (req, res) => {
     }
 });
 
+router.get('/tags/todos', verificarToken, async (req, res) => {
+    try {
+        const materiales = await listarMateriales();
+
+        const freqMap = {};
+        materiales.forEach(item => {
+            const tags = parsearEtiquetasNormalizadas(item.etiquetas);
+            tags.forEach(tag => {
+                freqMap[tag] = (freqMap[tag] || 0) + 1;
+            });
+
+        });
+
+        const ranking = Object.entries(freqMap)
+            .map(([tag, count]) => ({ tag, count }))
+            .sort((a, b) => b.count - a.count);
+
+        return res.json({ ranking });
+
+    } catch (error) {
+        console.error("Error al obtener todas las etiquetas:", error);
+        res.status(500).json({ error: 'Hubo un error al procesar todas las etiquetas.' });
+    }
+});
+
 /**
  * GET /api/repositorio/:id
  * Devuelve la metadata de un material específico.
  */
 router.get('/:id', verificarToken, async (req, res) => {
     try {
+        // El servicio devuelve camelCase con relaciones incluidas
         const material = await obtenerMaterialPorId(req.params.id);
         res.json(material);
     } catch (error) {
@@ -145,23 +151,83 @@ router.get('/:id/descargar', verificarToken, async (req, res) => {
  */
 router.post('/', verificarToken, subirArchivo.single('archivo'), async (req, res) => {
     try {
-        const { titulo, id_materia, id_usuario, etiquetas } = req.body;
+        // id_usuario se extrae del token (no del body) por seguridad
+        const idUsuario = req.usuario.id;
+        const { titulo, id_materia, etiquetas } = req.body;
 
-        if (!titulo || !id_materia || !id_usuario) {
-            return res.status(400).json({ error: 'titulo, id_materia e id_usuario son requeridos' });
+        if (!titulo || !id_materia) {
+            return res.status(400).json({ error: 'titulo e id_materia son requeridos' });
         }
 
+        // Llamamos al servicio con camelCase; el servicio acepta ambas convenciones
         const material = await crearMaterial({
             archivo: req.file,
             titulo,
-            id_materia: parseInt(id_materia),
-            id_usuario: parseInt(id_usuario),
+            idMateria: parseInt(id_materia),
+            idUsuario: parseInt(idUsuario),
             etiquetas
         });
 
+        // El servicio ya devuelve camelCase
         res.status(201).json(material);
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/:id/reaccionar', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { tipo } = req.body; // 'positivo' o 'negativo'
+        const id_usuario = req.usuario.id;
+
+        if (tipo !== 'positivo' && tipo !== 'negativo') {
+            return res.status(400).json({ error: 'Tipo de reacción inválido.' });
+        }
+
+        const material = await obtenerMaterialPorId(id);
+        if (!material) {
+            return res.status(404).json({ error: 'Material no encontrado.' });
+        }
+
+        const reaccionExistente = await MaterialReaccion.findOne({
+            where: { id_material: id, id_usuario }
+        });
+
+        if (reaccionExistente) {
+            if (reaccionExistente.tipo === tipo) {
+                // Si hace click en el mismo voto, lo deshace (toggle)
+                await reaccionExistente.destroy();
+                material.likes = tipo === 'positivo' ? material.likes - 1 : material.likes + 1;
+                await material.save();
+                return res.json({ mensaje: 'Reacción removida', likes: material.likes, reaccion: null });
+            } else {
+                // Cambia de positivo a negativo o viceversa (cambia el voto de 1 a -1 o viceversa, total dif es 2)
+                const ajuste = tipo === 'positivo' ? 2 : -2;
+                reaccionExistente.tipo = tipo;
+                await reaccionExistente.save();
+
+                material.likes = material.likes + ajuste;
+                await material.save();
+                return res.json({ mensaje: 'Reacción actualizada', likes: material.likes, reaccion: reaccionExistente });
+            }
+        } else {
+            // Nueva reacción
+            const nuevaReaccion = await MaterialReaccion.create({
+                id_material: id,
+                id_usuario,
+                tipo
+            });
+
+            const ajuste = tipo === 'positivo' ? 1 : -1;
+            material.likes = material.likes + ajuste;
+            await material.save();
+            return res.json({ mensaje: 'Reacción agregada', likes: material.likes, reaccion: nuevaReaccion });
+        }
+
+    } catch (error) {
+        console.error("Error al reaccionar al material:", error);
+        return res.status(500).json({ error: 'Error interno del servidor al reaccionar al material.' });
     }
 });
 

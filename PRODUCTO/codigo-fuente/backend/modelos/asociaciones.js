@@ -15,6 +15,7 @@ const { ForoComentario } = require('./ForoComentario');
 const { ForoReaccion } = require('./ForoReaccion');
 const { PlanAcademico } = require('./PlanAcademico');
 const { MaterialDeEstudio } = require('./MaterialDeEstudio');
+const { MaterialReaccion } = require('./materialReaccion');
 
 Usuario.belongsTo(TipoUsuario, {
     foreignKey: 'id_tipo_usuario'
@@ -120,7 +121,7 @@ Perfil.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
 // Relaciones de Foro
 Materia.hasMany(ForoPublicacion, { foreignKey: 'id_materia', onDelete: 'CASCADE' });
-ForoPublicacion.belongsTo(Materia, { foreignKey: 'id_materia'});
+ForoPublicacion.belongsTo(Materia, { foreignKey: 'id_materia' });
 
 Usuario.hasMany(ForoPublicacion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 ForoPublicacion.belongsTo(Usuario, { as: 'Autor', foreignKey: 'id_usuario' });
@@ -145,11 +146,25 @@ ForoComentario.hasMany(ForoReaccion, { foreignKey: 'id_comentario', onDelete: 'C
 ForoReaccion.belongsTo(ForoComentario, { foreignKey: 'id_comentario' });
 
 // Relaciones de Material de Estudio
-Materia.hasMany(MaterialDeEstudio, { foreignKey: 'id_materia', onDelete: 'CASCADE' });
-MaterialDeEstudio.belongsTo(Materia, { foreignKey: 'id_materia' });
+MaterialDeEstudio.belongsTo(Materia, {
+    foreignKey: 'id_materia',
+    as: 'materia'
+});
+
+Materia.hasMany(MaterialDeEstudio, {
+    foreignKey: 'id_materia',
+    as: 'materiales'
+});
 
 Usuario.hasMany(MaterialDeEstudio, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 MaterialDeEstudio.belongsTo(Usuario, { as: 'Autor', foreignKey: 'id_usuario' });
+
+MaterialDeEstudio.hasMany(MaterialReaccion, { foreignKey: 'id_material', onDelete: 'CASCADE' });
+MaterialReaccion.belongsTo(MaterialDeEstudio, { foreignKey: 'id_material' });
+
+Usuario.hasMany(MaterialReaccion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+MaterialReaccion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+
 
 module.exports = {
     Usuario,

@@ -22,6 +22,8 @@ const ListaForos = lazy(() => import('./components/us-foro/ListaForos'));
 const MuroForo = lazy(() => import('./components/us-foro/MuroForo'));
 const ListaMateriales = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/ListaMateriales'));
 const MuroMaterialEstudio = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/MuroMaterialEstudio'));
+const CrearMaterialEstudio = lazy(() => import('./components/US-18-Agregar-Material-estudio/CrearMaterialEstudio'));
+
 
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
 
@@ -159,6 +161,14 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <ListaMateriales />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/repositorio/agregar" element={
+            <RutaPrivada>
+              <Layout>
+                <CrearMaterialEstudio />
               </Layout>
             </RutaPrivada>
           } />

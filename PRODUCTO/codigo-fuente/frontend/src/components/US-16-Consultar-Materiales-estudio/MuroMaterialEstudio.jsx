@@ -23,16 +23,6 @@ function badgeClase(tipo) {
     return "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
 }
 
-function parsearEtiquetas(etiquetas) {
-    if (!etiquetas) return [];
-    try {
-        const parsed = JSON.parse(etiquetas);
-        return Array.isArray(parsed) ? parsed : [parsed];
-    } catch {
-        return etiquetas.split(/[,,; ]+/).filter(Boolean);
-    }
-}
-
 const MuroMaterialEstudio = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -133,7 +123,7 @@ const MuroMaterialEstudio = () => {
         );
     }
 
-    const etiquetas = parsearEtiquetas(material?.etiquetas);
+    const etiquetas = material?.etiquetas;
     const fechaFormateada = material?.fecha_de_publicacion
         ? new Date(material.fecha_de_publicacion).toLocaleDateString("es-AR", {
             day: "numeric", month: "short", year: "numeric"
