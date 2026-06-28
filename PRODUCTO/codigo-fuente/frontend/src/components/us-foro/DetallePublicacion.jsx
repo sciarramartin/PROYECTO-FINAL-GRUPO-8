@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-import  SeccionComentarios from './SeccionComentarios'; 
+import  SeccionComentarios from './SeccionComentarios';
+import CompartirPublicacion from "./CompartirPublicacion";
 
 import { 
   FiArrowUp, 
@@ -45,6 +46,9 @@ const DetallePublicacion = () => {
   const [editContenido, setEditContenido] = useState("");
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [reaccionUsuario, setReaccionUsuario] = useState(null); // 'positivo' o 'negativo'
+
+  // Estados para compartir publicaciones
+  const [compartirAbierto, setCompartirAbierto] = useState(false);
 
   const editorRef = useRef(null);
 
@@ -586,7 +590,7 @@ const DetallePublicacion = () => {
                       <span className="hidden sm:inline">{publicacion.esGuardada ? "Guardada" : "Guardar"}</span>
                     </button>
                     <button 
-                      onClick={() => mostrarMensajeTeammate("Compartir está fuera de los alcances de la US actual.")}
+                      onClick={() => setCompartirAbierto(true)}
                       className="flex items-center gap-1.5 hover:text-indigo-650 dark:hover:text-indigo-400 border-none bg-transparent cursor-pointer transition"
                     >
                       <FiShare2 className="w-3.5 h-3.5" />
@@ -779,6 +783,16 @@ const DetallePublicacion = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de Compratir */}
+      <CompartirPublicacion
+        isOpen={compartirAbierto} 
+        onClose={() => setCompartirAbierto(false)} 
+        publicacion={publicacion} 
+        //nombreMateriaForo={publicacion?.materia?.nombre}
+        nombreMateriaForo={publicacion.Materia?.nombre || publicacion.materium?.nombre || publicacion.materia?.nombre}
+      />
+      
     </div>
   );
 };

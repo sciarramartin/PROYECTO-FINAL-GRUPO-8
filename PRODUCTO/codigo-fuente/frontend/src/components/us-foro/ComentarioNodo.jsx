@@ -42,19 +42,19 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                 </div>
 
                 {/* Cuerpo del Mensaje */}
-                <div className="flex-1 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div className="flex-1 bg-gray-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-gray-200 dark:border-zinc-800">
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-gray-800 text-sm">
+                        <span className="font-semibold text-gray-800 dark:text-zinc-200 text-sm">
                             {comentario.Autor?.nombre} {comentario.Autor?.apellido || "(Estudiante)"}
                         </span>
-                        <span className="text-xs text-gray-400">{fechaFormateada}</span>
+                        <span className="text-xs text-gray-400 dark:text-zinc-500">{fechaFormateada}</span>
                     </div>
                     
-                    <p className="text-gray-700 text-sm whitespace-pre-wrap">{comentario.contenido}</p>
+                    <p className="text-gray-700 dark:text-zinc-300 text-sm whitespace-pre-wrap">{comentario.contenido}</p>
 
                     {/* Botonera de acciones (con valoración e íconos premium) */}
-                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-                        <div className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200/70 transition px-2 py-0.5 rounded-full font-bold">
+                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-zinc-400">
+                        <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200/70 dark:hover:bg-zinc-700/70 transition px-2 py-0.5 rounded-full font-bold">
                             <button
                                 type="button"
                                 onClick={() => alVotar && alVotar(comentario.id, 'positivo')}
@@ -62,7 +62,7 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                             >
                                 <FiArrowUp className="w-3.5 h-3.5" />
                             </button>
-                            <span className="text-[10px] text-gray-700 min-w-[8px] text-center">{comentario.votos || 0}</span>
+                            <span className="text-[10px] text-gray-700 dark:text-zinc-300 min-w-[8px] text-center">{comentario.votos || 0}</span>
                             <button
                                 type="button"
                                 onClick={() => alVotar && alVotar(comentario.id, 'negativo')}
@@ -75,7 +75,7 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                         <button 
                             type="button"
                             onClick={() => setMostrarFormularioRespuesta(!mostrarFormularioRespuesta)}
-                            className="hover:text-indigo-650 font-semibold transition-colors border-none bg-transparent cursor-pointer flex items-center gap-1.5"
+                            className="hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold transition-colors border-none bg-transparent cursor-pointer flex items-center gap-1.5"
                         >
                             <FiMessageSquare className="w-3.5 h-3.5" />
                             Responder
@@ -83,7 +83,7 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
 
                         <button
                             type="button"
-                            className="hover:text-red-650 transition border-none bg-transparent cursor-pointer flex items-center gap-1.5"
+                            className="hover:text-red-600 dark:hover:text-red-400 transition border-none bg-transparent cursor-pointer flex items-center gap-1.5"
                             onClick={() => alReportar && alReportar(comentario.id)}
                         >
                             <FiFlag className="w-3.5 h-3.5" />
@@ -93,7 +93,7 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                         {puedeEliminar && (
                             <button
                                 type="button"
-                                className="hover:text-red-650 hover:font-bold transition border-none bg-transparent cursor-pointer flex items-center gap-1.5"
+                                className="hover:text-red-600 dark:hover:text-red-400 hover:font-bold transition border-none bg-transparent cursor-pointer flex items-center gap-1.5"
                                 onClick={() => setConfirmandoEliminar(true)}
                             >
                                 <FiTrash2 className="w-3.5 h-3.5" />
@@ -124,7 +124,7 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
             {misHijos.length > 0 && (
                 <div className="flex ml-2 sm:ml-4 mt-2">
                     {/* 🛠️ LA LÍNEA VERTICAL DEL HILO */}
-                    <div className="w-0.5 bg-gray-300 hover:bg-indigo-400 transition-colors cursor-pointer mr-2 ml-1 sm:mr-4 sm:ml-3 rounded" />
+                    <div className="w-0.5 bg-gray-300 dark:bg-zinc-700 hover:bg-indigo-400 dark:hover:bg-indigo-500 transition-colors cursor-pointer mr-2 ml-1 sm:mr-4 sm:ml-3 rounded" />
                     
                     {/* Renderizamos recursivamente los hijos adentro de este mismo bloque */}
                     <div className="flex-1">

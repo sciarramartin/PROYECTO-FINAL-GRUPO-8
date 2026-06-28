@@ -148,8 +148,8 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor
     const comentariosRaiz = comentarios.filter(c => c.id_comentario_padre === null);
 
     return (
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mt-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">
+        <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm mt-6">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-zinc-100 mb-4">
                 Comentarios ({comentarios.length})
             </h3>
 
@@ -170,7 +170,7 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor
                     placeholder="Escribe un comentario académico o duda..."
                     value={nuevoComentarioRaiz}
                     onChange={(e) => setNuevoComentarioRaiz(e.target.value)}
-                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500"
+                    className="flex-1 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500"
                 />
                 <button 
                     type="submit" 
@@ -184,7 +184,7 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor
             {/* Listado de hilos */}
             <div className="space-y-2">
                 {comentariosRaiz.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-4">No hay comentarios aún. ¡Sé el primero en participar!</p>
+                    <p className="text-sm text-gray-400 dark:text-zinc-500 text-center py-4">No hay comentarios aún. ¡Sé el primero en participar!</p>
                 ) : (
                     comentariosRaiz.map(comentario => (
                         <ComentarioNodo
