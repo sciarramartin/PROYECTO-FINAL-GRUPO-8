@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { verificarToken } = require('../../middleware/authMiddleware'); 
-const { ForoPublicacion, ForoComentario, ForoReaccion, Usuario, Materia } = require('../../modelos/asociaciones');
+const { ForoPublicacion, ForoComentario, ForoReaccion, Usuario, Materia, ForoPublicacionGuardada, Perfil, ForoReporte, ForoEtiqueta } = require('../../modelos/asociaciones');
 
 // @route   POST /api/publicaciones
 // @desc    Crear una nueva publicación en el foro de una materia
 // @access  Privado
 router.post('/', verificarToken, async (req, res) => {
     try {
-        const { id_materia, titulo, contenido, categoria } = req.body;
+        const { id_materia, titulo, contenido, categoria, etiquetas } = req.body;
         if (!titulo || titulo.trim() === "") {
             return res.status(400).json({ 
                 error: 'El sistema requiere un título obligatorio para continuar.' 
@@ -33,9 +33,35 @@ router.post('/', verificarToken, async (req, res) => {
             votos: 0
         });
 
+        if (Array.isArray(etiquetas) && etiquetas.length > 0) {
+            const tagsToInsert = etiquetas
+                .map(t => t.trim())
+                .filter(t => t.length > 0)
+                .map(t => t.startsWith('#') ? t : `#${t}`);
+            
+            const uniqueTags = [...new Set(tagsToInsert)];
+
+            for (const tag of uniqueTags) {
+                await ForoEtiqueta.create({
+                    id_publicacion: nuevaPublicacion.id,
+                    nombre: tag
+                });
+            }
+        }
+
+        const publicacionCreada = await ForoPublicacion.findByPk(nuevaPublicacion.id, {
+            include: [
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
+                }
+            ]
+        });
+
         return res.status(201).json({
             mensaje: '¡Publicación creada con éxito!',
-            publicacion: nuevaPublicacion
+            publicacion: publicacionCreada
         });
 
     } catch (error) {
@@ -84,9 +110,34 @@ router.put('/:id', verificarToken, async (req, res) => {
         publicacion.contenido = contenido.trim();
         await publicacion.save();
 
+        const publicacionActualizada = await ForoPublicacion.findByPk(id, {
+            include: [
+                {
+                    model: Usuario,
+                    as: 'Autor',
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'id_tipo_usuario'],
+                    include: [
+                        {
+                            model: Perfil,
+                            attributes: ['foto_perfil']
+                        }
+                    ]
+                },
+                {
+                    model: Materia,
+                    attributes: ['id', 'nombre', 'codigo']
+                },
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
+                }
+            ]
+        });
+
         return res.json({
             mensaje: 'Publicación editada correctamente.',
-            publicacion
+            publicacion: publicacionActualizada
         });
 
     } catch (error) {
@@ -240,26 +291,305 @@ router.post('/comentarios/:id/reaccionar', verificarToken, async (req, res) => {
     }
 });
 
+// @route   GET /api/publicaciones/guardadas
+// @desc    Obtener todas las publicaciones guardadas por el usuario autenticado
+// @access  Privado
+router.get('/guardadas', verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const guardadas = await ForoPublicacionGuardada.findAll({
+            where: { id_usuario },
+            include: [
+                {
+                    model: ForoPublicacion,
+                    include: [
+                        {
+                            model: Usuario,
+                            as: 'Autor',
+                            attributes: ['id', 'nombre', 'apellido', 'nombre_usuario'],
+                            include: [
+                                {
+                                    model: Perfil,
+                                    attributes: ['foto_perfil']
+                                }
+                            ]
+                        },
+                        {
+                            model: Materia,
+                            attributes: ['id', 'nombre', 'codigo']
+                        },
+                        {
+                            model: ForoEtiqueta,
+                            as: 'Etiquetas',
+                            attributes: ['id', 'nombre']
+                        }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        // Mapear para devolver el formato correcto
+        const publicaciones = guardadas.map(g => {
+            if (!g.ForoPublicacion) return null;
+            const pub = g.ForoPublicacion.toJSON();
+            pub.esGuardada = true; // Por definición, ya está guardada
+            return pub;
+        }).filter(Boolean);
+
+        return res.json(publicaciones);
+    } catch (error) {
+        console.error("Error al obtener publicaciones guardadas:", error);
+        return res.status(500).json({ error: 'Error interno al obtener publicaciones guardadas.' });
+    }
+});
+
+// @route   GET /api/publicaciones/reportes
+// @desc    Obtener todos los reportes de publicaciones (solo administradores)
+// @access  Privado
+router.get('/reportes', verificarToken, async (req, res) => {
+    try {
+        if (req.usuario.id_tipo_usuario !== 3) {
+            return res.status(403).json({ error: 'Acceso denegado. Se requieren privilegios de administrador.' });
+        }
+
+        const reportes = await ForoReporte.findAll({
+            include: [
+                {
+                    model: Usuario,
+                    as: 'Reportador',
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario']
+                },
+                {
+                    model: ForoPublicacion,
+                    include: [
+                        {
+                            model: Usuario,
+                            as: 'Autor',
+                            attributes: ['id', 'nombre', 'apellido', 'nombre_usuario']
+                        },
+                        {
+                            model: Materia,
+                            attributes: ['id', 'nombre', 'codigo']
+                        }
+                    ]
+                },
+                {
+                    model: ForoComentario,
+                    as: 'Comentario',
+                    include: [
+                        {
+                            model: Usuario,
+                            as: 'Autor',
+                            attributes: ['id', 'nombre', 'apellido', 'nombre_usuario']
+                        }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        return res.json(reportes);
+    } catch (error) {
+        console.error("Error al obtener reportes:", error);
+        return res.status(500).json({ error: 'Error al obtener los reportes de publicaciones.' });
+    }
+});
+
+// @route   POST /api/publicaciones/:id/reportar
+// @desc    Reportar una publicación (guardando el reporte en foro_reportes)
+// @access  Privado
+router.post('/:id/reportar', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { descripcion } = req.body;
+        const id_usuario_reportador = req.usuario.id;
+
+        if (!descripcion || !descripcion.trim()) {
+            return res.status(400).json({ error: 'La descripción del reporte es obligatoria.' });
+        }
+
+        const publicacion = await ForoPublicacion.findByPk(id);
+        if (!publicacion) {
+            return res.status(404).json({ error: 'Publicación no encontrada.' });
+        }
+
+        const reporte = await ForoReporte.create({
+            id_usuario_reportador,
+            id_publicacion: id,
+            descripcion: descripcion.trim()
+        });
+
+        return res.status(201).json({ mensaje: 'Publicación reportada con éxito.', reporte });
+    } catch (error) {
+        console.error("Error al reportar publicación:", error);
+        return res.status(500).json({ error: 'Error al procesar el reporte de la publicación.' });
+    }
+});
+
+// @route   POST /api/publicaciones/reportes/:id/resolver
+// @desc    Marcar un reporte como resuelto o pendiente (toggle)
+// @access  Privado (Solo admin)
+router.post('/reportes/:id/resolver', verificarToken, async (req, res) => {
+    try {
+        if (req.usuario.id_tipo_usuario !== 3) {
+            return res.status(403).json({ error: 'Acceso denegado. Se requieren privilegios de administrador.' });
+        }
+
+        const { id } = req.params;
+        const reporte = await ForoReporte.findByPk(id);
+        if (!reporte) {
+            return res.status(404).json({ error: 'Reporte no encontrado.' });
+        }
+
+        reporte.resuelto = !reporte.resuelto;
+        await reporte.save();
+
+        return res.json({ 
+            mensaje: reporte.resuelto ? 'Reporte marcado como resuelto.' : 'Reporte marcado como pendiente.',
+            reporte 
+        });
+    } catch (error) {
+        console.error("Error al resolver/pendiente del reporte:", error);
+        return res.status(500).json({ error: 'Error al actualizar el estado del reporte.' });
+    }
+});
+
+// @route   POST /api/publicaciones/:id/guardar
+// @desc    Guardar o desguardar una publicación (toggle)
+// @access  Privado
+router.post('/:id/guardar', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const id_usuario = req.usuario.id;
+
+        const publicacion = await ForoPublicacion.findByPk(id);
+        if (!publicacion) {
+            return res.status(404).json({ error: 'Publicación no encontrada.' });
+        }
+
+        const guardada = await ForoPublicacionGuardada.findOne({
+            where: { id_usuario, id_publicacion: id }
+        });
+
+        if (guardada) {
+            await guardada.destroy();
+            return res.json({ guardada: false, mensaje: 'Publicación eliminada de tus guardados.' });
+        } else {
+            await ForoPublicacionGuardada.create({
+                id_usuario,
+                id_publicacion: id
+            });
+            return res.json({ guardada: true, mensaje: 'Publicación guardada con éxito.' });
+        }
+    } catch (error) {
+        console.error("Error al guardar/desguardar publicación:", error);
+        return res.status(500).json({ error: 'Error interno al guardar/desguardar la publicación.' });
+    }
+});
+
+// @route   GET /api/publicaciones/etiquetas/populares
+// @desc    Obtener 5 etiquetas aleatorias de las 15 más usadas
+// @access  Privado
+router.get('/etiquetas/populares', verificarToken, async (req, res) => {
+    try {
+        const Sequelize = require('sequelize');
+        const popularTags = await ForoEtiqueta.findAll({
+            attributes: [
+                'nombre',
+                [Sequelize.fn('COUNT', Sequelize.col('nombre')), 'cantidad']
+            ],
+            group: ['nombre'],
+            order: [[Sequelize.literal('cantidad'), 'DESC']],
+            limit: 15
+        });
+
+        if (popularTags.length === 0) {
+            return res.json([]);
+        }
+
+        const tagNames = popularTags.map(t => t.nombre);
+
+        // Mezclar de manera aleatoria (shuffle)
+        const shuffled = tagNames.sort(() => 0.5 - Math.random());
+
+        // Seleccionar máximo 5 etiquetas
+        const selectedTags = shuffled.slice(0, 5);
+
+        return res.json(selectedTags);
+    } catch (error) {
+        console.error("Error al obtener etiquetas populares:", error);
+        return res.status(500).json({ error: 'Error al obtener etiquetas populares.' });
+    }
+});
+
+// @route   GET /api/publicaciones/:postId
+// @desc    Obtener detalle de una publicación con sus comentarios y si está guardada
+// @access  Privado
 router.get('/:postId', verificarToken, async (req, res) => {
     try {
         const { postId } = req.params;
         
-        // Buscamos solo el registro plano sin ninguna clase de includes o mapeos externos
-        const publicacion = await ForoPublicacion.findByPk(postId);
+        const publicacionObj = await ForoPublicacion.findByPk(postId, {
+            include: [
+                {
+                    model: Usuario,
+                    as: 'Autor',
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'id_tipo_usuario'],
+                    include: [
+                        {
+                            model: Perfil,
+                            attributes: ['foto_perfil']
+                        }
+                    ]
+                },
+                {
+                    model: Materia,
+                    attributes: ['id', 'nombre', 'codigo']
+                },
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
+                }
+            ]
+        });
         
-        if (!publicacion) {
-            return res.status(404).json({ error: 'No encontrado' });
+        if (!publicacionObj) {
+            return res.status(404).json({ error: 'Publicación no encontrada.' });
         }
 
-        const comentariosGuardados = await ForoComentario.findAll({
-            where: { id_publicacion: postId }
+        const comentarios = await ForoComentario.findAll({
+            where: { id_publicacion: postId },
+            include: [
+                {
+                    model: Usuario,
+                    as: 'Autor',
+                    attributes: ['id', 'nombre', 'apellido', 'nombre_usuario', 'id_tipo_usuario'],
+                    include: [
+                        {
+                            model: Perfil,
+                            attributes: ['foto_perfil']
+                        }
+                    ]
+                }
+            ],
+            order: [['createdAt', 'ASC']]
         });
+
+        const guardada = await ForoPublicacionGuardada.findOne({
+            where: { id_usuario: req.usuario.id, id_publicacion: postId }
+        });
+
+        const publicacion = publicacionObj.toJSON();
+        publicacion.esGuardada = !!guardada;
         
         return res.json({
             publicacion,
-            comentarios: comentariosGuardados
+            comentarios
         });
     } catch (error) {
+        console.error("Error al obtener detalle de publicación:", error);
         return res.status(500).json({ error: error.message });
     }
 });

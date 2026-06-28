@@ -355,3 +355,47 @@ CREATE TABLE materiales_estudio (
     FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+-- =========================
+-- PUBLICACIONES GUARDADAS
+-- =========================
+CREATE TABLE foro_publicaciones_guardadas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL,
+    id_publicacion INTEGER NOT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_usuario, id_publicacion)
+);
+
+-- =========================
+-- REPORTES DE PUBLICACIONES
+-- =========================
+CREATE TABLE foro_reportes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario_reportador INTEGER NOT NULL,
+    id_publicacion INTEGER NOT NULL,
+    id_comentario INTEGER DEFAULT NULL,
+    descripcion TEXT NOT NULL,
+    resuelto BOOLEAN NOT NULL DEFAULT 0,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario_reportador) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_comentario) REFERENCES foro_comentarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- ETIQUETAS DE PUBLICACIONES
+-- =========================
+CREATE TABLE foro_etiquetas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_publicacion INTEGER NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+

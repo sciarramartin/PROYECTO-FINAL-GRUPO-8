@@ -18,6 +18,8 @@ require('./modelos/ForoPublicacion');
 require('./modelos/ForoComentario');
 require('./modelos/ForoReaccion');
 require('./modelos/MaterialDeEstudio');
+require('./modelos/ForoPublicacionGuardada');
+require('./modelos/ForoReporte');
 
 require('./modelos/asociaciones');
 
@@ -28,7 +30,7 @@ const rutasActividadesFlexibles = require('./controladores/actividades-flexibles
 const rutasCursos = require('./controladores/curso.controlador.js');
 const rutasInscripciones = require('./controladores/inscripciones-cursos.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js');
-const rutasAuth = require('./controladores/auth.controller.js');       
+const rutasAuth = require('./controladores/auth.controller.js');
 const rutasMateria = require('./controladores/materia.controlador');
 const rutasCarreras = require('./controladores/controlador-carreras.js'); // para probar resgitro
 const rutasProgreso = require('./controladores/progreso.controlador.js');
@@ -101,7 +103,7 @@ app.use((req, res, next) => {
 });
 
 // Rutas
-app.use('/api/auth', rutasAuth);                                  
+app.use('/api/auth', rutasAuth);
 app.use('/api/materias', rutasMateria);
 app.use('/api/actividad-personal', rutasActividad);
 app.use('/api/planificador/actividades-flexibles', rutasActividadesFlexibles);
@@ -131,7 +133,7 @@ const iniciarServidor = async () => {
 
         await inicializarDB();
         console.log('Base de datos conectada correctamente.');
-        
+
         // Sincronizar el modelo de material de estudio para asegurar la creación de la tabla
         const { MaterialDeEstudio } = require('./modelos/MaterialDeEstudio');
         await MaterialDeEstudio.sync();
@@ -168,7 +170,7 @@ const iniciarServidor = async () => {
             ]);
             console.log('Semillas de materiales de estudio insertadas.');
         }
-        
+
         const servidor = servidorHttp.listen(PUERTO, () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO} con soporte de WebSockets`);
         });

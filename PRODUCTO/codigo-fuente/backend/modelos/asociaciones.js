@@ -13,9 +13,12 @@ const { Perfil } = require('./Perfil');
 const { ForoPublicacion } = require('./ForoPublicacion');
 const { ForoComentario } = require('./ForoComentario');
 const { ForoReaccion } = require('./ForoReaccion');
+const { ForoPublicacionGuardada } = require('./ForoPublicacionGuardada');
+const { ForoReporte } = require('./ForoReporte');
 const { PlanAcademico } = require('./PlanAcademico');
 const { MaterialDeEstudio } = require('./MaterialDeEstudio');
 const { MaterialReaccion } = require('./materialReaccion');
+const { ForoEtiqueta } = require('./ForoEtiqueta');
 
 Usuario.belongsTo(TipoUsuario, {
     foreignKey: 'id_tipo_usuario'
@@ -165,6 +168,26 @@ MaterialReaccion.belongsTo(MaterialDeEstudio, { foreignKey: 'id_material' });
 Usuario.hasMany(MaterialReaccion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 MaterialReaccion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
+// Relación de Publicaciones Guardadas
+Usuario.hasMany(ForoPublicacionGuardada, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+ForoPublicacionGuardada.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+
+ForoPublicacion.hasMany(ForoPublicacionGuardada, { foreignKey: 'id_publicacion', onDelete: 'CASCADE' });
+ForoPublicacionGuardada.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
+
+// Relación de Reportes de Publicaciones
+Usuario.hasMany(ForoReporte, { foreignKey: 'id_usuario_reportador', as: 'ReportesEnviados', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(Usuario, { foreignKey: 'id_usuario_reportador', as: 'Reportador' });
+
+ForoPublicacion.hasMany(ForoReporte, { foreignKey: 'id_publicacion', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
+
+ForoComentario.hasMany(ForoReporte, { foreignKey: 'id_comentario', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(ForoComentario, { foreignKey: 'id_comentario', as: 'Comentario' });
+
+// Relación de Etiquetas de Publicaciones
+ForoPublicacion.hasMany(ForoEtiqueta, { foreignKey: 'id_publicacion', as: 'Etiquetas', onDelete: 'CASCADE' });
+ForoEtiqueta.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
 
 module.exports = {
     Usuario,
@@ -181,5 +204,9 @@ module.exports = {
     ForoPublicacion,
     ForoComentario,
     ForoReaccion,
-    MaterialDeEstudio
+    MaterialDeEstudio,
+    ForoPublicacionGuardada,
+    ForoReporte,
+    ForoEtiqueta
 };
+

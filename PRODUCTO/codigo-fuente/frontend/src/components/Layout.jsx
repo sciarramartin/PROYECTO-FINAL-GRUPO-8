@@ -33,8 +33,8 @@ const menuItems = [
   { label: "Conexiones", icon: <FiShare2 />, path: "/conexiones" },
   { label: "Grupos", icon: <FiUsers />, path: "/grupos" },
   { label: "Foros", icon: <FiMessageSquare />, path: "/foros" },
-  { label: "Reportes", icon: <FiBarChart2 />, path: "/reportes" },
   { label: "Repositorio", icon: <FiGitMerge />, path: "/repositorio" },
+  { label: "Reportes", icon: <FiBarChart2 />, path: "/reportes", role: 3 },
   { label: "Mapa Correlativas", icon: <FiGitMerge />, path: "/mapa-correlatividades", role: 1 },
   { label: "Registrar Correlativas", icon: <FiPlusCircle />, path: "/correlativas", role: 3 }
 ];
@@ -819,6 +819,15 @@ const Layout = ({ children }) => {
                     className="w-full text-left px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 flex items-center gap-2.5 font-medium transition"
                   >
                     👤 Mi Perfil
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMenuUsuarioAbierto(false);
+                      navigate("/mis-guardados");
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 flex items-center gap-2.5 font-medium transition"
+                  >
+                    💾 Mis Guardados
                   </button>
                   <button
                     onClick={() => { cerrarSesion(); setMenuUsuarioAbierto(false); }}
