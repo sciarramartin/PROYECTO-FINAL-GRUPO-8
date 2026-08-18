@@ -28,6 +28,7 @@ const CrearMaterialEstudio = lazy(() => import('./components/US-18-Agregar-Mater
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
 const MisGuardados = lazy(() => import('./components/us-foro/MisGuardados'));
 const Reportes = lazy(() => import('./components/us-foro/Reportes'));
+const ChatbotModalidadAcademica = lazy(() => import('./components/US-29-Consultar-modalidad-academica-ia/ChatbotModalidadAcademica'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -195,6 +196,15 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <MuroMaterialEstudio />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          {/* Ruta del Asistente IA - Modalidad Académica (US-29) */}
+          <Route path="/asistente-ia" element={
+            <RutaPrivada>
+              <Layout>
+                <ChatbotModalidadAcademica />
               </Layout>
             </RutaPrivada>
           } />

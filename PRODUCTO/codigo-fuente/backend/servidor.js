@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ override: true });
 const express = require('express');
 const cors = require('cors');
 
@@ -43,6 +43,8 @@ const rutasForo = require('./controladores/Foro-controllers/foro.controller.js')
 const rutasPublicacion = require('./controladores/Foro-controllers/publicacion.controller.js');
 const rutasComentario = require('./controladores/Foro-controllers/comentario.controller.js');
 const rutasRepositorio = require('./controladores/material.controlador.js');
+const rutasIA = require('./controladores/ia.controlador.js');
+const ragService = require('./servicios/rag.servicio.js');
 
 
 const http = require('http');
@@ -121,6 +123,7 @@ app.use('/api/foro', rutasForo);
 app.use('/api/publicaciones', rutasPublicacion);
 app.use('/api/foro/comentarios', rutasComentario);
 app.use('/api/repositorio', rutasRepositorio);
+app.use('/api/ia', rutasIA);
 
 // Ruta base
 app.get('/', (req, res) => {
@@ -133,6 +136,9 @@ const iniciarServidor = async () => {
 
         await inicializarDB();
         console.log('Base de datos conectada correctamente.');
+
+        // Inicializar corpus RAG de documentos y reglamentos académicos
+        await ragService.inicializar();
 
         // Sincronizar el modelo de material de estudio para asegurar la creación de la tabla
         const { MaterialDeEstudio } = require('./modelos/MaterialDeEstudio');
