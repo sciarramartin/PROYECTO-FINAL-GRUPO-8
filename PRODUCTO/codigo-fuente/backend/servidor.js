@@ -56,7 +56,8 @@ const servidorHttp = http.createServer(app);
 const io = new Server(servidorHttp, {
     cors: {
         origin: '*', // En producción limitar al dominio frontend
-        methods: ['GET', 'POST', 'PUT', 'DELETE']
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true // cambio que hice para probar app
     }
 });
 
@@ -171,7 +172,12 @@ const iniciarServidor = async () => {
             console.log('Semillas de materiales de estudio insertadas.');
         }
 
-        const servidor = servidorHttp.listen(PUERTO, () => {
+        // const servidor = servidorHttp.listen(PUERTO, () => {
+            //console.log(`Servidor corriendo en el puerto ${PUERTO} con soporte de WebSockets`);
+        //});
+
+        // Por esto (agregando '0.0.0.0'):
+        const servidor = servidorHttp.listen(PUERTO, '0.0.0.0', () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO} con soporte de WebSockets`);
         });
 

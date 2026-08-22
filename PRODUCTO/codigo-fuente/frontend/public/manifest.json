@@ -1,0 +1,20 @@
+{
+  "short_name": "CampusUTN",
+  "name": "CampusUTN",
+  "icons": [
+    {
+      "src": "/CampusUTN192X192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/CampusUTN512X512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "display": "standalone"
+}
