@@ -17,7 +17,7 @@ const { ForoPublicacionGuardada } = require('./ForoPublicacionGuardada');
 const { ForoReporte } = require('./ForoReporte');
 const { PlanAcademico } = require('./PlanAcademico');
 const { MaterialDeEstudio } = require('./MaterialDeEstudio');
-const { MaterialReaccion } = require('./materialReaccion');
+const { MaterialReaccion } = require('./MaterialReaccion');
 const { ForoEtiqueta } = require('./ForoEtiqueta');
 
 Usuario.belongsTo(TipoUsuario, {

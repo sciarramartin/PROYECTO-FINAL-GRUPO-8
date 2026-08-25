@@ -129,6 +129,18 @@ const DetallePublicacion = () => {
     setTimeout(() => setAlertaTeammate(null), 5000);
   };
 
+  const copiarEnlaceAlPortapapeles = () => {
+    const url = `${window.location.origin}/foros/${materiaId}/publicacion/${postId}`;
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        mostrarMensajeTeammate("¡Enlace copiado al portapapeles con éxito!");
+      })
+      .catch((err) => {
+        console.error("Error al copiar enlace:", err);
+        mostrarMensajeTeammate("No se pudo copiar el enlace automáticamente.");
+      });
+  };
+
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return "";
     const fecha = new Date(fechaStr);
@@ -697,7 +709,7 @@ const DetallePublicacion = () => {
                 <span>{publicacion.esGuardada ? "Publicación guardada" : "Guardar publicación"}</span>
               </button>
               <button 
-                onClick={() => mostrarMensajeTeammate("Compartir está fuera de los alcances de la US actual.")}
+                onClick={copiarEnlaceAlPortapapeles}
                 className="w-full py-2.5 px-3 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-800 cursor-pointer transition flex items-center justify-start gap-2.5"
               >
                 <FiShare2 className="w-4 h-4 text-zinc-400" />

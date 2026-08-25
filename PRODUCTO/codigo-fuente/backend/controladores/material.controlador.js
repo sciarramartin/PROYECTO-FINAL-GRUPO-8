@@ -11,7 +11,7 @@ const {
     eliminarMaterial,
     obtenerRutaParaDescarga
 } = require('../servicios/material.servicio');
-const { MaterialReaccion } = require('../modelos/materialReaccion');
+const { MaterialReaccion } = require('../modelos/MaterialReaccion');
 const { verificarToken } = require('../middleware/authMiddleware');
 
 // ─── Helpers para el endpoint de relación de etiquetas ──────────────────────
