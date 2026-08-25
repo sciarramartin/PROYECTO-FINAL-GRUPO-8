@@ -31,7 +31,11 @@ const Reportes = lazy(() => import('./components/us-foro/Reportes'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  return token ? children : <Navigate to="/login" />;
+  if (!token) {
+    sessionStorage.setItem("redirect_despues_login", window.location.pathname + window.location.search);
+    return <Navigate to="/login" replace />;
+  }
+  return children;
 };
 
 const App = () => {

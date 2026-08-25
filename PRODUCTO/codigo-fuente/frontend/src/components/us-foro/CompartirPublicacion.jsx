@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FiX, FiUsers, FiUser, FiCheck, FiSend, FiLoader } from 'react-icons/fi';
+import { FiX, FiUsers, FiUser, FiCheck, FiSend, FiLoader, FiCopy } from 'react-icons/fi';
 
 const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo }) => {
     const [pestañaActiva, setPestañaActiva] = useState('grupos'); // 'grupos' o 'amigos'
@@ -10,8 +10,9 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
     const [amigos, setAmigos] = useState([]);
     const [cargando, setCargando] = useState(false);
     
-    // Feedback de envío
+    // Feedback de envío/copiado
     const [compartidoId, setCompartidoId] = useState(null); 
+    const [copiado, setCopiado] = useState(false);
 
     // URL base del backend
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -24,7 +25,7 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
         const cargarDatosCompartir = async () => {
             setCargando(true);
             try {
-                // Hacemos las llamadas en paralelo a tus nuevos endpoints
+                // Hacemos las llamadas en paralelo a los endpoints correspondientes
                 const [resGrupos, resAmigos] = await Promise.all([
                     axios.get(`${apiUrl}/grupos`, { headers: { Authorization: `Bearer ${token}` } }),
                     axios.get(`${apiUrl}/amistades/lista`, { headers: { Authorization: `Bearer ${token}` } })
@@ -44,53 +45,49 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
 
     if (!isOpen) return null;
 
+    // Obtener la URL de la publicación
+    const obtenerUrlPublicacion = () => {
+        if (!publicacion) return '';
+        const { id: publicacionId, materiaId, id_materia } = publicacion;
+        const segsUrl = window.location.pathname.split('/');
+        const codigoMateriaUrl = materiaId || id_materia || (segsUrl[2] !== 'general' ? segsUrl[2] : 'general');
+        return `${window.location.origin}/foros/${codigoMateriaUrl}/publicacion/${publicacionId}`;
+    };
+
+    // Copiar enlace directo al portapapeles
+    const manejarCopiarEnlace = () => {
+        const urlPublicacion = obtenerUrlPublicacion();
+        if (!urlPublicacion) return;
+
+        navigator.clipboard.writeText(urlPublicacion)
+            .then(() => {
+                setCopiado(true);
+                setTimeout(() => setCopiado(false), 2000);
+            })
+            .catch((err) => {
+                console.error("Error al copiar enlace:", err);
+            });
+    };
+
     // Acción al hacer clic en enviar
     const manejarCompartir = async (id, tipo) => {
         if (!publicacion) return;
         setCompartidoId(id);
         
         try {
-            if (tipo === 'grupo') {
-                const { id: publicacionId, titulo, materiaId, id_materia, Materia } = publicacion;
+            const { titulo, materiaId, id_materia, Materia } = publicacion;
 
-                let nombreMostrado = "General";
-                if (nombreMateriaForo) {
-                    nombreMostrado = nombreMateriaForo;
-                } else if (Materia?.nombre) {
-                    nombreMostrado = Materia.nombre;
-                } else if (publicacion.nombre_materia) {
-                    nombreMostrado = publicacion.nombre_materia;
-                }
+            let nombreMostrado = "General";
+            if (nombreMateriaForo) {
+                nombreMostrado = nombreMateriaForo;
+            } else if (Materia?.nombre) {
+                nombreMostrado = Materia.nombre;
+            } else if (publicacion.nombre_materia) {
+                nombreMostrado = publicacion.nombre_materia;
+            }
 
-                const segsUrl = window.location.pathname.split('/');
-                const codigoMateriaUrl = materiaId || id_materia || (segsUrl[2] !== 'general' ? segsUrl[2] : 'general');
-                
-                // 1. Buscamos el nombre real en todas las variantes posibles que mande el backend
-                //let nombreMateria = "General";
-
-                //if (Materia?.nombre) {
-                    //nombreMateria = Materia.nombre;
-                //} else if (publicacion.nombre_materia) {
-                    //nombreMateria = publicacion.nombre_materia;
-                //} else {
-                    // 2. Si el objeto de la publicación no lo tiene, intentamos rescatarlo de la URL actual
-                    // (Por ejemplo: si la URL es /foros/analisis-matematico-1, limpiamos los guiones)
-                    //const rutaProps = window.location.pathname.split('/');
-                    //const materiaDesdeUrl = rutaProps[2]; // El segmento de la materia en la URL
-    
-                    //if (materiaDesdeUrl && materiaDesdeUrl !== 'general') {
-                        //nombreMateria = materiaDesdeUrl
-                            //.replace(/-/g, ' ')
-                            //.replace(/(^\w|\s\w)/g, m => m.toUpperCase()); // "analisis-matematico" -> "Analisis Matematico"
-                    //} else if (materiaId || id_materia) {
-                        //nombreMateria = String(materiaId || id_materia);
-                    //}
-                //}
-
-                //const nombreMateria = Materia?.nombre || materiaId || 'General';
-                //const codigoMateriaUrl = materiaId || id_materia || window.location.pathname.split('/')[2] || 'general';
-                const urlPublicacion = `${window.location.origin}/foros/${codigoMateriaUrl}/${publicacionId}`;
-                const mensajeTexto = 
+            const urlPublicacion = obtenerUrlPublicacion();
+            const mensajeTexto = 
 `📥 POST COMPARTIDO
 ───────────────────
 📌 Materia: ${nombreMostrado.toUpperCase()}
@@ -99,22 +96,23 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
 ⤵️ Hacé clic acá para ver la publicación completa y los comentarios:
 🔗 ${urlPublicacion}
 ───────────────────`;
-                
-                //`📢 ¡Compartió una publicación! \n🔗 Mirá el hilo acá: ${urlPublicacion}`;
 
-                // petición real al backend
+            if (tipo === 'grupo') {
+                // Petición real al backend
                 await axios.post(
                     `${apiUrl}/grupos/${id}/mensajes`, 
                     { contenido: mensajeTexto }, 
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
-                
                 console.log(`[OK] Publicación compartida con éxito en el grupo ID: ${id}`);
             } else if (tipo === 'amigo') {
-                // Si más adelante tenemos chat privado de amigos, agregar el POST acá!!
-                //
-                //
-                console.log(`Compartiendo con amigo ID: ${id} (Falta configurar endpoint privado)`);
+                // Petición real al backend
+                await axios.post(
+                    `${apiUrl}/chat-privado/${id}`, 
+                    { contenido: mensajeTexto }, 
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                console.log(`[OK] Publicación compartida con éxito con el amigo ID: ${id}`);
             }
         } catch (err) {
             console.error("Error al registrar el compartido en la base de datos:", err);
@@ -133,7 +131,7 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-150">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-150 animate-duration-150">
                 
                 {/* Cabecera del Modal */}
                 <div className="flex items-center justify-between mb-4">
@@ -146,6 +144,28 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                         className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition p-1 bg-transparent border-none cursor-pointer"
                     >
                         <FiX className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Copiar enlace directo (Escenario 1) */}
+                <div className="mb-4 p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-150 dark:border-zinc-800/60 flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Enlace directo</p>
+                        <p className="text-xs text-zinc-600 dark:text-zinc-300 truncate">
+                            {obtenerUrlPublicacion()}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={manejarCopiarEnlace}
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer border-none shrink-0 ${
+                            copiado
+                                ? 'bg-green-600 text-white'
+                                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'
+                        }`}
+                    >
+                        {copiado ? <FiCheck /> : <FiCopy />}
+                        {copiado ? 'Copiado' : 'Copiar'}
                     </button>
                 </div>
 

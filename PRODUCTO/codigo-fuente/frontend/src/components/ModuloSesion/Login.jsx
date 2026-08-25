@@ -49,7 +49,9 @@ const Login = () => {
       sessionStorage.setItem("token", token);
       sessionStorage.setItem("usuario", JSON.stringify(usuario));
 
-      window.location.href = "/dashboard";
+      const redirectPath = sessionStorage.getItem("redirect_despues_login") || "/dashboard";
+      sessionStorage.removeItem("redirect_despues_login");
+      window.location.href = redirectPath;
     } catch (err) {
       setError("Usuario o contraseña incorrectos.");
     } finally {
