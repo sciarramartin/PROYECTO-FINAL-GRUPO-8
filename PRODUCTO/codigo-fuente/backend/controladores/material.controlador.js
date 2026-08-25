@@ -9,7 +9,8 @@ const {
     obtenerMaterialPorId,
     listarMateriales,
     eliminarMaterial,
-    obtenerRutaParaDescarga
+    obtenerRutaParaDescarga,
+    registrarCalificacion
 } = require('../servicios/material.servicio');
 const { MaterialReaccion } = require('../modelos/MaterialReaccion');
 const { verificarToken } = require('../middleware/authMiddleware');
@@ -228,6 +229,30 @@ router.post('/:id/reaccionar', verificarToken, async (req, res) => {
     } catch (error) {
         console.error("Error al reaccionar al material:", error);
         return res.status(500).json({ error: 'Error interno del servidor al reaccionar al material.' });
+    }
+});
+
+// nuevo endpoint para calificar material
+router.post('/:id/calificar', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { puntuacion } = req.body;
+        const idUsuario = req.usuario.id;
+
+        if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
+            return res.status(400).json({ error: 'La puntuación debe ser un número entero entre 1 y 5.' });
+        }
+
+        const resultado = await registrarCalificacion({
+            idMaterial: id,
+            idUsuario,
+            puntuacion: parseInt(puntuacion, 10)
+        });
+
+        return res.json(resultado);
+    } catch (error) {
+        console.error("Error al calificar material:", error);
+        return res.status(500).json({ error: 'Error al procesar la calificación.' });
     }
 });
 

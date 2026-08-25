@@ -1,15 +1,6 @@
 PRAGMA foreign_keys = ON;
 
 -- =========================
--- TIPOS DE USUARIO
--- =========================
-
-CREATE TABLE tipos_usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL UNIQUE
-);
-
--- =========================
 -- CARRERAS
 -- =========================
 
@@ -31,6 +22,15 @@ CREATE TABLE planes_academicos (
         REFERENCES carreras(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
+);
+
+-- =========================
+-- TIPOS DE USUARIO
+-- =========================
+
+CREATE TABLE tipos_usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL UNIQUE
 );
 
 -- =========================
@@ -355,6 +355,22 @@ CREATE TABLE materiales_estudio (
     FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- =======================================
+-- CALIFICACIONES DE MATERIALES DE ESTUDIO
+-- =======================================
+CREATE TABLE material_calificaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_material INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    puntuacion INTEGER NOT NULL CHECK (puntuacion >= 1 AND puntuacion <= 5),
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_material) REFERENCES materiales_estudio(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_material, id_usuario) -- un mismo estudiante solo puede tener 1 voto guardado por cada material
+);
+
 -- =========================
 -- PUBLICACIONES GUARDADAS
 -- =========================

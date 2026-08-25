@@ -19,6 +19,7 @@ const { PlanAcademico } = require('./PlanAcademico');
 const { MaterialDeEstudio } = require('./MaterialDeEstudio');
 const { MaterialReaccion } = require('./MaterialReaccion');
 const { ForoEtiqueta } = require('./ForoEtiqueta');
+const { MaterialDeEstudioCalificaciones } = require('./MaterialDeEstudioCalificaciones');
 
 Usuario.belongsTo(TipoUsuario, {
     foreignKey: 'id_tipo_usuario'
@@ -168,6 +169,23 @@ MaterialReaccion.belongsTo(MaterialDeEstudio, { foreignKey: 'id_material' });
 Usuario.hasMany(MaterialReaccion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 MaterialReaccion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
+// Relación de Calificaión de Material de estudio
+MaterialDeEstudio.hasMany(MaterialDeEstudioCalificaciones, { 
+    foreignKey: 'id_material', 
+    as: 'calificaciones', 
+    onDelete: 'CASCADE' 
+});
+MaterialDeEstudioCalificaciones.belongsTo(MaterialDeEstudio, { 
+    foreignKey: 'id_material' 
+});
+Usuario.hasMany(MaterialDeEstudioCalificaciones, { 
+    foreignKey: 'id_usuario', 
+    onDelete: 'CASCADE' 
+});
+MaterialDeEstudioCalificaciones.belongsTo(Usuario, { 
+    foreignKey: 'id_usuario' 
+});
+
 // Relación de Publicaciones Guardadas
 Usuario.hasMany(ForoPublicacionGuardada, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 ForoPublicacionGuardada.belongsTo(Usuario, { foreignKey: 'id_usuario' });
@@ -207,6 +225,7 @@ module.exports = {
     MaterialDeEstudio,
     ForoPublicacionGuardada,
     ForoReporte,
-    ForoEtiqueta
+    ForoEtiqueta,
+    MaterialDeEstudioCalificaciones
 };
 

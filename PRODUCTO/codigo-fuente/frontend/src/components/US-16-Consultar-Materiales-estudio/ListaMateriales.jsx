@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FiSearch, FiInfo, FiCornerDownRight, FiHeart, FiBookOpen, FiTag, FiPlus } from "react-icons/fi";
+import { CalificacionEstrellas } from "../US-19-Calificar-Material-estudio/CalificarMaterial";
 
 const ListaMateriales = () => {
   const [materiales, setMateriales] = useState([]);
@@ -47,6 +48,10 @@ const ListaMateriales = () => {
             idUsuario: item.idUsuario,
             fechaPublicacion: item.fechaPublicacion,
             likes: item.likes ?? 0,
+            // nuevo para calificar
+            promedioCalificacion: item.promedioCalificacion || 0,
+            totalVotos: item.totalVotos || 0,
+            miCalificacion: item.miCalificacion || 0
           };
         });
 
@@ -217,6 +222,21 @@ const ListaMateriales = () => {
       return (p1 + p2).toUpperCase();
     }
     return nombre.substring(0, 2).toUpperCase();
+  };
+
+  // Callback para actualizar la lista en tiempo real cuando un usuario vota 
+  const handleCalificacionActualizada = ({ materialId, promedio, totalVotos, miCalificacion }) => {
+    setMateriales(prev => prev.map(m => {
+      if (m.id === materialId) {
+        return {
+          ...m,
+          promedioCalificacion: promedio,
+          totalVotos,
+          miCalificacion
+        };
+      }
+      return m;
+    }));
   };
 
   return (
@@ -439,7 +459,7 @@ const ListaMateriales = () => {
                   </div>
                 </div>
 
-                {/* Centro: */}
+                {/* Centro */}
                 <div className="md:col-span-3 flex items-center md:justify-center text-xs font-semibold text-zinc-650 dark:text-zinc-300">
                   <div className="flex items-center gap-1.5 px-3 py-1.5 text-base ">
                     {material.etiquetas.length > 0 && (
@@ -457,8 +477,16 @@ const ListaMateriales = () => {
                   </div>
                 </div>
 
-                {/* Derecha: Botón de Acción (3 columnas) */}
-                <div className="md:col-span-3 flex md:justify-end">
+                {/* Derecha: Calificaión y Botón de Acción (3 columnas) */}
+                <div className="md:col-span-3 flex flex-col md:items-end gap-2 shrink-0">
+                  {/* Renderizamos las Estrellas */}
+                  <CalificacionEstrellas
+                    materialId={material.id}
+                    promedioInicial={material.promedioCalificacion}
+                    totalVotosInicial={material.totalVotos}
+                    miCalificacionInicial={material.miCalificacion}
+                    onCalificacionActualizada={handleCalificacionActualizada}
+                  />
                   <button
                     onClick={() => navigate(`/repositorio/${material.id}`)}
                     className="w-full md:w-auto px-4 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-indigo-650 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl text-xs font-bold border-none cursor-pointer transition flex items-center justify-center gap-1 shrink-0"

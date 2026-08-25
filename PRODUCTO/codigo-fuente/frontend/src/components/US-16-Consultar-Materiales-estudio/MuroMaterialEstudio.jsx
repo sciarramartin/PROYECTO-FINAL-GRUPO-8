@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FiArrowLeft, FiDownload, FiFile, FiFileText, FiImage } from "react-icons/fi";
+import { FiArrowLeft, FiDownload, FiFile, FiStar } from "react-icons/fi";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
@@ -33,6 +33,13 @@ const MuroMaterialEstudio = () => {
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
 
+    // Estados para la calificación
+    const [hoverEstrella, setHoverEstrella] = useState(0);
+    const [miPuntuacion, setMiPuntuacion] = useState(0);
+    const [promedio, setPromedio] = useState(0);
+    const [totalVotos, setTotalVotos] = useState(0);
+    const [enviandoCalificacion, setEnviandoCalificacion] = useState(false);
+
     useEffect(() => {
         let url = null;
 
@@ -43,22 +50,25 @@ const MuroMaterialEstudio = () => {
                 const token = obtenerToken();
                 const headers = { Authorization: `Bearer ${token}` };
 
-                // 1️⃣ Metadata — igual que antes
+                // 1️⃣ Metadata
                 const resMeta = await axios.get(`${API_BASE}/repositorio/${id}`, { headers });
                 const meta = resMeta.data;
                 setMaterial(meta);
 
+                // Cargar datos de calificación si vienen en la respuesta
+                setPromedio(meta.promedioCalificacion || 0);
+                setTotalVotos(meta.totalVotos || 0);
+
                 const tipoDetectado = tipoDeArchivo(meta.ubicacion);
                 setTipo(tipoDetectado);
 
-                // 2️⃣ Binario — con axios hay que pedir responseType: 'blob'
-                //    La respuesta llega en res.data directamente, sin llamar a .blob()
+                // 2️⃣ Binario para el visor
                 if (tipoDetectado === "pdf" || tipoDetectado === "imagen") {
                     const resBlob = await axios.get(`${API_BASE}/repositorio/${id}/descargar`, {
                         headers,
-                        responseType: "blob"  // ← clave: sin esto axios devuelve texto
+                        responseType: "blob"
                     });
-                    url = URL.createObjectURL(resBlob.data);  // ← resBlob.data ya es el Blob
+                    url = URL.createObjectURL(resBlob.data);
                     setBlobUrl(url);
                 }
             } catch (err) {
@@ -72,15 +82,42 @@ const MuroMaterialEstudio = () => {
         return () => { if (url) URL.revokeObjectURL(url); };
     }, [id]);
 
-    // Descarga forzada — mismo patrón: responseType blob, usar res.data
+    // Función para registrar la calificación en la API
+    async function handleCalificar(puntuacion) {
+        if (enviandoCalificacion) return;
+        setEnviandoCalificacion(true);
+
+        try {
+            const token = obtenerToken();
+            const res = await axios.post(
+                `${API_BASE}/repositorio/${id}/calificar`,
+                { idMaterial: Number(id), puntuacion },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            // Actualizamos los estados locales con los nuevos valores recibidos de la API
+            setMiPuntuacion(puntuacion);
+            if (res.data?.promedio !== undefined) {
+                setPromedio(res.data.promedio);
+                setTotalVotos(res.data.totalVotos);
+            }
+        } catch (err) {
+            console.error("Error al registrar calificación:", err);
+            alert("No se pudo registrar tu calificación");
+        } finally {
+            setEnviandoCalificacion(false);
+        }
+    }
+
+    // Descarga forzada
     async function handleDescargar() {
         try {
             const token = obtenerToken();
             const res = await axios.get(`${API_BASE}/repositorio/${id}/descargar`, {
                 headers: { Authorization: `Bearer ${token}` },
-                responseType: "blob"  // ← ídem
+                responseType: "blob"
             });
-            const url = URL.createObjectURL(res.data);  // ← res.data, no res.blob()
+            const url = URL.createObjectURL(res.data);
             const a = document.createElement("a");
             a.href = url;
             a.download = material?.titulo || "archivo";
@@ -90,6 +127,7 @@ const MuroMaterialEstudio = () => {
             alert("No se pudo descargar el archivo");
         }
     }
+
     // ── Skeleton ────────────────────────────────────────────────────────────────
     if (cargando) {
         return (
@@ -123,9 +161,9 @@ const MuroMaterialEstudio = () => {
         );
     }
 
-    const etiquetas = material?.etiquetas;
-    const fechaFormateada = material?.fecha_de_publicacion
-        ? new Date(material.fecha_de_publicacion).toLocaleDateString("es-AR", {
+    const etiquetas = Array.isArray(material?.etiquetas) ? material.etiquetas : [];
+    const fechaFormateada = material?.fechaPublicacion || material?.fecha_de_publicacion
+        ? new Date(material.fechaPublicacion || material.fecha_de_publicacion).toLocaleDateString("es-AR", {
             day: "numeric", month: "short", year: "numeric"
         })
         : "";
@@ -142,8 +180,8 @@ const MuroMaterialEstudio = () => {
 
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
 
-                {/* Header con metadata */}
-                <div className="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex items-start justify-between gap-4">
+                {/* Header con metadata y calificaciones */}
+                <div className="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="min-w-0">
                         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2 truncate">
                             {material?.titulo}
@@ -171,12 +209,46 @@ const MuroMaterialEstudio = () => {
                                 </span>
                             )}
                         </div>
+
+                        {/* ── SECCIÓN DE CALIFICACIÓN Y ESTRELLAS ── */}
+                        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                Calificar:
+                            </span>
+                            <div className="flex items-center gap-1">
+                                {[1, 2, 3, 4, 5].map((estrella) => (
+                                    <button
+                                        key={estrella}
+                                        disabled={enviandoCalificacion}
+                                        onClick={() => handleCalificar(estrella)}
+                                        onMouseEnter={() => setHoverEstrella(estrella)}
+                                        onMouseLeave={() => setHoverEstrella(0)}
+                                        className="p-0.5 text-lg transition-transform active:scale-125 disabled:opacity-50"
+                                        title={`Calificar con ${estrella} estrella${estrella > 1 ? 's' : ''}`}
+                                    >
+                                        <FiStar
+                                            className={`${
+                                                estrella <= (hoverEstrella || miPuntuacion)
+                                                    ? "fill-amber-400 text-amber-400"
+                                                    : "text-zinc-300 dark:text-zinc-600"
+                                            }`}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="text-xs text-zinc-500 dark:text-zinc-400 ml-1">
+                                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                                    {promedio} ★
+                                </span>{" "}
+                                ({totalVotos} {totalVotos === 1 ? "voto" : "votos"})
+                            </div>
+                        </div>
                     </div>
 
                     {/* Botón descargar */}
                     <button
                         onClick={handleDescargar}
-                        className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition shrink-0"
+                        className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition shrink-0 self-start md:self-center"
                     >
                         <FiDownload className="w-4 h-4" /> Descargar
                     </button>
@@ -220,6 +292,6 @@ const MuroMaterialEstudio = () => {
             </div>
         </div>
     );
-}
+};
 
 export default MuroMaterialEstudio;

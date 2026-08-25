@@ -20,6 +20,7 @@ require('./modelos/ForoReaccion');
 require('./modelos/MaterialDeEstudio');
 require('./modelos/ForoPublicacionGuardada');
 require('./modelos/ForoReporte');
+require('./modelos/MaterialDeEstudioCalificaciones');
 
 require('./modelos/asociaciones');
 
@@ -43,6 +44,7 @@ const rutasForo = require('./controladores/Foro-controllers/foro.controller.js')
 const rutasPublicacion = require('./controladores/Foro-controllers/publicacion.controller.js');
 const rutasComentario = require('./controladores/Foro-controllers/comentario.controller.js');
 const rutasRepositorio = require('./controladores/material.controlador.js');
+const rutasMaterialCalificaciones = require('./controladores/material-calificacion.controlador.js');
 
 
 const http = require('http');
@@ -121,6 +123,7 @@ app.use('/api/foro', rutasForo);
 app.use('/api/publicaciones', rutasPublicacion);
 app.use('/api/foro/comentarios', rutasComentario);
 app.use('/api/repositorio', rutasRepositorio);
+app.use('/api/materiales-calificaciones', rutasMaterialCalificaciones);
 
 // Ruta base
 app.get('/', (req, res) => {
