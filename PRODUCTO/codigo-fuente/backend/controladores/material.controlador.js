@@ -9,7 +9,8 @@ const {
     obtenerMaterialPorId,
     listarMateriales,
     eliminarMaterial,
-    obtenerRutaParaDescarga
+    obtenerRutaParaDescarga,
+    registrarDescarga
 } = require('../servicios/material.servicio');
 const { MaterialReaccion } = require('../modelos/materialReaccion');
 const { verificarToken } = require('../middleware/authMiddleware');
@@ -141,6 +142,20 @@ router.get('/:id/descargar', verificarToken, async (req, res) => {
         );
         res.sendFile(rutaAbsoluta);
     } catch (error) {
+        res.status(404).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/repositorio/:id/descargas
+ * Incrementa el contador de descargas para un material de estudio.
+ */
+router.post('/:id/descargas', verificarToken, async (req, res) => {
+    try {
+        const material = await registrarDescarga(req.params.id);
+        res.json({ mensaje: 'Descarga registrada con éxito', descargas: material.descargas });
+    } catch (error) {
+        console.error("Error al registrar descarga:", error);
         res.status(404).json({ error: error.message });
     }
 });

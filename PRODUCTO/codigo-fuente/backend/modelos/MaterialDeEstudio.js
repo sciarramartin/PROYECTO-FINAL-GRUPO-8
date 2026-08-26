@@ -35,6 +35,10 @@ const MaterialDeEstudio = baseDeDatos.define('MaterialDeEstudio', {
     likes: {
         type: DataTypes.INTEGER,
         defaultValue: 0
+    },
+    descargas: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 }, {
     tableName: 'materiales_estudio',

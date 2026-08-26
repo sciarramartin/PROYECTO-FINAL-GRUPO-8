@@ -28,7 +28,7 @@ const rutasActividadesFlexibles = require('./controladores/actividades-flexibles
 const rutasCursos = require('./controladores/curso.controlador.js');
 const rutasInscripciones = require('./controladores/inscripciones-cursos.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js');
-const rutasAuth = require('./controladores/auth.controller.js');       
+const rutasAuth = require('./controladores/auth.controller.js');
 const rutasMateria = require('./controladores/materia.controlador');
 const rutasCarreras = require('./controladores/controlador-carreras.js'); // para probar resgitro
 const rutasProgreso = require('./controladores/progreso.controlador.js');
@@ -101,7 +101,7 @@ app.use((req, res, next) => {
 });
 
 // Rutas
-app.use('/api/auth', rutasAuth);                                  
+app.use('/api/auth', rutasAuth);
 app.use('/api/materias', rutasMateria);
 app.use('/api/actividad-personal', rutasActividad);
 app.use('/api/planificador/actividades-flexibles', rutasActividadesFlexibles);
@@ -131,44 +131,7 @@ const iniciarServidor = async () => {
 
         await inicializarDB();
         console.log('Base de datos conectada correctamente.');
-        
-        // Sincronizar el modelo de material de estudio para asegurar la creación de la tabla
-        const { MaterialDeEstudio } = require('./modelos/MaterialDeEstudio');
-        await MaterialDeEstudio.sync();
-        console.log('Tabla de materiales de estudio sincronizada.');
 
-        // Seeding automático si la tabla está vacía
-        const count = await MaterialDeEstudio.count();
-        if (count === 0) {
-            await MaterialDeEstudio.bulkCreate([
-                {
-                    id_materia: 1,
-                    id_usuario: 2,
-                    titulo: 'Apunte completo Análisis Matemático I',
-                    etiquetas: '["analisis","resumen","primer parcial"]',
-                    fecha_de_publicacion: new Date('2026-06-20 10:00:00'),
-                    likes: 15
-                },
-                {
-                    id_materia: 2,
-                    id_usuario: 2,
-                    titulo: 'Ejercicios resueltos Álgebra',
-                    etiquetas: '["algebra","vectores","matrices"]',
-                    fecha_de_publicacion: new Date('2026-06-21 11:30:00'),
-                    likes: 8
-                },
-                {
-                    id_materia: 3,
-                    id_usuario: 1,
-                    titulo: 'Guía Práctica Química General',
-                    etiquetas: '["quimica","laboratorio","formulas"]',
-                    fecha_de_publicacion: new Date('2026-06-22 15:45:00'),
-                    likes: 24
-                }
-            ]);
-            console.log('Semillas de materiales de estudio insertadas.');
-        }
-        
         const servidor = servidorHttp.listen(PUERTO, () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO} con soporte de WebSockets`);
         });

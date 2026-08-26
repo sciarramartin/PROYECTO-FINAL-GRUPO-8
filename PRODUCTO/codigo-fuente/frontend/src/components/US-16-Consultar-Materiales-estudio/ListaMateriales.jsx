@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FiSearch, FiInfo, FiCornerDownRight, FiHeart, FiBookOpen, FiTag, FiPlus } from "react-icons/fi";
+import { FiSearch, FiInfo, FiCornerDownRight, FiHeart, FiBookOpen, FiTag, FiPlus, FiDownload } from "react-icons/fi";
 
 const ListaMateriales = () => {
   const [materiales, setMateriales] = useState([]);
@@ -47,6 +47,7 @@ const ListaMateriales = () => {
             idUsuario: item.idUsuario,
             fechaPublicacion: item.fechaPublicacion,
             likes: item.likes ?? 0,
+            descargas: item.descargas ?? 0,
           };
         });
 
@@ -431,8 +432,15 @@ const ListaMateriales = () => {
                       <span className="text-xs text-zinc-550 dark:text-zinc-400 font-medium">
                         Materia: <strong className="text-zinc-750 dark:text-zinc-300 font-semibold">{material.materiaNombre || "N/A"}</strong>
                       </span>
-                      <span className="text-[11px] text-zinc-450 dark:text-zinc-500">
-                        Por: {material.autor || "Anónimo"} • {formatearFecha(material.fechaPublicacion)}
+                      <span className="text-[11px] text-zinc-450 dark:text-zinc-500 flex items-center gap-1.5 flex-wrap">
+                        <span>Por: {material.autor || "Anónimo"}</span>
+                        <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                        <span>{formatearFecha(material.fechaPublicacion)}</span>
+                        <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                        <span className="flex items-center gap-0.5 text-zinc-550 dark:text-zinc-400" title="Descargas">
+                          <FiDownload className="w-3.5 h-3.5" />
+                          <span>{material.descargas ?? 0}</span>
+                        </span>
                       </span>
 
                     </div>

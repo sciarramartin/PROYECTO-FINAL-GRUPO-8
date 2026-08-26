@@ -61,6 +61,7 @@ function mapearMaterial(raw) {
         ubicacion: item.ubicacion,
         etiquetas,
         likes: item.likes ?? 0,
+        descargas: item.descargas ?? 0,
 
         // snake_case de la BD → camelCase público
         idMateria: item.id_materia,
@@ -193,6 +194,19 @@ function obtenerRutaParaDescarga(material) {
     return obtenerRutaAbsoluta(material.ubicacion);
 }
 
+/**
+ * Incrementa en 1 el contador de descargas de un material.
+ */
+async function registrarDescarga(id) {
+    const material = await MaterialDeEstudio.findByPk(id);
+    if (!material) {
+        throw new Error('Material no encontrado');
+    }
+    material.descargas = (material.descargas ?? 0) + 1;
+    await material.save();
+    return mapearMaterial(material);
+}
+
 // ─── Alias mantenido por compatibilidad con código anterior ──────────────────
 const obtenerTodos = listarMateriales;
 
@@ -204,4 +218,5 @@ module.exports = {
     eliminarMaterial,
     obtenerRutaParaDescarga,
     obtenerTodos,
+    registrarDescarga,
 };

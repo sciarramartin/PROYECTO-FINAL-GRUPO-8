@@ -76,8 +76,18 @@ const MuroMaterialEstudio = () => {
     async function handleDescargar() {
         try {
             const token = obtenerToken();
+            const headers = { Authorization: `Bearer ${token}` };
+
+            // Registrar descarga en el backend
+            try {
+                await axios.post(`${API_BASE}/repositorio/${id}/descargas`, {}, { headers });
+                setMaterial(prev => prev ? { ...prev, descargas: (prev.descargas ?? 0) + 1 } : null);
+            } catch (err) {
+                console.error("Error al registrar la descarga en el servidor:", err);
+            }
+
             const res = await axios.get(`${API_BASE}/repositorio/${id}/descargar`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers,
                 responseType: "blob"  // ← ídem
             });
             const url = URL.createObjectURL(res.data);  // ← res.data, no res.blob()
@@ -170,6 +180,15 @@ const MuroMaterialEstudio = () => {
                                     {fechaFormateada}
                                 </span>
                             )}
+
+                            {/* Separador */}
+                            <span className="text-zinc-300 dark:text-zinc-700 text-xs">•</span>
+
+                            {/* Descargas */}
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                                <FiDownload className="w-3.5 h-3.5 text-zinc-450 dark:text-zinc-450" />
+                                {material?.descargas ?? 0} {material?.descargas === 1 ? "descarga" : "descargas"}
+                            </span>
                         </div>
                     </div>
 
@@ -209,7 +228,7 @@ const MuroMaterialEstudio = () => {
                             </p>
                             <button
                                 onClick={handleDescargar}
-                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition"
+                                className="inline-flex items-center mt-2 gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition"
                             >
                                 <FiDownload className="w-4 h-4" /> Descargar archivo
                             </button>
