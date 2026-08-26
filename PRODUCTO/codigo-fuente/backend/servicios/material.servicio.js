@@ -64,6 +64,7 @@ function mapearMaterial(raw) {
         ubicacion: item.ubicacion,
         etiquetas,
         likes: item.likes ?? 0,
+        descargas: item.descargas ?? 0,
 
         // propiedades agregadas y calculadas de calificación 
         promedioCalificacion: parseFloat(item.promedioCalificacion || item.promedio || 0),
@@ -328,6 +329,19 @@ async function listarMaterialesPorRanking(idMateria) {
 
     return rows.map(mapearMaterial);
 }
+/**
+ * Incrementa en 1 el contador de descargas de un material.
+ * Emite o actualiza una calificación de un usuario para un material (Escenarios 1 y 2).
+ */
+async function registrarDescarga(id) {
+    const material = await MaterialDeEstudio.findByPk(id);
+    if (!material) {
+        throw new Error('Material no encontrado');
+    }
+    material.descargas = (material.descargas ?? 0) + 1;
+    await material.save();
+    return mapearMaterial(material);
+}
 
 // ─── Alias mantenido por compatibilidad con código anterior ──────────────────
 const obtenerTodos = listarMateriales;
@@ -341,5 +355,6 @@ module.exports = {
     obtenerRutaParaDescarga,
     obtenerTodos,
     registrarCalificacion,
-    listarMaterialesPorRanking
+    listarMaterialesPorRanking,
+    registrarDescarga,
 };

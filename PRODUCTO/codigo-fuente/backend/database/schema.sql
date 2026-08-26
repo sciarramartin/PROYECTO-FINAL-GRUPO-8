@@ -352,6 +352,7 @@ CREATE TABLE materiales_estudio (
     id_usuario INTEGER NOT NULL,
     fecha_de_publicacion DATETIME DEFAULT CURRENT_TIMESTAMP,
     likes INTEGER DEFAULT 0,
+    descargas INTEGER DEFAULT 0,
     FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
