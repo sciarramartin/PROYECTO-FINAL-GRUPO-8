@@ -28,13 +28,13 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const CATEGORIAS_GUIA = [
   {
     id: 'aprobacion',
-    titulo: 'Aprobación Directa',
+    titulo: 'Aprobación Directa y Notas',
     icono: <FiAward className="text-amber-500" />,
-    badge: 'Cátedras',
+    badge: '45 Cátedras',
     preguntas: [
       '¿Cuáles son las condiciones de aprobación directa en Paradigmas de Programación?',
       '¿Cómo es la promoción directa en Diseño de Sistemas de Información?',
-      '¿Qué requisitos pide Algoritmos y Estructuras de Datos para promocionar?',
+      '¿Qué nota mínima en parciales y TPI pide Bases de Datos?',
       '¿Cómo se aprueba de forma directa en Sistemas Operativos?',
       '¿Cuáles son los requisitos de promoción en Redes de Datos?',
       '¿Cómo funciona la aprobación directa en Backend de Aplicaciones?',
@@ -42,94 +42,80 @@ const CATEGORIAS_GUIA = [
     ]
   },
   {
-    id: 'regularidad',
-    titulo: 'Regularidad y Evaluaciones',
-    icono: <FiCheckCircle className="text-emerald-500" />,
-    badge: 'Evaluaciones',
-    preguntas: [
-      '¿Qué nota mínima necesito para regularizar una materia en Plan 2023?',
-      '¿Cuántos recuperatorios tengo derecho a rendir por materia en el ciclo lectivo?',
-      '¿Cuánto tiempo dura la validez de la condición de regular?',
-      '¿Qué porcentaje mínimo de asistencia se exige para mantener la regularidad?',
-      '¿Cómo funciona la autoevaluación diagnóstica en Sistemas y Procesos de Negocios?',
-      '¿Qué ocurre si acumulo aplazos en materias con régimen de promoción?'
-    ]
-  },
-  {
     id: 'correlatividades',
-    titulo: 'Correlatividades y Planes',
+    titulo: 'Planes y Correlatividades',
     icono: <FiLayers className="text-indigo-500" />,
-    badge: 'Planes',
+    badge: 'Ord. 1877/1878',
     preguntas: [
-      '¿Cuáles son las 4 materias de 1° año del Plan 2023?',
+      '¿Cuáles son las 4 materias de 1° año del Plan 2023 (Ord. 1877)?',
       '¿Cuáles son las 5 materias de 2° año del Plan 2023?',
-      '¿Qué 7 materias componen el 3° año de Ingeniería en Sistemas?',
-      '¿Cuáles son las materias electivas disponibles en 4° y 5° año?',
+      '¿Qué materias componen el 3° año de Ingeniería en Sistemas?',
+      '¿Qué materias electivas oficiales están disponibles en 4° y 5° año?',
       '¿Qué correlativas necesito tener aprobadas para cursar Inteligencia Artificial?',
       '¿Qué correlativas necesito para rendir el examen final de Redes de Datos?',
-      '¿Qué diferencias hay entre el Plan 2023 (Ord. 1877) y el Plan 2008 (Ord. 1150)?'
+      '¿Qué materias y requisitos debo cumplir para el título de Analista Desarrollador (Ord. 1910)?'
     ]
   },
   {
-    id: 'examenes',
-    titulo: 'Exámenes Finales y Turnos',
+    id: 'calendario',
+    titulo: 'Calendario y Exámenes 2026',
     icono: <FiCalendar className="text-blue-500" />,
-    badge: 'Turnos',
+    badge: 'Res. 2126/25',
     preguntas: [
+      '¿Cuáles son los 5 turnos oficiales de exámenes finales en 2026?',
       '¿Hasta cuándo puedo inscribirme para rendir un examen final en Autogestión?',
-      '¿Cuáles son los turnos oficiales de exámenes finales del año?',
       '¿Quiénes pueden rendir en los turnos especiales de Mayo y Septiembre?',
-      '¿Cómo se solicita una mesa especial de examen final?',
-      '¿Dónde y en qué horarios se abonan aranceles de matrícula o certificados en ATECOR?',
-      '¿Cómo es la modalidad de los exámenes orales según la norma oficial?'
+      '¿Cuándo inician las clases del segundo cuatrimestre y el receso invernal 2026?',
+      '¿Qué días son asuetos institucionales o feriados en 2026 (Circular 04/25)?'
+    ]
+  },
+  {
+    id: 'becas',
+    titulo: 'Becas y Boleto (BEG)',
+    icono: <FiBookOpen className="text-emerald-500" />,
+    badge: 'SAE',
+    preguntas: [
+      '¿Cómo solicito el Boleto Educativo Gratuito (BEG) con Ciudadano Digital (CiDi)?',
+      '¿Quiénes se pueden postular a las Becas Estratégicas Manuel Belgrano en Sistemas?',
+      '¿Cuáles son las Becas Universitarias de Grado de la UTN (Rendimiento y Ayuda)?',
+      '¿Cómo postularse a las Becas de Investigación BINID y EVC-CIN de la SECyT?',
+      '¿Cuáles son los requisitos socioeconómicos y límites de ingresos para las becas?'
+    ]
+  },
+  {
+    id: 'pasantias',
+    titulo: 'Pasantías y Empleo',
+    icono: <FiFileText className="text-purple-500" />,
+    badge: 'SEU',
+    preguntas: [
+      '¿Qué requisitos académicos exige la facultad para acceder a pasantías laborales (Ley 26.427)?',
+      '¿Cuántas horas semanales como máximo puede durar una pasantía universitaria?',
+      '¿Cuánto dura el contrato de pasantía y cómo se renueva?',
+      '¿Cómo autorizo a un tercero a retirar mi título universitario en colación (modelo de poder)?'
     ]
   },
   {
     id: 'tramites',
-    titulo: 'Trámites, PPS y Formularios',
-    icono: <FiFileText className="text-purple-500" />,
+    titulo: 'Trámites, Bedelía y PPS',
+    icono: <FiCheckCircle className="text-cyan-500" />,
     badge: 'Alumnos',
     preguntas: [
-      '¿Cómo tramito el cambio de comisión por motivos laborales y qué formulario uso?',
-      '¿Cuáles son los requisitos y pasos para iniciar la Práctica Profesional Supervisada (PPS - ALU01-02)?',
-      '¿Qué debo hacer si una nota en Autogestión figura ausente o errónea?',
-      '¿Dónde se gestionan los certificados de alumno regular y de examen final?',
-      '¿Cómo se realiza el análisis y valoración de las encuestas de cátedra (ALU04-01)?',
-      '¿Cuál es el procedimiento para solicitar aulas en Labsis (formulario F0003-W)?'
+      '¿Cómo tramito el cambio de comisión por motivos laborales (Formulario F0035-P)?',
+      '¿Cuáles son los requisitos para iniciar la Práctica Profesional Supervisada (PPS - ALU01-02)?',
+      '¿Cómo funciona el trámite de Pase entre Facultades Regionales de la UTN?',
+      '¿Cómo descargo mi Certificado de Alumno Regular con código QR en Autogestión 4?',
+      '¿Qué ocurre si pierdo la regularidad y cómo se pide la readmisión curricular?'
     ]
   },
   {
-    id: 'analista',
-    titulo: 'Título de Analista Desarrollador',
-    icono: <FiBookOpen className="text-rose-500" />,
-    badge: 'Intermedio',
+    id: 'campus',
+    titulo: 'Comedor y Campus',
+    icono: <FiHardDrive className="text-rose-500" />,
+    badge: 'Servicios',
     preguntas: [
-      '¿Qué materias y requisitos debo cumplir para tramitar el título de Analista Desarrollador (Ord. 1910)?',
-      '¿Qué es el Seminario Integrador y cuándo se cursa para el título intermedio?',
-      '¿Cuáles son las incumbencias profesionales del Analista Desarrollador Universitario?',
-      '¿Cuál es la diferencia entre el Analista Universitario de Sistemas (Plan 2008) y el del Plan 2023?'
-    ]
-  },
-  {
-    id: 'tutorias',
-    titulo: 'Tutorías y Acompañamiento',
-    icono: <FiUsers className="text-cyan-500" />,
-    badge: 'Apoyo',
-    preguntas: [
-      '¿Cómo funciona el Programa de Tutorías de Inicio de Carrera (1° y 2° año)?',
-      '¿En qué consiste el Programa de Tutorías de Finalización de Carrera (Res. CD 1507/22)?',
-      '¿Cómo me contacto con un tutor académico para apoyo en Proyecto Final?'
-    ]
-  },
-  {
-    id: 'laboratorios',
-    titulo: 'Laboratorios y Horarios',
-    icono: <FiHardDrive className="text-teal-500" />,
-    badge: 'Campus',
-    preguntas: [
-      '¿Cuáles son las normas de seguridad vigentes en los laboratorios de informática?',
-      '¿Cuáles son los horarios de cursado por turno (Mañana, Tarde y Noche)?',
-      '¿Quiénes integran el cuerpo docente de Paradigmas de Programación y de Algoritmos?'
+      '¿En qué horario funciona el Comedor Universitario y cómo se accede al menú subsidiado?',
+      '¿Qué disciplinas deportivas gratuitas ofrece la Secretaría de Asuntos Estudiantiles (SAE)?',
+      '¿Cuáles son las normas de seguridad y conducta en los laboratorios de informática (LabSis)?'
     ]
   }
 ];
@@ -141,15 +127,16 @@ export default function ChatbotModalidadAcademica() {
       rol: 'asistente',
       contenido: `### ¡Hola! Te doy la bienvenida al Asistente Académico Inteligente 🎓
 
-Estoy entrenado para responder con exactitud sobre las **normativas oficiales, planificaciones de cátedra y reglamentos** de **Ingeniería en Sistemas de Información (UTN FRC)**.
+Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (Ciclo 2026)**. Toda respuesta incluye la cita y enlace al documento institucional.
 
 #### 💡 ¿En qué puedo ayudarte?
-* **Aprobación directa y regularidad** de cada cátedra (1° a 5° año).
-* **Correlatividades de cursado y examen final** (Plan 2023 / Plan 2008).
-* **Plazos de inscripción a finales** y calendarios de exámenes.
-* **Trámites de alumnos** (cambio de comisión laboral, formulario F0035-P, PPS).
+* **Aprobación directa y regularidad** de las 45 materias del Plan 2023.
+* **Correlatividades y planes** (Ordenanzas 1877, 1878 y Título de Analista 1910).
+* **Calendario Académico 2026** (Mesas de examen, inscripciones y feriados).
+* **Boleto Educativo (BEG), Becas y Pasantías** (Ley 26.427, Manuel Belgrano, SAE y SEU).
+* **Trámites de Bedelía** (Formulario F0035-P de cambio de turno, PPS, pases y certificados con QR).
 
-*Podés seleccionar cualquier pregunta de la **Guía Lateral Derecha** (o usar el buscador de preguntas) para consultar al instante.*`,
+*Podés elegir cualquier pregunta sugerida de la **Guía Lateral** o escribir tu consulta abajo.*`,
       fuentes: [],
       fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
@@ -532,6 +519,69 @@ Estoy entrenado para responder con exactitud sobre las **normativas oficiales, p
               <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
                 Asistente Académico IA
               </h1>
+
+              {/* Badge Beta con Globito Informativo al pasar el mouse */}
+              <div className="relative inline-flex items-center group">
+                <span className="cursor-help inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-600/70 shadow-xs transition-all hover:scale-105 hover:border-amber-400 hover:shadow-amber-500/10 active:scale-95 select-none">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  Beta
+                </span>
+
+                {/* Globito / Popover Flotante */}
+                <div className="absolute left-0 top-full mt-2.5 w-80 sm:w-[410px] p-4 rounded-2xl bg-white dark:bg-gray-900 text-slate-800 dark:text-gray-100 border border-amber-200/80 dark:border-amber-900/60 shadow-2xl shadow-slate-900/15 dark:shadow-black/60 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform group-hover:translate-y-0 translate-y-1 z-50 pointer-events-none">
+                  <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-100 dark:border-gray-800">
+                    <span className="flex h-2 w-2 relative">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                    </span>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Estado del Asistente • Versión Beta
+                    </h4>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs leading-relaxed text-slate-600 dark:text-gray-300">
+                    {/* Bloque 1: Fuente y Alcance */}
+                    <div className="bg-slate-50 dark:bg-gray-800/60 border border-slate-200/70 dark:border-gray-700/60 rounded-xl p-2.5">
+                      <p className="font-semibold text-slate-900 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+                        <span>🏛️</span> Fuente de Datos y Alcance Actual:
+                      </p>
+                      <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-normal">
+                        Los documentos y normativas oficiales que alimentan este chatbot fueron extraídos directamente de{' '}
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">https://www.frc.utn.edu.ar/</span>.
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1 leading-normal">
+                        ⚠️ <em>Nota:</em> La información está sujeta a cambios continuos y actualmente comprende una muestra representativa (no la totalidad absoluta de modalidades y trámites de todas las carreras).
+                      </p>
+                    </div>
+
+                    {/* Bloque 2: Métricas Actuales */}
+                    <div className="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40 rounded-xl p-2.5">
+                      <p className="font-semibold text-amber-900 dark:text-amber-200 mb-1 flex items-center gap-1.5">
+                        <span>⚡</span> Rendimiento y Capacidad Actual (Free Tier):
+                      </p>
+                      <ul className="space-y-0.5 list-disc list-inside text-[11px] text-amber-800/90 dark:text-amber-300/90">
+                        <li><strong>~1.600 tokens</strong> promedio por consulta RAG optimizada.</li>
+                        <li>Soporta de <strong>100 a 130 alumnos diarios</strong> (~400 consultas/día).</li>
+                        <li>Concurrencia de hasta <strong>30 consultas simultáneas por minuto</strong>.</li>
+                      </ul>
+                    </div>
+
+                    {/* Bloque 3: Escalabilidad y Ampliación Futura */}
+                    <div className="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/50 dark:border-blue-900/40 rounded-xl p-2.5">
+                      <p className="font-semibold text-blue-900 dark:text-blue-200 mb-1 flex items-center gap-1.5">
+                        <span>🚀</span> Escalabilidad y Ampliación Futura:
+                      </p>
+                      <p className="text-[11px] text-blue-800/90 dark:text-blue-300/90 leading-normal">
+                        En caso de que la aplicación escale y se implemente en toda la facultad, la base de datos documental se ampliará de forma continua para incorporar la totalidad de carreras y trámites, sustentada sobre una <strong>infraestructura de IA con capacidad de escalabilidad institucional</strong> para soportar la demanda masiva de toda la comunidad universitaria.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Flechita / Triángulo decorativo superior */}
+                  <div className="absolute -top-2 left-6 w-3.5 h-3.5 bg-white dark:bg-gray-900 border-t border-l border-amber-200/80 dark:border-amber-900/60 transform rotate-45" />
+                </div>
+              </div>
+
               <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
                 UTN FRC • Sistemas
               </span>
