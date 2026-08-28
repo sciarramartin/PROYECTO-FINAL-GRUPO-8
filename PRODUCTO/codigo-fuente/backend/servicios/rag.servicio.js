@@ -382,9 +382,18 @@ class RagService {
     });
 
     const queryNorm = Math.sqrt(querySumaCuadrados) || 1.0;
-    const querySet = new Set(queryTokens);
+    // 3. Extraer tokens de intención pura (excluyendo el nombre de la materia para no diluir el ranking)
+    let intentTokens = queryTokens;
+    if (materiaDetectada) {
+      const subjectTokens = new Set(this.extraerTokens(materiaDetectada.nombre));
+      intentTokens = queryTokens.filter(t => !subjectTokens.has(t));
+    }
 
-    // 3. Calcular similitud coseno entre vector de consulta y cada chunk
+    const esConsultaEvaluacion = /aprob|promoc|regular|nota|parcial|recuperator|evalua|calificac|tpi|libre|condici/i.test(query);
+    const esConsultaCorrelativas = /correlat|cursar|rendir|requisito|plan/i.test(query);
+    const esConsultaDocentes = /docente|profesor|c[aá]tedra|jtp|titular|adjunto/i.test(query);
+
+    // 4. Calcular similitud coseno entre vector de consulta y cada chunk con boosting de intención
     const scoredChunks = this.chunks.map(chunk => {
       let chunkVector = chunk.vector;
       let chunkNorm = chunk.norm;
@@ -409,22 +418,53 @@ class RagService {
       });
 
       let similitudCoseno = productoPunto / (queryNorm * chunkNorm);
-
+      const chunkTextLower = (chunk.texto || '').toLowerCase();
       const docLower = (chunk.documento || '').toLowerCase();
+
+      // Boosting por palabras clave de intención del alumno
+      let intentBoost = 0;
+      if (intentTokens.length > 0) {
+        let intentMatches = 0;
+        intentTokens.forEach(it => {
+          if (chunkTextLower.includes(it)) intentMatches++;
+        });
+        intentBoost = intentMatches * 0.45;
+      }
+
+      // Boosting por cabeceras y secciones canónicas del documento
+      let headerBoost = 0;
+      if (esConsultaEvaluacion) {
+        if (/condiciones?\s+de\s+aprobaci|r[eé]gimen\s+de\s+aprobaci/i.test(chunkTextLower)) headerBoost += 3.5;
+        if (/aprobaci[oó]n\s+directa|promoci[oó]n\s+directa/i.test(chunkTextLower)) headerBoost += 3.0;
+        if (/regularidad|regular:|condici[oó]n\s+regular/i.test(chunkTextLower)) headerBoost += 2.5;
+        if (/nota\s+[0-9]|aprobados?\s+con\s+nota|calificaci[oó]n\s+de\s+[0-9]/i.test(chunkTextLower)) headerBoost += 2.5;
+        if (/escala\s+para\s+la\s+regularidad|escala\s+de\s+notas/i.test(chunkTextLower)) headerBoost += 2.0;
+        if (/recuperatori|evaluaciones\s+parciales/i.test(chunkTextLower)) headerBoost += 1.5;
+      }
+
+      if (esConsultaCorrelativas) {
+        if (/correlativida|para\s+cursar|para\s+rendir|ordenanza\s+1878/i.test(chunkTextLower)) headerBoost += 3.0;
+      }
+
+      if (esConsultaDocentes) {
+        if (/cuerpo\s+docente|n[oó]mina\s+de\s+docentes|profesor\s+titular/i.test(chunkTextLower)) headerBoost += 3.0;
+      }
+
+      similitudCoseno += intentBoost + headerBoost;
 
       // Subject-Specific Disambiguation Boosting
       if (materiaDetectada) {
         const esDelDocObjetivo = materiaDetectada.targetDocs.some(td => docLower.includes(td));
         if (esDelDocObjetivo) {
           // Boost masivo al documento exacto de la materia consultada
-          similitudCoseno = (similitudCoseno * 5.0) + 0.8;
+          similitudCoseno = (similitudCoseno * 5.0) + 1.5;
         } else {
           // Verificar si pertenece a OTRA materia para penalizarlo y evitar citas cruzadas
           const otraMateria = MATERIAS_DISAMBIGUATION.find(om => 
             om.nombre !== materiaDetectada.nombre && om.targetDocs.some(td => docLower.includes(td))
           );
           if (otraMateria) {
-            similitudCoseno = similitudCoseno * 0.05; // Fuerte penalización a materias ajenas
+            similitudCoseno = similitudCoseno * 0.02; // Fuerte penalización a materias ajenas
           }
         }
       } else {
