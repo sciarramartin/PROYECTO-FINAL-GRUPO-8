@@ -487,14 +487,16 @@ const ListaMateriales = () => {
 
                 {/* Derecha: Calificaión y Botón de Acción (3 columnas) */}
                 <div className="md:col-span-3 flex flex-col md:items-end gap-2 shrink-0">
-                  {/* Renderizamos las Estrellas */}
-                  <CalificacionEstrellas
-                    materialId={material.id}
-                    promedioInicial={material.promedioCalificacion}
-                    totalVotosInicial={material.totalVotos}
-                    miCalificacionInicial={material.miCalificacion}
-                    onCalificacionActualizada={handleCalificacionActualizada}
-                  />
+                  {/* Muestra solo la puntuación numérica y cantidad de votos */}
+                  <div className="flex items-center gap-1.5 text-xs font-semibold py-1">
+                    <span className="text-amber-500 text-sm">★</span>
+                    <span className="text-zinc-800 dark:text-zinc-200">
+                      {material.promedioCalificacion ? parseFloat(material.promedioCalificacion).toFixed(1) : "0.0"}
+                    </span>
+                    <span className="text-zinc-400 font-normal">
+                      ({material.totalVotos || 0})
+                    </span>
+                  </div>
                   <button
                     onClick={() => navigate(`/repositorio/${material.id}`)}
                     className="w-full md:w-auto px-4 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-indigo-650 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 rounded-xl text-xs font-bold border-none cursor-pointer transition flex items-center justify-center gap-1 shrink-0"
