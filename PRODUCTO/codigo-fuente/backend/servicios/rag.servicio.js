@@ -56,10 +56,19 @@ class RagService {
     this.chunkHashes = new Set(); // Deduplicación de contenido por hash MD5
     this.duplicatesRemoved = 0;
     this.idfMap = new Map(); // Mapa de IDF para vectorización TF-IDF
-    this.cache = new Map(); // Caché en memoria para respuestas frecuentes (LRU con TTL)
-    this.CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutos de vigencia
+    this.cache = new Map(); // Caché en memoria normalizado con TTL
+    this.CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas de vigencia para ahorro de tokens
     this.estaInicializado = false;
     this.rejectionMessage = 'Esta consulta no se encuentra contemplada dentro de los reglamentos, normativas y planificaciones académicas oficiales de la carrera. Por favor, realizá una consulta sobre condiciones de cursado, regularidad, aprobación directa, correlatividades, fechas de examen o trámites de Ingeniería en Sistemas de Información.';
+  }
+
+  _normalizeCacheKey(texto) {
+    return (texto || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   /**
@@ -364,7 +373,12 @@ class RagService {
 
     scoredChunks.sort((a, b) => b.score - a.score);
 
-    return scoredChunks.slice(0, topK).filter(c => c.score > 0.03);
+    // Filtro dinámico de calidad: si el primer resultado tiene alta confianza, limitamos a los 3 mejores
+    const filtrados = scoredChunks.filter(c => c.score > 0.05);
+    if (filtrados.length > 0 && filtrados[0].score >= 0.22) {
+      return filtrados.slice(0, 3);
+    }
+    return filtrados.slice(0, Math.min(topK, 4));
   }
 
   _getApiKey() {
@@ -377,10 +391,10 @@ class RagService {
 
   /**
    * Consulta al LLM enriquecida con RAG, lenguaje natural y Grounding inteligente.
-   * Incluye query expansion para preguntas de seguimiento.
+   * Incluye query expansion para preguntas de seguimiento y caché normalizado.
    */
   async consultarChatbot({ prompt, historial = [] }) {
-    const cacheKey = prompt.toLowerCase().trim();
+    const cacheKey = this._normalizeCacheKey(prompt);
     if ((!historial || historial.length === 0) && this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey);
       if (Date.now() - cached.timestamp < this.CACHE_TTL_MS) {
@@ -396,15 +410,23 @@ class RagService {
       await this.inicializar();
     }
 
-    const esSaludo = this.esSaludoOCharlaInicial(prompt);
+    // Fast-path: respuestas locales directas para saludos/agradecimientos (0 tokens de API)
+    if (this.esSaludoOCharlaInicial(prompt)) {
+      let respSaludo = '¡Hola! 👋 Soy tu Asistente Académico oficial de Campus UTN. Podés consultarme sobre condiciones de aprobación directa, regularidad, fechas de exámenes finales, correlatividades, docentes y reglamentos de Ingeniería en Sistemas. ¿En qué materia o trámite te puedo ayudar hoy?';
+      if (cacheKey.includes('gracias') || cacheKey.includes('joya') || cacheKey.includes('genial')) {
+        respSaludo = '¡De nada! Si te surge cualquier otra duda sobre las materias o el cursado, acá estoy para ayudarte. ¡Muchos éxitos en la carrera! 🚀';
+      } else if (cacheKey.includes('chau') || cacheKey.includes('adios') || cacheKey.includes('hasta luego')) {
+        respSaludo = '¡Hasta luego! Que tengas un excelente día de cursado. 👋';
+      }
+      return { respuesta: respSaludo, fuentes: [] };
+    }
+
     const esMeta = this.esMetaConsultaCorpus(prompt);
 
-    // Query expansion: enriquecer la búsqueda con contexto del historial
-    // para preguntas de seguimiento como "¿Y la regularidad?" o "¿Y cómo es?"
+    // Query expansion para preguntas de seguimiento
     let queryParaBusqueda = prompt;
-    if (!esSaludo && !esMeta && Array.isArray(historial) && historial.length > 0) {
+    if (!esMeta && Array.isArray(historial) && historial.length > 0) {
       const tokensPrompt = this.extraerTokens(prompt);
-      // Si la pregunta actual es corta (< 6 tokens), es probablemente un follow-up
       if (tokensPrompt.length < 6) {
         const ultimoMensajeUsuario = [...historial]
           .reverse()
@@ -416,10 +438,9 @@ class RagService {
       }
     }
 
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6);
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 4);
 
-    // Si no es saludo, ni meta-consulta, y no hay fragmentos relevantes en el corpus: fuera de ámbito
-    if (!esSaludo && !esMeta && fragmentosRelevantes.length === 0) {
+    if (!esMeta && fragmentosRelevantes.length === 0) {
       return {
         respuesta: this.rejectionMessage,
         fuentes: []
@@ -430,48 +451,43 @@ class RagService {
       .map((f) => `[DOCUMENTO OFICIAL: ${f.documento} (Pág. ~${f.pagina})]\n${f.texto}`)
       .join('\n\n---\n\n');
 
+    // Catálogo dinámico: solo inyecta el catálogo completo de 5 años si es una meta-consulta
+    const seccionCatalogo = esMeta
+      ? `===================================================================\n${CATALOGO_CORPUS}\n===================================================================`
+      : `DIRECTIVA: Respondé en base estricta a los fragmentos del CONTEXTO RECUPERADO. El campus cuenta con todas las modalidades académicas de ISI UTN FRC (Plan 2023 y Plan 2008).`;
+
     const systemPrompt = `Sos el Asistente Virtual Oficial de Modalidad Académica y Normativas de Campus UTN (Facultad Regional Córdoba - Ingeniería en Sistemas de Información).
 
 TONO Y PERSONALIDAD:
 - Hablá en español con tono universitario argentino, natural, cordial, empático y profesional (usá "vos", "podés", "fijate", "te cuento").
-- Formateá tus respuestas con Markdown limpio (usá títulos limpios, negritas en nombres y notas clave, viñetas y tablas Markdown estándar bien estructuradas).
+- Formateá tus respuestas con Markdown limpio (títulos claros, negritas en notas y requisitos clave, viñetas y tablas Markdown estándar).
 
 DIRECTIVAS Y REGLAS DE RESPUESTA:
-1. SALUDOS Y CHARLA INICIAL:
-   - Si el estudiante saluda o pregunta cómo estás, respondé con calidez y naturalidad presentándote y contándole amablemente en qué podés orientarlo.
-2. CONSULTAS POR AÑO O CATÁLOGO DE MATERIAS (DISTRIBUCIÓN EXACTA PLAN 2023):
-   - Si el estudiante pregunta cuántas o cuáles materias/modalidades tenés de un año determinado, respondé con el número exacto y listá de forma clara y ordenada las materias oficiales:
-     * 1° Año (8 materias oficiales Plan 2023): Algoritmos y Estructuras de Datos, Arquitectura de Computadoras, Lógica y Estructuras Discretas, Sistemas y Procesos de Negocios, Análisis Matemático I, Álgebra y Geometría Analítica, Física I, Inglés I. (Nota: En Plan 2008 histórico se incluían además Química General e Ingeniería y Sociedad).
-     * 2° Año (8 materias oficiales Plan 2023): Análisis de Sistemas de Información, Paradigmas de Programación, Probabilidades y Estadísticas, Sintaxis y Semántica de los Lenguajes, Sistemas Operativos, Análisis Matemático II, Física II, Ingeniería y Sociedad.
-     * 3° Año (8 materias oficiales Plan 2023): Análisis Numérico, Backend de Aplicaciones, Bases de Datos, Comunicación de Datos, Desarrollo de Software, Diseño de Sistemas de Información, Seminario Integrador (Analista Desarrollador), Inglés II.
-     * 4° Año (14 materias oficiales Plan 2023): Administración de SI, Comunicación Multimedial, Desarrollo con Objetos, DevOps, Experiencia e Interfaces UX/UI, Gestión de Procesos de Negocio, Gestión Industrial, Green Software, Ingeniería y Calidad de Software, Investigación Operativa, Redes de Datos, Seguridad en el Desarrollo de Software, Tecnologías para la Automatización, Legislación.
-     * 5° Año (13 materias oficiales Plan 2023): Ciencia de Datos, Consultoría en Negocios Digitales, Entornos Virtuales y Videojuegos, Blockchain, Emprendimientos Tecnológicos, Gerenciamiento Estratégico, Gestión Gerencial, Habilidades Blandas, Inteligencia Artificial, Proyecto Final, Seguridad en los Sistemas de Información, Testing de Software, Economía.
-   - NUNCA mezcles materias de distintos años (por ejemplo, Administración de SI pertenece estrictamente a 4° año).
-3. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
-   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)* o *Norma ALU02-02*).
-4. PREGUNTAS FUERA DEL ÁMBITO UNIVERSITARIO:
+1. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
+   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)*).
+2. PREGUNTAS FUERA DEL ÁMBITO UNIVERSITARIO:
    - Si la consulta es sobre cocina, entretenimiento, deportes, política u ocio, debés responder:
    "${this.rejectionMessage}"
 
-===================================================================
-${CATALOGO_CORPUS}
-===================================================================
+${seccionCatalogo}
 
 CONTEXTO RECUPERADO ESPECÍFICO (RAG):
 ===================================================================
-${contextoStr || 'No se requirió fragmento específico (saludo o consulta general de catálogo).'}
+${contextoStr || 'No se requirió fragmento específico.'}
 ===================================================================`;
 
-    const mensajes = [
-      { role: 'system', content: systemPrompt }
-    ];
-
+    // History pruning: mandar últimos 3 mensajes y truncar respuestas anteriores largas para ahorrar tokens
+    const mensajes = [{ role: 'system', content: systemPrompt }];
     if (Array.isArray(historial)) {
-      historial.slice(-4).forEach(h => {
+      historial.slice(-3).forEach(h => {
+        const rawContent = h.contenido || h.content || '';
+        const content = (h.rol === 'asistente' || h.role === 'assistant')
+          ? (rawContent.length > 250 ? rawContent.substring(0, 250) + '...' : rawContent)
+          : rawContent;
         if (h.rol === 'usuario' || h.role === 'user') {
-          mensajes.push({ role: 'user', content: h.contenido || h.content || '' });
+          mensajes.push({ role: 'user', content });
         } else if (h.rol === 'asistente' || h.role === 'assistant') {
-          mensajes.push({ role: 'assistant', content: h.contenido || h.content || '' });
+          mensajes.push({ role: 'assistant', content });
         }
       });
     }
@@ -479,7 +495,6 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
     mensajes.push({ role: 'user', content: prompt });
 
     const apiKey = this._getApiKey();
-
     if (!apiKey) {
       return {
         respuesta: fragmentosRelevantes.length > 0 
@@ -489,7 +504,6 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
       };
     }
 
-    // Lista de modelos con fallback automático ante picos de uso o rate limits
     const modelosDisponibles = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3.6-27b'];
 
     for (const modelName of modelosDisponibles) {
@@ -503,8 +517,8 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
           body: JSON.stringify({
             model: modelName,
             messages: mensajes,
-            temperature: 0.2,
-            max_tokens: 1024
+            temperature: 0.15,
+            max_tokens: 850
           })
         });
 
@@ -526,15 +540,12 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
           }
 
           return resultado;
-        } else {
-          console.warn(`⚠️ [Groq Fallback] Modelo ${modelName} devolvió estado ${response.status}. Intentando siguiente modelo...`);
         }
       } catch (err) {
         console.warn(`⚠️ [Groq Fallback] Error con modelo ${modelName}:`, err.message);
       }
     }
 
-    // Fallback final estructurado si todos los modelos fallaran
     return {
       respuesta: fragmentosRelevantes.length > 0 
         ? `**Respuesta Asistida:**\n\n${fragmentosRelevantes.map(f => `* ${f.texto}`).join('\n\n')}\n\n*Fuente: ${fragmentosRelevantes[0]?.documento || 'Documentación oficial'}*`
@@ -544,14 +555,14 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
   }
 
   /**
-   * Consulta al LLM con streaming en tiempo real (SSE) y RAG integrado
+   * Consulta al LLM con streaming en tiempo real (SSE), RAG y optimización de tokens
    */
   async consultarChatbotStream({ prompt, historial = [], onChunk, onContext }) {
     if (!this.estaInicializado || this.chunks.length === 0) {
       await this.inicializar();
     }
 
-    const cacheKey = prompt.toLowerCase().trim();
+    const cacheKey = this._normalizeCacheKey(prompt);
     if ((!historial || historial.length === 0) && this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey);
       if (Date.now() - cached.timestamp < this.CACHE_TTL_MS) {
@@ -561,11 +572,23 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
       }
     }
 
-    const esSaludo = this.esSaludoOCharlaInicial(prompt);
+    // Fast-path: respuestas locales directas para saludos y agradecimientos
+    if (this.esSaludoOCharlaInicial(prompt)) {
+      let respSaludo = '¡Hola! 👋 Soy tu Asistente Académico oficial de Campus UTN. Podés consultarme sobre condiciones de aprobación directa, regularidad, fechas de exámenes finales, correlatividades, docentes y reglamentos de Ingeniería en Sistemas. ¿En qué materia o trámite te puedo ayudar hoy?';
+      if (cacheKey.includes('gracias') || cacheKey.includes('joya') || cacheKey.includes('genial')) {
+        respSaludo = '¡De nada! Si te surge cualquier otra duda sobre las materias o el cursado, acá estoy para ayudarte. ¡Muchos éxitos en la carrera! 🚀';
+      } else if (cacheKey.includes('chau') || cacheKey.includes('adios') || cacheKey.includes('hasta luego')) {
+        respSaludo = '¡Hasta luego! Que tengas un excelente día de cursado. 👋';
+      }
+      if (onContext) onContext({ fuentes: [] });
+      if (onChunk) onChunk(respSaludo);
+      return { respuesta: respSaludo, fuentes: [] };
+    }
+
     const esMeta = this.esMetaConsultaCorpus(prompt);
 
     let queryParaBusqueda = prompt;
-    if (!esSaludo && !esMeta && Array.isArray(historial) && historial.length > 0) {
+    if (!esMeta && Array.isArray(historial) && historial.length > 0) {
       const tokensPrompt = this.extraerTokens(prompt);
       if (tokensPrompt.length < 6) {
         const ultimoMensajeUsuario = [...historial]
@@ -578,9 +601,9 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
       }
     }
 
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6);
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 4);
 
-    if (!esSaludo && !esMeta && fragmentosRelevantes.length === 0) {
+    if (!esMeta && fragmentosRelevantes.length === 0) {
       if (onContext) onContext({ fuentes: [] });
       if (onChunk) onChunk(this.rejectionMessage);
       return { respuesta: this.rejectionMessage, fuentes: [] };
@@ -600,48 +623,45 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
       .map((f) => `[DOCUMENTO OFICIAL: ${f.documento} (Pág. ~${f.pagina})]\n${f.texto}`)
       .join('\n\n---\n\n');
 
+    const seccionCatalogo = esMeta
+      ? `===================================================================\n${CATALOGO_CORPUS}\n===================================================================`
+      : `DIRECTIVA: Respondé en base estricta a los fragmentos del CONTEXTO RECUPERADO. El campus cuenta con todas las modalidades académicas de ISI UTN FRC (Plan 2023 y Plan 2008).`;
+
     const systemPrompt = `Sos el Asistente Virtual Oficial de Modalidad Académica y Normativas de Campus UTN (Facultad Regional Córdoba - Ingeniería en Sistemas de Información).
 
 TONO Y PERSONALIDAD:
 - Hablá en español con tono universitario argentino, natural, cordial, empático y profesional (usá "vos", "podés", "fijate", "te cuento").
-- Formateá tus respuestas con Markdown limpio (usá títulos limpios, negritas en nombres y notas clave, viñetas y tablas Markdown estándar bien estructuradas).
+- Formateá tus respuestas con Markdown limpio (títulos claros, negritas en notas y requisitos clave, viñetas y tablas Markdown estándar).
 
 DIRECTIVAS Y REGLAS DE RESPUESTA:
-1. SALUDOS Y CHARLA INICIAL:
-   - Si el estudiante saluda o pregunta cómo estás, respondé con calidez y naturalidad presentándote y contándole amablemente en qué podés orientarlo.
-2. CONSULTAS POR AÑO O CATÁLOGO DE MATERIAS (DISTRIBUCIÓN EXACTA PLAN 2023):
-   - Si el estudiante pregunta cuántas o cuáles materias/modalidades tenés de un año determinado, respondé con el número exacto y listá de forma clara y ordenada las materias oficiales:
-     * 1° Año (8 materias oficiales Plan 2023): Algoritmos y Estructuras de Datos, Arquitectura de Computadoras, Lógica y Estructuras Discretas, Sistemas y Procesos de Negocios, Análisis Matemático I, Álgebra y Geometría Analítica, Física I, Inglés I. (Nota: En Plan 2008 histórico se incluían además Química General e Ingeniería y Sociedad).
-     * 2° Año (8 materias oficiales Plan 2023): Análisis de Sistemas de Información, Paradigmas de Programación, Probabilidades y Estadísticas, Sintaxis y Semántica de los Lenguajes, Sistemas Operativos, Análisis Matemático II, Física II, Ingeniería y Sociedad.
-     * 3° Año (8 materias oficiales Plan 2023): Análisis Numérico, Backend de Aplicaciones, Bases de Datos, Comunicación de Datos, Desarrollo de Software, Diseño de Sistemas de Información, Seminario Integrador (Analista Desarrollador), Inglés II.
-     * 4° Año (14 materias oficiales Plan 2023): Administración de SI, Comunicación Multimedial, Desarrollo con Objetos, DevOps, Experiencia e Interfaces UX/UI, Gestión de Procesos de Negocio, Gestión Industrial, Green Software, Ingeniería y Calidad de Software, Investigación Operativa, Redes de Datos, Seguridad en el Desarrollo de Software, Tecnologías para la Automatización, Legislación.
-     * 5° Año (13 materias oficiales Plan 2023): Ciencia de Datos, Consultoría en Negocios Digitales, Entornos Virtuales y Videojuegos, Blockchain, Emprendimientos Tecnológicos, Gerenciamiento Estratégico, Gestión Gerencial, Habilidades Blandas, Inteligencia Artificial, Proyecto Final, Seguridad en los Sistemas de Información, Testing de Software, Economía.
-   - NUNCA mezcles materias de distintos años.
-3. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
-   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada.
-4. PREGUNTAS FUERA DEL ÁMBITO UNIVERSITARIO:
+1. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
+   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)*).
+2. PREGUNTAS FUERA DEL ÁMBITO UNIVERSITARIO:
    - Si la consulta es sobre cocina, entretenimiento, deportes, política u ocio, debés responder:
    "${this.rejectionMessage}"
 
-===================================================================
-${CATALOGO_CORPUS}
-===================================================================
+${seccionCatalogo}
 
 CONTEXTO RECUPERADO ESPECÍFICO (RAG):
 ===================================================================
-${contextoStr || 'No se requirió fragmento específico (saludo o consulta general de catálogo).'}
+${contextoStr || 'No se requirió fragmento específico.'}
 ===================================================================`;
 
     const mensajes = [{ role: 'system', content: systemPrompt }];
     if (Array.isArray(historial)) {
-      historial.slice(-4).forEach(h => {
+      historial.slice(-3).forEach(h => {
+        const rawContent = h.contenido || h.content || '';
+        const content = (h.rol === 'asistente' || h.role === 'assistant')
+          ? (rawContent.length > 250 ? rawContent.substring(0, 250) + '...' : rawContent)
+          : rawContent;
         if (h.rol === 'usuario' || h.role === 'user') {
-          mensajes.push({ role: 'user', content: h.contenido || h.content || '' });
+          mensajes.push({ role: 'user', content });
         } else if (h.rol === 'asistente' || h.role === 'assistant') {
-          mensajes.push({ role: 'assistant', content: h.contenido || h.content || '' });
+          mensajes.push({ role: 'assistant', content });
         }
       });
     }
+
     mensajes.push({ role: 'user', content: prompt });
 
     const apiKey = this._getApiKey();
@@ -666,8 +686,8 @@ ${contextoStr || 'No se requirió fragmento específico (saludo o consulta gener
           body: JSON.stringify({
             model: modelName,
             messages: mensajes,
-            temperature: 0.2,
-            max_tokens: 1024,
+            temperature: 0.15,
+            max_tokens: 850,
             stream: true
           })
         });
