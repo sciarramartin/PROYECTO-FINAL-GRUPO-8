@@ -49,6 +49,63 @@ CATÁLOGO OFICIAL DE DOCUMENTOS INDEXADOS EN EL RAG (UTN FRC - SISTEMAS):
 --------------------------------------------------------------------------------
 `;
 
+const MATERIAS_DISAMBIGUATION = [
+  // 1° Año
+  { nombre: 'Algoritmos y Estructuras de Datos', patterns: [/algoritmos?\s+y\s+estructuras?/i, /\baed\b/i], targetDocs: ['algoritmos_y_estructura_de_datos', 'aed'] },
+  { nombre: 'Arquitectura de Computadoras', patterns: [/arquitectura\s+de\s+computadoras?/i, /\baco\b/i], targetDocs: ['arquitectura_de_computadoras', 'aco'] },
+  { nombre: 'Lógica y Estructuras Discretas', patterns: [/l[oó]gica\s+y\s+estructuras?/i, /matem[aá]tica\s+discreta/i, /\bled\b/i], targetDocs: ['logica', 'discreta', 'led'] },
+  { nombre: 'Sistemas y Procesos de Negocios', patterns: [/sistemas?\s+y\s+procesos/i, /\bspn\b/i], targetDocs: ['sistemas_y_procesos', 'spn'] },
+  { nombre: 'Análisis Matemático I', patterns: [/an[aá]lisis\s+matem[aá]tico\s+1/i, /an[aá]lisis\s+matem[aá]tico\s+i\b/i, /\bam1\b/i, /\bami\b/i, /an[aá]lisis\s+1\b/i, /an[aá]lisis\s+i\b/i], targetDocs: ['analisis_matematico_i', 'analisis_matematico_1'] },
+  { nombre: 'Álgebra y Geometría Analítica', patterns: [/([aá]lgebra\s+y\s+geometr[ií]a|[aá]lgebra)/i, /\baga\b/i, /\balg\b/i], targetDocs: ['algebra', 'aga'] },
+  { nombre: 'Física I', patterns: [/f[ií]sica\s+1/i, /f[ií]sica\s+i\b/i, /\bf1\b/i, /\bfi\b/i], targetDocs: ['fisica_i', 'fisica_1'] },
+  { nombre: 'Inglés I', patterns: [/ingl[eé]s\s+1/i, /ingl[eé]s\s+i\b/i], targetDocs: ['ingles_i', 'ingles_1'] },
+  { nombre: 'Ingeniería y Sociedad', patterns: [/ingenier[ií]a\s+y\s+sociedad/i, /\biys\b/i], targetDocs: ['ingenieria_y_sociedad', 'iys'] },
+  { nombre: 'Química General', patterns: [/qu[ií]mica/i, /\bqg\b/i], targetDocs: ['quimica'] },
+
+  // 2° Año
+  { nombre: 'Análisis de Sistemas de Información', patterns: [/an[aá]lisis\s+de\s+sistemas/i, /\basi\b/i], targetDocs: ['analisis_de_sistemas', 'asi'] },
+  { nombre: 'Paradigmas de Programación', patterns: [/paradigmas?/i, /\bppr\b/i, /\bpdp\b/i], targetDocs: ['paradigmas_de_programacion', 'paradigmas', 'ppr'] },
+  { nombre: 'Probabilidad y Estadística', patterns: [/probabilidad(es)?\s+y\s+estad[ií]stica/i, /estad[ií]stica/i, /\bpye\b/i], targetDocs: ['probabilidades', 'estadistica', 'pye'] },
+  { nombre: 'Sintaxis y Semántica de los Lenguajes', patterns: [/sintaxis/i, /\bssl\b/i], targetDocs: ['sintaxis', 'ssl'] },
+  { nombre: 'Sistemas Operativos', patterns: [/sistemas?\s+operativos?/i, /\bsop?\b/i], targetDocs: ['sistemas_operativos', 'sop'] },
+  { nombre: 'Análisis Matemático II', patterns: [/an[aá]lisis\s+matem[aá]tico\s+2/i, /an[aá]lisis\s+matem[aá]tico\s+ii\b/i, /\bam2\b/i, /\bamii\b/i, /an[aá]lisis\s+2\b/i, /an[aá]lisis\s+ii\b/i], targetDocs: ['analisis_matematico_ii', 'analisis_matematico_2'] },
+  { nombre: 'Física II', patterns: [/f[ií]sica\s+2/i, /f[ií]sica\s+ii\b/i, /\bf2\b/i, /\bfii\b/i], targetDocs: ['fisica_ii', 'fisica_2'] },
+
+  // 3° Año
+  { nombre: 'Bases de Datos', patterns: [/bases?\s+de\s+datos/i, /\bbda?\b/i], targetDocs: ['base_de_datos', 'bases_de_datos', 'bd-'] },
+  { nombre: 'Redes de Datos', patterns: [/redes?\s+de\s+datos/i, /\bredes?\b/i], targetDocs: ['redes_de_datos', 'red-'] },
+  { nombre: 'Comunicación de Datos', patterns: [/comunicaci[oó]n\s+de\s+datos/i, /comunicaci[oó]n\s+datos/i], targetDocs: ['comunicacion_de_datos', 'com-'] },
+  { nombre: 'Diseño de Sistemas de Información', patterns: [/dise[nñ]o\s+de\s+sistemas/i, /\bdsi\b/i], targetDocs: ['diseno_de_sistemas', 'dsi'] },
+  { nombre: 'Desarrollo de Software', patterns: [/desarrollo\s+de\s+software/i, /\bdds\b/i], targetDocs: ['desarrollo_de_software', 'ds-'] },
+  { nombre: 'Backend de Aplicaciones', patterns: [/backend/i], targetDocs: ['backend'] },
+  { nombre: 'Análisis Numérico', patterns: [/an[aá]lisis\s+num[eé]rico/i, /\bnum[eé]rico\b/i], targetDocs: ['analisis_numerico'] },
+  { nombre: 'Seminario Integrador', patterns: [/seminario(\s+integrador)?/i, /\bsem\b/i], targetDocs: ['seminario'] },
+  { nombre: 'Inglés II', patterns: [/ingl[eé]s\s+2/i, /ingl[eé]s\s+ii\b/i], targetDocs: ['ingles_ii', 'ingles_2'] },
+
+  // 4° Año
+  { nombre: 'Investigación Operativa', patterns: [/investigaci[oó]n\s+operativa/i, /\biop?\b/i], targetDocs: ['investigacion_operativa', 'iop'] },
+  { nombre: 'Administración de Sistemas de Información', patterns: [/administraci[oó]n\s+de\s+(si|sistemas)/i, /\badr\b/i], targetDocs: ['administracion_de_si', 'administracion_de_sistemas'] },
+  { nombre: 'Ingeniería y Calidad de Software', patterns: [/calidad\s+de\s+software/i, /\bics\b/i], targetDocs: ['calidad_de_software', 'ics'] },
+  { nombre: 'Gestión de Procesos de Negocio', patterns: [/gesti[oó]n\s+de\s+procesos/i, /\bgpn\b/i], targetDocs: ['gestion_de_procesos', 'gpn'] },
+  { nombre: 'Seguridad en el Desarrollo de Software', patterns: [/seguridad\s+en\s+el\s+desarrollo/i, /\bsds\b/i], targetDocs: ['seguridad_en_el_desarrollo', 'sds'] },
+  { nombre: 'Green Software', patterns: [/green\s+software/i, /\bgrs\b/i], targetDocs: ['green_software', 'grs'] },
+  { nombre: 'DevOps', patterns: [/devops/i], targetDocs: ['devops'] },
+  { nombre: 'Legislación', patterns: [/legislaci[oó]n/i, /\bleg\b/i], targetDocs: ['legislacion'] },
+  { nombre: 'Gestión Industrial', patterns: [/gesti[oó]n\s+industrial/i, /\bgi\b/i], targetDocs: ['gestion_industrial'] },
+  { nombre: 'Experiencia e Interfaces UX/UI', patterns: [/experiencia\s+e\s+interfaces/i, /\bux\b/i, /\bui\b/i], targetDocs: ['experiencia_e_interfaces', 'ux'] },
+
+  // 5° Año
+  { nombre: 'Inteligencia Artificial', patterns: [/inteligencia\s+artificial/i, /\bia\b/i], targetDocs: ['inteligencia_artificial', 'ia-'] },
+  { nombre: 'Ciencia de Datos', patterns: [/ciencia\s+de\s+datos/i, /\bcd\b/i], targetDocs: ['ciencia_de_datos', 'cd-'] },
+  { nombre: 'Proyecto Final', patterns: [/proyecto\s+final/i, /\bpf\b/i], targetDocs: ['proyecto_final', 'pf-'] },
+  { nombre: 'Seguridad en los Sistemas de Información', patterns: [/seguridad\s+en\s+los\s+sistemas/i, /\bssi\b/i], targetDocs: ['seguridad_en_los_sistemas', 'ssi'] },
+  { nombre: 'Testing de Software', patterns: [/testing/i, /\btst\b/i], targetDocs: ['testing'] },
+  { nombre: 'Blockchain', patterns: [/blockchain/i, /\bdtb\b/i], targetDocs: ['blockchain', 'dtb'] },
+  { nombre: 'Economía', patterns: [/econom[ií]a/i, /\beco\b/i], targetDocs: ['economia'] },
+  { nombre: 'Habilidades Blandas', patterns: [/habilidades\s+blandas/i, /\bhb\b/i], targetDocs: ['habilidades_blandas', 'hb'] },
+  { nombre: 'Emprendimientos Tecnológicos', patterns: [/emprendimientos?\s+tecnol[oó]gicos?/i, /\bet\b/i], targetDocs: ['emprendimientos', 'et'] }
+];
+
 class RagService {
   constructor() {
     this.docsDir = path.join(__dirname, '..', 'documentos_academicos');
@@ -303,7 +360,10 @@ class RagService {
       this.construirIndiceVectorial();
     }
 
-    // 1. Vectorizar la consulta
+    // 1. Detectar si la consulta apunta a una materia específica
+    const materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(query)));
+
+    // 2. Vectorizar la consulta
     const queryTf = new Map();
     queryTokens.forEach(term => {
       queryTf.set(term, (queryTf.get(term) || 0) + 1);
@@ -324,13 +384,12 @@ class RagService {
     const queryNorm = Math.sqrt(querySumaCuadrados) || 1.0;
     const querySet = new Set(queryTokens);
 
-    // 2. Calcular similitud coseno entre vector de consulta y cada chunk
+    // 3. Calcular similitud coseno entre vector de consulta y cada chunk
     const scoredChunks = this.chunks.map(chunk => {
       let chunkVector = chunk.vector;
       let chunkNorm = chunk.norm;
 
       if (!chunkVector) {
-        // Fallback dinámico si se agregó un chunk individualmente sin reconstruir índice
         chunkVector = new Map();
         let sumSq = 0;
         const tTokens = chunk.tokens.length || 1;
@@ -349,20 +408,38 @@ class RagService {
         }
       });
 
-      // Similitud Coseno: cos(q, d) = (q · d) / (|q| * |d|)
       let similitudCoseno = productoPunto / (queryNorm * chunkNorm);
 
-      // Metadata boosting: coincidencia con el nombre del documento oficial
-      const docTokens = this.extraerTokens(chunk.documento);
-      let docMatches = 0;
-      docTokens.forEach(dt => {
-        if (querySet.has(dt)) docMatches++;
-      });
+      const docLower = (chunk.documento || '').toLowerCase();
 
-      if (docMatches >= 2) {
-        similitudCoseno = (similitudCoseno * 2.5) + (docMatches * 0.15);
-      } else if (docMatches === 1) {
-        similitudCoseno = (similitudCoseno * 1.5) + 0.05;
+      // Subject-Specific Disambiguation Boosting
+      if (materiaDetectada) {
+        const esDelDocObjetivo = materiaDetectada.targetDocs.some(td => docLower.includes(td));
+        if (esDelDocObjetivo) {
+          // Boost masivo al documento exacto de la materia consultada
+          similitudCoseno = (similitudCoseno * 5.0) + 0.8;
+        } else {
+          // Verificar si pertenece a OTRA materia para penalizarlo y evitar citas cruzadas
+          const otraMateria = MATERIAS_DISAMBIGUATION.find(om => 
+            om.nombre !== materiaDetectada.nombre && om.targetDocs.some(td => docLower.includes(td))
+          );
+          if (otraMateria) {
+            similitudCoseno = similitudCoseno * 0.05; // Fuerte penalización a materias ajenas
+          }
+        }
+      } else {
+        // Metadata boosting estándar por coincidencia de tokens en el nombre del archivo
+        const docTokens = this.extraerTokens(chunk.documento);
+        let docMatches = 0;
+        docTokens.forEach(dt => {
+          if (querySet.has(dt)) docMatches++;
+        });
+
+        if (docMatches >= 2) {
+          similitudCoseno = (similitudCoseno * 2.5) + (docMatches * 0.15);
+        } else if (docMatches === 1) {
+          similitudCoseno = (similitudCoseno * 1.5) + 0.05;
+        }
       }
 
       return {
@@ -373,7 +450,17 @@ class RagService {
 
     scoredChunks.sort((a, b) => b.score - a.score);
 
-    // Filtro dinámico de calidad: si el primer resultado tiene alta confianza, limitamos a los 3 mejores
+    // Si se detectó una materia específica, filtrar exclusivamente los fragmentos de esa materia
+    if (materiaDetectada) {
+      const deLaMateria = scoredChunks.filter(c => 
+        materiaDetectada.targetDocs.some(td => (c.documento || '').toLowerCase().includes(td))
+      );
+      if (deLaMateria.length > 0) {
+        return deLaMateria.slice(0, Math.min(topK, 3));
+      }
+    }
+
+    // Filtro dinámico de calidad general: si el primer resultado tiene alta confianza, limitamos a los 3 mejores
     const filtrados = scoredChunks.filter(c => c.score > 0.05);
     if (filtrados.length > 0 && filtrados[0].score >= 0.22) {
       return filtrados.slice(0, 3);
