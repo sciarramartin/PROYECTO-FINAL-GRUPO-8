@@ -214,7 +214,7 @@ describe('Caché en memoria de consultas', () => {
     ragService.cache.set(key.toLowerCase().trim(), {
       respuesta: 'Respuesta vieja',
       fuentes: [],
-      timestamp: Date.now() - (40 * 60 * 1000) // Expirada (40 min > 30 min TTL)
+      timestamp: Date.now() - (ragService.CACHE_TTL_MS + 60000) // Expirada dinámicamente según CACHE_TTL_MS
     });
 
     const res = await ragService.consultarChatbot({ prompt: key, historial: [] });

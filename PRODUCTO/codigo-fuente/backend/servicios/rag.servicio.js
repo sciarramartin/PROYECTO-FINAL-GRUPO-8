@@ -382,6 +382,7 @@ class RagService {
     });
 
     const queryNorm = Math.sqrt(querySumaCuadrados) || 1.0;
+    const querySet = new Set(queryTokens);
     // 3. Extraer tokens de intención pura (excluyendo el nombre de la materia para no diluir el ranking)
     let intentTokens = queryTokens;
     if (materiaDetectada) {
@@ -503,7 +504,7 @@ class RagService {
     // Filtro dinámico de calidad general: si el primer resultado tiene alta confianza, limitamos a los 3 mejores
     const filtrados = scoredChunks.filter(c => c.score > 0.05);
     if (filtrados.length > 0 && filtrados[0].score >= 0.22) {
-      return filtrados.slice(0, 3);
+      return filtrados.slice(0, Math.min(topK, 3));
     }
     return filtrados.slice(0, Math.min(topK, 4));
   }
@@ -522,8 +523,9 @@ class RagService {
    */
   async consultarChatbot({ prompt, historial = [] }) {
     const cacheKey = this._normalizeCacheKey(prompt);
-    if ((!historial || historial.length === 0) && this.cache.has(cacheKey)) {
-      const cached = this.cache.get(cacheKey);
+    const rawKey = (prompt || '').toLowerCase().trim();
+    if ((!historial || historial.length === 0) && (this.cache.has(cacheKey) || this.cache.has(rawKey))) {
+      const cached = this.cache.get(cacheKey) || this.cache.get(rawKey);
       if (Date.now() - cached.timestamp < this.CACHE_TTL_MS) {
         return {
           respuesta: cached.respuesta,
