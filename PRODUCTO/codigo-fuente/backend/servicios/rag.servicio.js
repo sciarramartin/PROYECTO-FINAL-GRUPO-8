@@ -510,11 +510,7 @@ class RagService {
   }
 
   _getApiKey() {
-    const _c = [103,115,107,95,75,89,89,108,103,87,65,81,69,56,88,119,78,80,116,70,119,57,98,70,87,71,100,121,98,51,70,89,100,86,85,84,98,121,48,101,104,112,114,89,120,80,78,53,65,79,65,56,106,71,86,76];
-    const DEFAULT_KEY = String.fromCharCode(..._c);
-    return (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'tu_api_key_de_groq_aqui')
-      ? process.env.GROQ_API_KEY
-      : DEFAULT_KEY;
+    return process.env.GROQ_API_KEY || null;
   }
 
   /**

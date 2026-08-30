@@ -217,8 +217,10 @@ describe('Caché en memoria de consultas', () => {
       timestamp: Date.now() - (ragService.CACHE_TTL_MS + 60000) // Expirada dinámicamente según CACHE_TTL_MS
     });
 
+    const spy = jest.spyOn(ragService, '_getApiKey').mockReturnValue(null);
     const res = await ragService.consultarChatbot({ prompt: key, historial: [] });
     expect(res.desdeCache).toBeUndefined();
+    spy.mockRestore();
   });
 });
 
