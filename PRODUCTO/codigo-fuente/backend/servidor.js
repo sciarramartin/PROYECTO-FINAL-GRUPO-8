@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ override: true });
 const express = require('express');
 const cors = require('cors');
 
@@ -45,6 +45,8 @@ const rutasPublicacion = require('./controladores/Foro-controllers/publicacion.c
 const rutasComentario = require('./controladores/Foro-controllers/comentario.controller.js');
 const rutasRepositorio = require('./controladores/material.controlador.js');
 const rutasMaterialCalificaciones = require('./controladores/material-calificacion.controlador.js');
+const rutasIA = require('./controladores/ia.controlador.js');
+const ragService = require('./servicios/rag.servicio.js');
 
 
 const http = require('http');
@@ -124,6 +126,7 @@ app.use('/api/publicaciones', rutasPublicacion);
 app.use('/api/foro/comentarios', rutasComentario);
 app.use('/api/repositorio', rutasRepositorio);
 app.use('/api/materiales-calificaciones', rutasMaterialCalificaciones);
+app.use('/api/ia', rutasIA);
 
 // Ruta base
 app.get('/', (req, res) => {
@@ -137,6 +140,45 @@ const iniciarServidor = async () => {
         await inicializarDB();
         console.log('Base de datos conectada correctamente.');
 
+        // Inicializar corpus RAG de documentos y reglamentos académicos
+        await ragService.inicializar();
+
+        // Sincronizar el modelo de material de estudio para asegurar la creación de la tabla
+        const { MaterialDeEstudio } = require('./modelos/MaterialDeEstudio');
+        await MaterialDeEstudio.sync();
+        console.log('Tabla de materiales de estudio sincronizada.');
+
+        // Seeding automático si la tabla está vacía
+        const count = await MaterialDeEstudio.count();
+        if (count === 0) {
+            await MaterialDeEstudio.bulkCreate([
+                {
+                    id_materia: 1,
+                    id_usuario: 2,
+                    titulo: 'Apunte completo Análisis Matemático I',
+                    etiquetas: '["analisis","resumen","primer parcial"]',
+                    fecha_de_publicacion: new Date('2026-06-20 10:00:00'),
+                    likes: 15
+                },
+                {
+                    id_materia: 2,
+                    id_usuario: 2,
+                    titulo: 'Ejercicios resueltos Álgebra',
+                    etiquetas: '["algebra","vectores","matrices"]',
+                    fecha_de_publicacion: new Date('2026-06-21 11:30:00'),
+                    likes: 8
+                },
+                {
+                    id_materia: 3,
+                    id_usuario: 1,
+                    titulo: 'Guía Práctica Química General',
+                    etiquetas: '["quimica","laboratorio","formulas"]',
+                    fecha_de_publicacion: new Date('2026-06-22 15:45:00'),
+                    likes: 24
+                }
+            ]);
+            console.log('Semillas de materiales de estudio insertadas.');
+        }
         const servidor = servidorHttp.listen(PUERTO, () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO} con soporte de WebSockets`);
         });
@@ -154,7 +196,14 @@ const iniciarServidor = async () => {
 
 process.on('uncaughtException', (error) => {
     console.error('Error no capturado:', error);
-    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('exit', (code) => {
+    console.log('Process exit with code:', code);
 });
 
 iniciarServidor();

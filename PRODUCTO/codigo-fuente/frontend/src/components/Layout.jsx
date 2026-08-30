@@ -21,11 +21,13 @@ import {
   FiChevronDown,
   FiUsers,
   FiShare2,
-  FiMessageSquare
+  FiMessageSquare,
+  FiCpu
 } from "react-icons/fi";
 
 const menuItems = [
   { label: "Dashboard", icon: <FiGrid />, path: "/dashboard" },
+  { label: "Asistente IA", icon: <FiCpu />, path: "/asistente-ia" },
   { label: "Planificador", icon: <FiCompass />, path: "/planificador" },
   { label: "Materias", icon: <FiBookOpen />, path: "/materias" },
   { label: "Calendario", icon: <FiCalendar />, path: "/calendario" },
