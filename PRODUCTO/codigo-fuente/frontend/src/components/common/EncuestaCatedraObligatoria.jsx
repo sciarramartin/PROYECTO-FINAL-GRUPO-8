@@ -2,6 +2,36 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { FiStar, FiCheckCircle, FiShield, FiMessageCircle, FiAward } from 'react-icons/fi';
 
+const TooltipInfo = () => {
+  return (
+    <span
+      onClick={(e) => e.stopPropagation()}
+      className="relative inline-flex items-center group cursor-pointer ml-1.5 align-middle select-none"
+    >
+      <span
+        aria-label="Información sobre privacidad"
+        className="w-3.5 h-3.5 rounded-full border border-zinc-400 dark:border-zinc-500 text-zinc-600 dark:text-zinc-300 flex items-center justify-center text-[9px] font-black transition-all group-hover:scale-110 group-hover:border-amber-500 group-hover:text-amber-500"
+      >
+        !
+      </span>
+      <span className="pointer-events-none absolute bottom-full right-0 sm:left-1/2 sm:-translate-x-1/2 mb-2 w-72 p-3 bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-100 text-[11px] leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 border border-zinc-700 font-normal normal-case text-left">
+        <span className="font-bold text-amber-300 dark:text-amber-400 block mb-1.5">
+          🔒 Privacidad de tu reseña
+        </span>
+        <div className="space-y-1.5 text-zinc-300 dark:text-zinc-300 text-[11px]">
+          <p>
+            <strong className="text-white">✓ Si es anónima:</strong> Tu reseña se publica sin tu nombre, usuario ni foto de perfil (se muestra como <em>"Estudiante Anónimo"</em>).
+          </p>
+          <p>
+            <strong className="text-white">✕ Si no es anónima:</strong> Tu reseña mostrará públicamente tu nombre, usuario y foto de perfil junto a tus valoraciones.
+          </p>
+        </div>
+        <span className="absolute top-full right-4 sm:left-1/2 sm:-translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-800"></span>
+      </span>
+    </span>
+  );
+};
+
 const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada }) => {
   const [dificultad, setDificultad] = useState(0);
   const [claridadDocente, setClaridadDocente] = useState(0);
@@ -168,26 +198,29 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada }) => {
             />
           </div>
 
-          {/* Checkbox Anónimo */}
-          <label className="flex items-center gap-2.5 p-2.5 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={esAnonima}
-              onChange={(e) => setEsAnonima(e.target.checked)}
-              className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
-            />
-            <div className="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-              <FiShield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>Publicar mi reseña de forma <strong>100% anónima</strong></span>
+          {/* Checkbox Anónimo con Tooltip Informativo */}
+          <label className="flex items-center justify-between p-2.5 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 cursor-pointer select-none">
+            <div className="flex items-center gap-2.5">
+              <input
+                type="checkbox"
+                checked={esAnonima}
+                onChange={(e) => setEsAnonima(e.target.checked)}
+                className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
+              />
+              <div className="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
+                <FiShield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>Publicar mi reseña de forma <strong>100% anónima</strong></span>
+              </div>
             </div>
+            <TooltipInfo />
           </label>
 
-          {/* Botones */}
-          <div className="flex items-center justify-end pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          {/* Botón Centrado */}
+          <div className="flex items-center justify-center pt-2 border-t border-zinc-100 dark:border-zinc-800">
             <button
               type="submit"
               disabled={enviando || dificultad === 0 || claridadDocente === 0 || disponibilidad === 0}
-              className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold shadow-sm transition border-none flex items-center justify-center gap-1.5 ${
+              className={`w-full sm:w-auto px-8 py-3 rounded-xl text-xs font-bold shadow-sm transition border-none flex items-center justify-center gap-2 ${
                 dificultad === 0 || claridadDocente === 0 || disponibilidad === 0
                   ? 'bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
                   : 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer hover:shadow'
