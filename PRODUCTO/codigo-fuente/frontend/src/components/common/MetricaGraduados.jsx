@@ -2,6 +2,24 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiAward, FiUsers, FiTrendingUp, FiCheckCircle } from 'react-icons/fi';
 
+const TooltipInfo = ({ texto }) => {
+  return (
+    <span className="relative inline-flex items-center group cursor-pointer ml-1.5 align-middle select-none">
+      <span
+        aria-label="Información sobre cálculo de métrica"
+        className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[9px] font-black transition-all group-hover:scale-110 opacity-75 group-hover:opacity-100"
+      >
+        !
+      </span>
+      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-100 text-[11px] leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 border border-zinc-700 font-normal normal-case text-left">
+        <span className="font-bold text-amber-300 dark:text-amber-400 block mb-1">📐 ¿Cómo se calcula?</span>
+        {texto}
+        <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-800"></span>
+      </span>
+    </span>
+  );
+};
+
 const MetricaGraduados = () => {
   const [metricas, setMetricas] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -44,9 +62,12 @@ const MetricaGraduados = () => {
             🎓
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-zinc-800 dark:text-zinc-100">
-              Métricas de Graduación y Tasa de Egreso
-            </h3>
+            <div className="flex items-center">
+              <h3 className="text-sm font-extrabold text-zinc-800 dark:text-zinc-100">
+                Métricas de Graduación y Tasa de Egreso
+              </h3>
+              <TooltipInfo texto="Panel general de analíticas que cuantifica los egresados efectivos según las ordenanzas de plan de estudio y la materia terminal Proyecto Final." />
+            </div>
             <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
               Rendimiento institucional y finalización de carrera
             </p>
@@ -58,9 +79,12 @@ const MetricaGraduados = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
         <div className="p-4 bg-amber-50/50 dark:bg-amber-950/20 rounded-2xl border border-amber-100/70 dark:border-amber-900/40 space-y-1">
-          <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider block">
-            Graduados Totales
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+              Graduados Totales
+            </span>
+            <TooltipInfo texto="Contabiliza a todos los estudiantes que tienen el 100% de las materias del plan de carrera en estado 'Aprobada' y la materia terminal Proyecto Final (PRO5 / Tesis) aprobada." />
+          </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-amber-900 dark:text-amber-300">{metricas.totalGraduados}</span>
             <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">alumnos</span>
@@ -68,9 +92,12 @@ const MetricaGraduados = () => {
         </div>
 
         <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-2xl border border-emerald-100/70 dark:border-emerald-900/40 space-y-1">
-          <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-            Tasa de Egreso Global
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+              Tasa de Egreso Global
+            </span>
+            <TooltipInfo texto="Porcentaje calculado como: (Total de Estudiantes Graduados ÷ Total de Estudiantes Registrados en la plataforma) × 100." />
+          </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-emerald-900 dark:text-emerald-300">{metricas.tasaGeneral}%</span>
             <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">del alumnado</span>
@@ -78,9 +105,12 @@ const MetricaGraduados = () => {
         </div>
 
         <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl border border-indigo-100/70 dark:border-indigo-900/40 space-y-1">
-          <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider block">
-            Estudiantes Activos
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">
+              Estudiantes Activos
+            </span>
+            <TooltipInfo texto="Total de estudiantes matriculados en la plataforma cursando o con asignaturas registradas en su plan de estudios." />
+          </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-indigo-900 dark:text-indigo-300">{metricas.totalEstudiantes}</span>
             <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">totales</span>
@@ -92,9 +122,12 @@ const MetricaGraduados = () => {
       {/* Desglose por carrera */}
       {metricas.graduadosPorCarrera && Object.keys(metricas.graduadosPorCarrera).length > 0 && (
         <div className="space-y-2 pt-2">
-          <h4 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-            Desglose por Especialidad
-          </h4>
+          <div className="flex items-center">
+            <h4 className="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+              Desglose por Especialidad
+            </h4>
+            <TooltipInfo texto="Porcentaje de graduación por cada ingeniería: (Graduados de la especialidad ÷ Total de alumnos inscriptos en dicha especialidad) × 100." />
+          </div>
           <div className="space-y-1.5">
             {Object.entries(metricas.graduadosPorCarrera).map(([carrera, data]) => (
               <div

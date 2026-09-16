@@ -225,7 +225,7 @@ const ListaForos = () => {
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Feed Académico Global
+                Foro Académico Global
               </h1>
             </div>
           </div>
