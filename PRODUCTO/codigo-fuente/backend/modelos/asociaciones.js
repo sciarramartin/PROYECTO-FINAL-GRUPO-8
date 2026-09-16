@@ -13,7 +13,15 @@ const { Perfil } = require('./Perfil');
 const { ForoPublicacion } = require('./ForoPublicacion');
 const { ForoComentario } = require('./ForoComentario');
 const { ForoReaccion } = require('./ForoReaccion');
+const { ForoPublicacionGuardada } = require('./ForoPublicacionGuardada');
+const { ForoReporte } = require('./ForoReporte');
 const { PlanAcademico } = require('./PlanAcademico');
+const { MaterialDeEstudio } = require('./MaterialDeEstudio');
+const { MaterialReaccion } = require('./MaterialReaccion');
+const { ForoEtiqueta } = require('./ForoEtiqueta');
+const { MaterialDeEstudioCalificaciones } = require('./MaterialDeEstudioCalificaciones');
+const Curso = require('./curso.modelo');
+const inscripcionesCursos = require('./inscripciones-cursos.modelo');
 
 Usuario.belongsTo(TipoUsuario, {
     foreignKey: 'id_tipo_usuario'
@@ -32,6 +40,18 @@ EstadoMateria.belongsTo(Materia, { foreignKey: 'id_materia' });
 
 Materia.belongsTo(Carrera, { foreignKey: 'id_carrera' });
 Carrera.hasMany(Materia, { foreignKey: 'id_carrera' });
+
+// Relación de Materia con Curso
+Materia.hasMany(Curso, { foreignKey: 'id_materia', as: 'cursos', onDelete: 'CASCADE' });
+Curso.belongsTo(Materia, { foreignKey: 'id_materia' });
+
+// Relación de Curso con inscripciones_cursos
+Curso.hasMany(inscripcionesCursos, { foreignKey: 'id_curso', as: 'inscripciones', onDelete: 'CASCADE' });
+inscripcionesCursos.belongsTo(Curso, { foreignKey: 'id_curso' });
+
+// Relación de Usuario con inscripciones_cursos
+Usuario.hasMany(inscripcionesCursos, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+inscripcionesCursos.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
 // Relaciones de Plan Académico
 PlanAcademico.belongsTo(Carrera, { foreignKey: 'id_carrera' });
@@ -119,7 +139,7 @@ Perfil.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
 // Relaciones de Foro
 Materia.hasMany(ForoPublicacion, { foreignKey: 'id_materia', onDelete: 'CASCADE' });
-ForoPublicacion.belongsTo(Materia, { foreignKey: 'id_materia'});
+ForoPublicacion.belongsTo(Materia, { foreignKey: 'id_materia' });
 
 Usuario.hasMany(ForoPublicacion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
 ForoPublicacion.belongsTo(Usuario, { as: 'Autor', foreignKey: 'id_usuario' });
@@ -143,6 +163,64 @@ ForoReaccion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 ForoComentario.hasMany(ForoReaccion, { foreignKey: 'id_comentario', onDelete: 'CASCADE' });
 ForoReaccion.belongsTo(ForoComentario, { foreignKey: 'id_comentario' });
 
+// Relaciones de Material de Estudio
+MaterialDeEstudio.belongsTo(Materia, {
+    foreignKey: 'id_materia',
+    as: 'materia'
+});
+
+Materia.hasMany(MaterialDeEstudio, {
+    foreignKey: 'id_materia',
+    as: 'materiales'
+});
+
+Usuario.hasMany(MaterialDeEstudio, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+MaterialDeEstudio.belongsTo(Usuario, { as: 'Autor', foreignKey: 'id_usuario' });
+
+MaterialDeEstudio.hasMany(MaterialReaccion, { foreignKey: 'id_material', onDelete: 'CASCADE' });
+MaterialReaccion.belongsTo(MaterialDeEstudio, { foreignKey: 'id_material' });
+
+Usuario.hasMany(MaterialReaccion, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+MaterialReaccion.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+
+// Relación de Calificaión de Material de estudio
+MaterialDeEstudio.hasMany(MaterialDeEstudioCalificaciones, { 
+    foreignKey: 'id_material', 
+    as: 'calificaciones', 
+    onDelete: 'CASCADE' 
+});
+MaterialDeEstudioCalificaciones.belongsTo(MaterialDeEstudio, { 
+    foreignKey: 'id_material' 
+});
+Usuario.hasMany(MaterialDeEstudioCalificaciones, { 
+    foreignKey: 'id_usuario', 
+    onDelete: 'CASCADE' 
+});
+MaterialDeEstudioCalificaciones.belongsTo(Usuario, { 
+    foreignKey: 'id_usuario' 
+});
+
+// Relación de Publicaciones Guardadas
+Usuario.hasMany(ForoPublicacionGuardada, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+ForoPublicacionGuardada.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+
+ForoPublicacion.hasMany(ForoPublicacionGuardada, { foreignKey: 'id_publicacion', onDelete: 'CASCADE' });
+ForoPublicacionGuardada.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
+
+// Relación de Reportes de Publicaciones
+Usuario.hasMany(ForoReporte, { foreignKey: 'id_usuario_reportador', as: 'ReportesEnviados', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(Usuario, { foreignKey: 'id_usuario_reportador', as: 'Reportador' });
+
+ForoPublicacion.hasMany(ForoReporte, { foreignKey: 'id_publicacion', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
+
+ForoComentario.hasMany(ForoReporte, { foreignKey: 'id_comentario', onDelete: 'CASCADE' });
+ForoReporte.belongsTo(ForoComentario, { foreignKey: 'id_comentario', as: 'Comentario' });
+
+// Relación de Etiquetas de Publicaciones
+ForoPublicacion.hasMany(ForoEtiqueta, { foreignKey: 'id_publicacion', as: 'Etiquetas', onDelete: 'CASCADE' });
+ForoEtiqueta.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
+
 module.exports = {
     Usuario,
     TipoUsuario,
@@ -157,5 +235,13 @@ module.exports = {
     Perfil,
     ForoPublicacion,
     ForoComentario,
-    ForoReaccion
+    ForoReaccion,
+    MaterialDeEstudio,
+    ForoPublicacionGuardada,
+    ForoReporte,
+    ForoEtiqueta,
+    MaterialDeEstudioCalificaciones,
+    Curso,
+    inscripcionesCursos
 };
+

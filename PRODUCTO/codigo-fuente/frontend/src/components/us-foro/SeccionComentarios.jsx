@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ComentarioNodo from './ComentarioNodo';
 
-const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
+const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor, alReportar }) => {
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentarioRaiz, setNuevoComentarioRaiz] = useState("");
     const [error, setError] = useState("");
@@ -80,12 +80,76 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
         }
     };
 
+    const manejarVotoComentario = async (comId, tipo) => {
+        try {
+            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+            
+            const res = await axios.post(
+                `${apiUrl}/publicaciones/comentarios/${comId}/reaccionar`,
+                { tipo },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setComentarios(prev => prev.map(c => 
+                c.id === comId ? { ...c, votos: res.data.votos } : c
+            ));
+
+        } catch (err) {
+            console.error("Error al votar comentario:", err);
+            setError(err.response?.data?.error || "Error al registrar voto en comentario.");
+        }
+    };
+
+    const manejarEliminarComentario = async (comId) => {
+        setError("");
+        try {
+            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+            
+            await axios.delete(
+                `${apiUrl}/foro/comentarios/${comId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setComentarios((prev) => {
+                const idsAEliminar = new Set([comId]);
+                let prevSize = 0;
+                while (idsAEliminar.size !== prevSize) {
+                    prevSize = idsAEliminar.size;
+                    prev.forEach(c => {
+                        if (c.id_comentario_padre && idsAEliminar.has(c.id_comentario_padre)) {
+                            idsAEliminar.add(c.id);
+                        }
+                    });
+                }
+                return prev.filter(c => !idsAEliminar.has(c.id));
+            });
+
+            setMensajeExito("¡Comentario eliminado con éxito!");
+            setTimeout(() => {
+                setMensajeExito("");
+            }, 3000);
+        } catch (err) {
+            console.error("Error al eliminar comentario:", err);
+            setError(err.response?.data?.error || err.message || "Error al eliminar comentario.");
+        }
+    };
+
     // Filtramos los comentarios principales (los que no responden a nadie)
     const comentariosRaiz = comentarios.filter(c => c.id_comentario_padre === null);
 
     return (
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mt-6">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">
+        <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm mt-6">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-zinc-100 mb-4">
                 Comentarios ({comentarios.length})
             </h3>
 
@@ -106,7 +170,7 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
                     placeholder="Escribe un comentario académico o duda..."
                     value={nuevoComentarioRaiz}
                     onChange={(e) => setNuevoComentarioRaiz(e.target.value)}
-                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500"
+                    className="flex-1 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500"
                 />
                 <button 
                     type="submit" 
@@ -120,7 +184,7 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
             {/* Listado de hilos */}
             <div className="space-y-2">
                 {comentariosRaiz.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-4">No hay comentarios aún. ¡Sé el primero en participar!</p>
+                    <p className="text-sm text-gray-400 dark:text-zinc-500 text-center py-4">No hay comentarios aún. ¡Sé el primero en participar!</p>
                 ) : (
                     comentariosRaiz.map(comentario => (
                         <ComentarioNodo
@@ -129,8 +193,10 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual }) => {
                             todasLasRespuestas={comentarios} // Pasamos la bolsa completa para que los nodos busquen sus hijos
                             alResponder={manejarEnviarComentario}
                             idUsuarioActual={idUsuarioActual}
-                            //alVotar={manejarVotoComentario}
-                            //alReportar={manejarReportarComentario}
+                            idPublicacionAutor={idPublicacionAutor}
+                            alVotar={manejarVotoComentario}
+                            alReportar={alReportar}
+                            alEliminar={manejarEliminarComentario}
                         />
                     ))
                 )}

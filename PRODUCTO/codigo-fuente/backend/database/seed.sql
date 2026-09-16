@@ -385,9 +385,10 @@ INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES
 
 
 
-INSERT INTO inscripciones_cursos (fecha_inscripcion, id_usuario, id_curso) VALUES ("25/12/2023", 1, 1);
-INSERT INTO inscripciones_cursos (fecha_inscripcion, id_usuario, id_curso) VALUES ("25/12/2023", 1, 2);
-INSERT INTO inscripciones_cursos (fecha_inscripcion, id_usuario, id_curso) VALUES ("25/12/2023", 2, 3);
+INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 1);
+INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 1);
+INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 2);
+INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (2, 3);
 -- ===============================================================
 -- PERFILES DE USUARIOS SEED
 -- ===============================================================
@@ -413,15 +414,38 @@ VALUES
 (8, 2, 'Duda sobre Teorema de la Convergencia Monótona', 'Hola! No termino de entender por qué en el teorema de la convergencia monótona es necesario que las funciones sean no negativas. ¿Alguien me puede dar un ejemplo o intuición? Gracias!', 'Duda', 18, '2026-06-03 14:00:00', '2026-06-03 14:00:00'),
 (8, 1, 'Bienvenidos al foro de Análisis Matemático II 📌', 'Este es el espacio para compartir dudas, opiniones y recursos. Revisen las reglas del foro antes de publicar.', 'General', 42, '2026-06-01 09:00:00', '2026-06-01 09:00:00'),
 (8, 2, 'Métodos de estudio que me funcionaron para el parcial', 'Les comparto algunos métodos que me ayudaron a entender mejor los temas y aprobar el parcial. ¡Ojalá les sirva!', 'Opinión', 25, '2026-06-02 18:30:00', '2026-06-02 18:30:00'),
-(8, 2, 'Resumen de integrales impropias', 'Dejo este resumen que hice para el tema de integrales impropias. Incluye ejemplos y ejercicios resueltos.', 'Recurso', 7, '2026-06-02 20:00:00', '2026-06-02 20:00:00');
+(1, 2, 'Resumen de integrales impropias', 'Dejo este resumen que hice para el tema de integrales impropias. Incluye ejemplos y ejercicios resueltos.', 'Recurso', 7, '2026-06-02 20:00:00', '2026-06-02 20:00:00');
 
-INSERT INTO foro_comentarios (id_publicacion, id_usuario, contenido, createdAt, updatedAt)
+INSERT INTO foro_comentarios (id_publicacion, id_usuario, contenido, votos, createdAt, updatedAt)
 VALUES
-(1, 1, 'La condición de no negatividad asegura que la sucesión de funciones sea acotada inferiormente por 0, lo que permite aplicar el teorema de convergencia en medida. Si no fueran negativas, podríamos tener problemas con la medida de los conjuntos donde crecen.', '2026-06-03 14:15:00', '2026-06-03 14:15:00'),
-(1, 2, 'Muchas gracias, Prof. Roberto Cáceres. Ya me queda mucho más claro con esa analogía.', '2026-06-03 14:22:00', '2026-06-03 14:22:00'),
-(2, 2, 'Excelente, espero que todos usen este foro de forma responsable.', '2026-06-01 10:10:00', '2026-06-01 10:10:00');
+(1, 1, 'La condición de no negatividad asegura que la sucesión de funciones sea acotada inferiormente por 0, lo que permite aplicar el teorema de convergencia en medida. Si no fueran negativas, podríamos tener problemas con la medida de los conjuntos donde crecen.', 3, '2026-06-03 14:15:00', '2026-06-03 14:15:00'),
+(1, 2, 'Muchas gracias, Prof. Roberto Cáceres. Ya me queda mucho más claro con esa analogía.', 1, '2026-06-03 14:22:00', '2026-06-03 14:22:00'),
+(2, 2, 'Excelente, espero que todos usen este foro de forma responsable.', 6, '2026-06-01 10:10:00', '2026-06-01 10:10:00'),
+(4, 1, 'Alguien tiene fotos de parciales?', 3, '2026-06-10 10:12:00', '2026-06-10 10:12:00');
 
 -- Asignar todas las materias iniciales al Plan 2023
 UPDATE materias SET id_plan_academico = 2;
 
+-- ===============================================================
+-- MATERIALES DE ESTUDIO SEED
+-- ===============================================================
+INSERT INTO materiales_estudio (ubicacion, id_materia, id_usuario, titulo, etiquetas, fecha_de_publicacion, likes)
+VALUES
+("materiales\\2026\\06\\1.pdf", 1, 2, 'Apunte completo Análisis Matemático I', '["analisis","resumen","primer parcial"]', '2026-06-20 10:00:00', 15),
+("materiales\\2026\\06\\2.pdf", 2, 2, 'Ejercicios resueltos Álgebra', '["algebra","vectores","matrices"]', '2026-06-21 11:30:00', 8),
+("materiales\\2026\\06\\3.pdf", 3, 1, 'Guía Práctica Química General', '["quimica","laboratorio","formulas"]', '2026-06-22 15:45:00', 24);
 
+-- ==============================================
+-- CALIFICACIONES DE MATERIALES DE ESTUDIO SEED
+-- ==============================================
+INSERT INTO material_calificaciones (id_material, id_usuario, puntuacion)
+VALUES
+(1, 1, 5),
+(1, 2, 4),
+(1, 3, 5),
+(2, 1, 3),
+(2, 3, 4),
+(3, 1, 5),
+(3, 2, 5),
+(3, 3, 5),
+(3, 4, 5);

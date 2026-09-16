@@ -1,49 +1,58 @@
 const { promises } = require('nodemailer/lib/xoauth2');
 const Inscripcion = require('../modelos/inscripciones-cursos.modelo');
-const {findAllByMateriaId} = require('./cursos.service');
+const { findAllByMateriaId } = require('./cursos.service');
 
 const mapToCamelCase = (Inscripcion) => {
-    return {
-        id: Inscripcion.id,
-        fechaInscripcion: Inscripcion.fecha_inscripcion,
-        idUsuario: Inscripcion.id_usuario,
-        idCurso: Inscripcion.id_curso,
-        Inscripcion: Inscripcion.Inscripcion,
-        notaFinal: Inscripcion.nota_final
-    };
+  return {
+    id: Inscripcion.id,
+    fechaInscripcion: Inscripcion.fecha_inscripcion,
+    idUsuario: Inscripcion.id_usuario,
+    idCurso: Inscripcion.id_curso,
+    Inscripcion: Inscripcion.Inscripcion,
+    notaFinal: Inscripcion.nota_final
+  };
 };
 
 const findAllByCursoId = async (idCurso) => {
-    try {
+  try {
 
-        const registros = await Inscripcion.findAll({
-            where: {
-                id_curso: idCurso
-            }
-        });
-        return registros.map((Inscripcion) => {
-            return mapToCamelCase(Inscripcion);
-        });
-    } catch (error) {
-        throw error;
-    }
+    const registros = await Inscripcion.findAll({
+      where: {
+        id_curso: idCurso
+      }
+    });
+    return registros.map((Inscripcion) => {
+      return mapToCamelCase(Inscripcion);
+    });
+  } catch (error) {
+    throw error;
+  }
 };
 
 const findAllByUserId = async (idUser) => {
-    try {
-        const registros = await Inscripcion.findAll({
-            where: {
-                id_usuario: idUser
-            }
-        });
-        return registros.map((Inscripcion) => {
-            return mapToCamelCase(Inscripcion);
-        });
-    } catch (error) {
-        throw error;
-    }
+  try {
+    const registros = await Inscripcion.findAll({
+      where: {
+        id_usuario: idUser
+      }
+    });
+    return registros.map((Inscripcion) => {
+      return mapToCamelCase(Inscripcion);
+    });
+  } catch (error) {
+    throw error;
+  }
 };
 
+async function crearInscripcion({ fechaInscripcion, idCurso, idUsuario }) {
+  const inscripcion = await Inscripcion.create({
+    fecha_inscripcion: fechaInscripcion,
+    id_curso: idCurso,
+    id_usuario: idUsuario
+  });
+
+  return mapToCamelCase(inscripcion);
+}
 // ─── Utilidades ──────────────────────────────────────────────────────────────
 
 /** Convierte "09:30" → minutos desde medianoche */
@@ -58,9 +67,9 @@ const hayConflicto = (a, b) => {
   if (!diasCompartidos) return false;
 
   const aStart = toMin(a.horaInicio);
-  const aEnd   = aStart + a.duracion;
+  const aEnd = aStart + a.duracion;
   const bStart = toMin(b.horaInicio);
-  const bEnd   = bStart + b.duracion;
+  const bEnd = bStart + b.duracion;
 
   return aStart < bEnd && bStart < aEnd;
 };
@@ -81,8 +90,8 @@ const filtrarPorDisponibilidad = (cursosPosibles, disponibilidad) =>
     cursosDeMateria.filter((curso) => {
       const inicio = toMin(curso.horaInicio);
       if (!disponibilidad.manana && inicio >= TURNO.manana[0] && inicio < TURNO.manana[1]) return false;
-      if (!disponibilidad.tarde  && inicio >= TURNO.tarde[0]  && inicio < TURNO.tarde[1])  return false;
-      if (!disponibilidad.noche  && inicio >= TURNO.noche[0]  && inicio < TURNO.noche[1])  return false;
+      if (!disponibilidad.tarde && inicio >= TURNO.tarde[0] && inicio < TURNO.tarde[1]) return false;
+      if (!disponibilidad.noche && inicio >= TURNO.noche[0] && inicio < TURNO.noche[1]) return false;
       return true;
     })
   );
@@ -116,7 +125,7 @@ const calcularScore = (combinacion, fijas) => {
       .filter((a) => a.dias & bit)
       .map((a) => ({
         inicio: toMin(a.horaInicio),
-        fin:    toMin(a.horaInicio) + a.duracion,
+        fin: toMin(a.horaInicio) + a.duracion,
       }))
       .sort((a, b) => a.inicio - b.inicio);
 
@@ -124,7 +133,7 @@ const calcularScore = (combinacion, fijas) => {
       const gap = actividadesDelDia[i].inicio - actividadesDelDia[i - 1].fin;
       if (gap > 0) totalGap += gap;
     }
-    if(actividadesDelDia.length > 0) totalGap += 100;
+    if (actividadesDelDia.length > 0) totalGap += 100;
   }
 
   return totalGap; // Menor es mejor
@@ -168,10 +177,10 @@ const buscarMejorSlot = (flex, ocupado, durMin, rangoHorario) => {
 
   // Días preferidos primero, luego el resto
   const diasPreferidos = flex.diasPreferidos ? bitmaskADias(flex.diasPreferidos) : [];
-  const diasRestantes  = DIA_BITS.filter((b) => !diasPreferidos.includes(b));
-  const diasOrden      = [...diasPreferidos, ...diasRestantes];
+  const diasRestantes = DIA_BITS.filter((b) => !diasPreferidos.includes(b));
+  const diasOrden = [...diasPreferidos, ...diasRestantes];
 
-  let mejor      = null;
+  let mejor = null;
   let mejorScore = Infinity;
 
   // Primera pasada: solo días y horario preferidos
@@ -187,16 +196,16 @@ const buscarMejorSlot = (flex, ocupado, durMin, rangoHorario) => {
     for (const bit of diasEfectivos) {
       for (let startMin = rangoInicio; startMin + durMin <= rangoFin; startMin += 15) {
         const candidato = {
-          nombre:     flex.nombre.trim(),
+          nombre: flex.nombre.trim(),
           horaInicio: `${String(Math.floor(startMin / 60)).padStart(2, '0')}:${String(startMin % 60).padStart(2, '0')}`,
-          duracion:   durMin,
-          dias:       bit,
+          duracion: durMin,
+          dias: bit,
           esFlexible: true,
         };
 
         // Descartar si hay conflicto con todo lo ocupado
         if (ocupado.some((a) => hayConflicto(candidato, a))) continue;
-        
+
         // Simular inserción y medir gap total
         let score = calcularScore([...ocupado, candidato], []);
         if (ocupado.some((a) => a.esFlexible && (a.dias & candidato.dias))) {
@@ -225,9 +234,9 @@ const insertarFlexibles = (combinacion, fijas, flexibles) => {
   const flexiblesOrdenados = [...flexibles].sort((a, b) => a.prioridad - b.prioridad);
 
   for (const flex of flexiblesOrdenados) {
-    const durMin   = flex.duracion;                           // ya está en minutos
+    const durMin = flex.duracion;                           // ya está en minutos
     const sesiones = Math.ceil(flex.horasSemanales / durMin); // minutos / minutos = sesiones
-    const rango    = parsearPreferenciaHoraria(flex.preferenciaHoraria);
+    const rango = parsearPreferenciaHoraria(flex.preferenciaHoraria);
 
     for (let i = 0; i < sesiones; i++) {
       // Intentar primero en rango preferido; si falla, rango completo
@@ -277,12 +286,12 @@ const calcularPlan = async (data) => {
 
     // 6. Insertar flexibles en el mejor plan
     const flexiblesInsertados = insertarFlexibles(mejorCombinacion, data.fijas, data.flexibles);
-    
+
     return {
-        cursos:    mejorCombinacion,
-        fijas:     data.fijas,
-        flexibles: flexiblesInsertados,
-        score:     calcularScore(mejorCombinacion, data.fijas),
+      cursos: mejorCombinacion,
+      fijas: data.fijas,
+      flexibles: flexiblesInsertados,
+      score: calcularScore(mejorCombinacion, data.fijas),
     };
   } catch (error) {
     console.error('ERROR DETALLADO:', error);
@@ -292,4 +301,4 @@ const calcularPlan = async (data) => {
 
 
 // Exportar todos los métodos
-module.exports = { findAllByCursoId, findAllByUserId, calcularPlan};
+module.exports = { findAllByCursoId, findAllByUserId, crearInscripcion, calcularPlan };

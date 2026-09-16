@@ -2,15 +2,15 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { 
-  FiGrid, 
-  FiCompass, 
-  FiBookOpen, 
-  FiCalendar, 
-  FiClock, 
-  FiBarChart2, 
-  FiSettings, 
-  FiGitMerge, 
+import {
+  FiGrid,
+  FiCompass,
+  FiBookOpen,
+  FiCalendar,
+  FiClock,
+  FiBarChart2,
+  FiSettings,
+  FiGitMerge,
   FiPlusCircle,
   FiLogOut,
   FiMenu,
@@ -21,11 +21,13 @@ import {
   FiChevronDown,
   FiUsers,
   FiShare2,
-  FiMessageSquare
+  FiMessageSquare,
+  FiCpu
 } from "react-icons/fi";
 
 const menuItems = [
   { label: "Dashboard", icon: <FiGrid />, path: "/dashboard" },
+  { label: "Asistente IA", icon: <FiCpu />, path: "/asistente-ia" },
   { label: "Planificador", icon: <FiCompass />, path: "/planificador" },
   { label: "Materias", icon: <FiBookOpen />, path: "/materias" },
   { label: "Calendario", icon: <FiCalendar />, path: "/calendario" },
@@ -33,7 +35,8 @@ const menuItems = [
   { label: "Conexiones", icon: <FiShare2 />, path: "/conexiones" },
   { label: "Grupos", icon: <FiUsers />, path: "/grupos" },
   { label: "Foros", icon: <FiMessageSquare />, path: "/foros" },
-  { label: "Reportes", icon: <FiBarChart2 />, path: "/reportes" },
+  { label: "Repositorio", icon: <FiGitMerge />, path: "/repositorio" },
+  { label: "Reportes", icon: <FiBarChart2 />, path: "/reportes", role: 3 },
   { label: "Mapa Correlativas", icon: <FiGitMerge />, path: "/mapa-correlatividades", role: 1 },
   { label: "Registrar Correlativas", icon: <FiPlusCircle />, path: "/correlativas", role: 3 }
 ];
@@ -230,19 +233,19 @@ const Layout = ({ children }) => {
       const response = await axios.get(`${apiUrl}/grupos`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       const userId = usuario?.id;
       if (!userId) return;
       const ultimosVistos = JSON.parse(localStorage.getItem(`grupo_ultimo_visto_${userId}`) || "{}");
-      
+
       const unreadGroups = response.data.filter(grupo => {
         const ultMsg = grupo.ultimoMensaje;
         if (!ultMsg) return false;
-        
+
         // Si el último mensaje es mío, no lo considero pendiente
         const esMio = Number(ultMsg.id_usuario) === Number(userId);
         if (esMio) return false;
-        
+
         // Si estamos viendo el muro de este grupo actualmente, tampoco es pendiente
         const pathParts = window.location.pathname.split("/");
         const esMuroGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && Number(pathParts[2]) === Number(grupo.id);
@@ -410,7 +413,7 @@ const Layout = ({ children }) => {
         // Solo notificar si no estamos chateando con esa misma persona actualmente
         const pathParts = window.location.pathname.split("/");
         const esChatConRemitente = pathParts[1] === "chat-privado" && parseInt(pathParts[2], 10) === mensajeNuevo.id_remitente;
-        
+
         if (!esChatConRemitente) {
           cargarMensajesPendientes();
         }
@@ -456,10 +459,10 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col font-sans transition-colors duration-300">
-      
+
       {/* HEADER TRANSPARENTE CON BLUR */}
       <header className="h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 flex items-center justify-between px-4 md:px-6 fixed top-0 left-0 right-0 z-30 transition-colors duration-300">
-        
+
         {/* Izquierda: Hamburguesa + Marca */}
         <div className="flex items-center gap-3">
           <button
@@ -499,7 +502,7 @@ const Layout = ({ children }) => {
               className="w-full pl-9 pr-8 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full focus:bg-white dark:focus:bg-zinc-900 focus:border-indigo-500 outline-none transition text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500"
             />
             {busqueda && (
-              <button 
+              <button
                 onClick={() => { setBusqueda(""); setResultados([]); }}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-205"
               >
@@ -550,9 +553,9 @@ const Layout = ({ children }) => {
 
         {/* Derecha: Acciones de usuario, campana y tema */}
         <div className="flex items-center gap-2 md:gap-4">
-          
+
           {/* Botón de Tema (Claro/Oscuro) */}
-          <button 
+          <button
             onClick={toggleTema}
             className="p-2.5 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition duration-200"
             title={temaOscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
@@ -562,7 +565,7 @@ const Layout = ({ children }) => {
 
           {/* Campana de Notificaciones con Dropdown */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setMostrarCampanitaDropdown(!mostrarCampanitaDropdown)}
               className="relative p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition duration-200"
             >
@@ -577,8 +580,8 @@ const Layout = ({ children }) => {
             {/* Dropdown de la Campana */}
             {mostrarCampanitaDropdown && (
               <>
-                <div 
-                  className="fixed inset-0 z-40 cursor-default" 
+                <div
+                  className="fixed inset-0 z-40 cursor-default"
                   onClick={() => setMostrarCampanitaDropdown(false)}
                 />
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 py-3.5 px-4">
@@ -609,13 +612,13 @@ const Layout = ({ children }) => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <button 
+                                <button
                                   onClick={() => aceptarSolicitudAmistad(amigo.id)}
                                   className="flex-1 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
                                 >
                                   Aceptar
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => rechazarSolicitudAmistad(amigo.id)}
                                   className="flex-1 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
                                 >
@@ -659,13 +662,13 @@ const Layout = ({ children }) => {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 mt-1">
-                                <button 
+                                <button
                                   onClick={() => aceptarInvitacionGrupo(grupoInv.id)}
                                   className="flex-1 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition shadow-sm"
                                 >
                                   Aceptar
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => rejectInvitacionGrupo(grupoInv.id)}
                                   className="flex-1 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition shadow-sm"
                                 >
@@ -716,7 +719,7 @@ const Layout = ({ children }) => {
                                     </p>
                                   </div>
                                 </div>
-                                <button 
+                                <button
                                   onClick={() => {
                                     navigate(`/chat-privado/${remitente.id}`);
                                     setMostrarCampanitaDropdown(false);
@@ -759,7 +762,7 @@ const Layout = ({ children }) => {
                                     </p>
                                   </div>
                                 </div>
-                                <button 
+                                <button
                                   onClick={() => {
                                     navigate(`/grupos/${grupo.id}`);
                                     setMostrarCampanitaDropdown(false);
@@ -818,6 +821,15 @@ const Layout = ({ children }) => {
                     className="w-full text-left px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 flex items-center gap-2.5 font-medium transition"
                   >
                     👤 Mi Perfil
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMenuUsuarioAbierto(false);
+                      navigate("/mis-guardados");
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 flex items-center gap-2.5 font-medium transition"
+                  >
+                    💾 Mis Guardados
                   </button>
                   <button
                     onClick={() => { cerrarSesion(); setMenuUsuarioAbierto(false); }}

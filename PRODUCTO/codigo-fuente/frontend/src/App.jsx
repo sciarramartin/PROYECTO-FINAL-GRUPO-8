@@ -11,7 +11,7 @@ const Registro = lazy(() => import('./components/ModuloSesion/Registro'));
 const Horario = lazy(() => import('./components/Us-8-Actividades-Personales/Horario'));
 const ModuloCorrelativas = lazy(() => import('./components/Us-9-Registrar-Correlativas'));
 const MapaCorrelatividades = lazy(() => import('./components/US-10-Consultar-correlativas/MapaCorrelatividades'));
-const Planificador = lazy(()=> import('./components/Us-7-Generar-planificacion/Planificador'));
+const Planificador = lazy(() => import('./components/Us-7-Generar-planificacion/Planificador'));
 const PerfilPublico = lazy(() => import('./components/modulo-perfil-amigos/perfil-publico'));
 const MisConexiones = lazy(() => import('./components/modulo-perfil-amigos/mis-conexiones'));
 const MiPerfil = lazy(() => import('./components/modulo-perfil-amigos/mi-perfil'));
@@ -20,11 +20,24 @@ const MuroGrupo = lazy(() => import('./components/us-10-grupos/muro-grupo'));
 const ChatPrivado = lazy(() => import('./components/us-11-chat-privado/chat-privado'));
 const ListaForos = lazy(() => import('./components/us-foro/ListaForos'));
 const MuroForo = lazy(() => import('./components/us-foro/MuroForo'));
+const ListaMateriales = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/ListaMateriales'));
+const MuroMaterialEstudio = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/MuroMaterialEstudio'));
+const CrearMaterialEstudio = lazy(() => import('./components/US-18-Agregar-Material-estudio/CrearMaterialEstudio'));
+const ListaMaterias = lazy(() => import('./components/US-84-Historial-Inscripciones/ListaMaterias'));
+
+
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
+const MisGuardados = lazy(() => import('./components/us-foro/MisGuardados'));
+const Reportes = lazy(() => import('./components/us-foro/Reportes'));
+const ChatbotModalidadAcademica = lazy(() => import('./components/US-29-Consultar-modalidad-academica-ia/ChatbotModalidadAcademica'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  return token ? children : <Navigate to="/login" />;
+  if (!token) {
+    sessionStorage.setItem("redirect_despues_login", window.location.pathname + window.location.search);
+    return <Navigate to="/login" replace />;
+  }
+  return children;
 };
 
 const App = () => {
@@ -44,7 +57,16 @@ const App = () => {
               </Layout>
             </RutaPrivada>
           } />
-          
+
+          {/* Rutas de Materias */}
+          <Route path="/materias" element={
+            <RutaPrivada>
+              <Layout>
+                <ListaMaterias />
+              </Layout>
+            </RutaPrivada>
+          } />
+
           {/* Rutas de Correlatividades */}
           <Route path="/correlativas" element={
             <RutaPrivada>
@@ -65,7 +87,7 @@ const App = () => {
           <Route path="/Horario" element={
             <RutaPrivada>
               <Layout>
-                <Horario/>
+                <Horario />
               </Layout>
             </RutaPrivada>
           } />
@@ -73,7 +95,7 @@ const App = () => {
           <Route path="/Planificador" element={
             <RutaPrivada>
               <Layout>
-                <Planificador/>
+                <Planificador />
               </Layout>
             </RutaPrivada>
           } />
@@ -126,6 +148,22 @@ const App = () => {
             </RutaPrivada>
           } />
 
+          <Route path="/mis-guardados" element={
+            <RutaPrivada>
+              <Layout>
+                <MisGuardados />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/reportes" element={
+            <RutaPrivada>
+              <Layout>
+                <Reportes />
+              </Layout>
+            </RutaPrivada>
+          } />
+
           {/* Rutas de Foros */}
           <Route path="/foros" element={
             <RutaPrivada>
@@ -147,6 +185,40 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <DetallePublicacion />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          {/* Rutas del repositorio material de estiduo */}
+          <Route path="/repositorio" element={
+            <RutaPrivada>
+              <Layout>
+                <ListaMateriales />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/repositorio/agregar" element={
+            <RutaPrivada>
+              <Layout>
+                <CrearMaterialEstudio />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          <Route path="/repositorio/:id" element={
+            <RutaPrivada>
+              <Layout>
+                <MuroMaterialEstudio />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          {/* Ruta del Asistente IA - Modalidad Académica (US-29) */}
+          <Route path="/asistente-ia" element={
+            <RutaPrivada>
+              <Layout>
+                <ChatbotModalidadAcademica />
               </Layout>
             </RutaPrivada>
           } />
