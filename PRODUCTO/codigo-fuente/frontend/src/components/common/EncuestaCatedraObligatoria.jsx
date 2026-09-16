@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { FiStar, FiCheckCircle, FiShield, FiMessageCircle, FiAward } from 'react-icons/fi';
 
-const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCancelar }) => {
+const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada }) => {
   const [dificultad, setDificultad] = useState(0);
   const [claridadDocente, setClaridadDocente] = useState(0);
   const [disponibilidad, setDisponibilidad] = useState(0);
@@ -52,25 +52,38 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
 
   const renderEstrellas = (valorActual, onChange, label, descripcion) => {
     return (
-      <div className="space-y-1 bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700/60">
+      <div
+        onClick={(e) => {
+          // Si hace clic en la tarjeta fuera del botón de una estrella, desmarca la calificación
+          if (!e.target.closest('button')) {
+            onChange(0);
+          }
+        }}
+        className="space-y-1 bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700/60 select-none cursor-pointer"
+        title="Hacé clic fuera de las estrellas para desmarcar"
+      >
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{label}</label>
-          <span className={`text-xs font-extrabold font-mono ${valorActual > 0 ? 'text-amber-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
+          <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 pointer-events-none">{label}</label>
+          <span className={`text-xs font-extrabold font-mono pointer-events-none ${valorActual > 0 ? 'text-amber-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
             {valorActual > 0 ? `${valorActual}/5` : '-/5'}
           </span>
         </div>
-        <p className="text-[11px] text-zinc-400 dark:text-zinc-500">{descripcion}</p>
+        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 pointer-events-none">{descripcion}</p>
         <div className="flex items-center justify-center gap-3 pt-2 pb-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
-              onClick={() => onChange(star)}
-              className="p-1.5 text-lg transition-transform hover:scale-125 border-none bg-transparent cursor-pointer"
-              title={`Calificar con ${star} estrella${star > 1 ? 's' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                // Si hace clic en la misma estrella, la desmarca (0); si hace clic en otra, selecciona esa estrella
+                onChange(valorActual === star ? 0 : star);
+              }}
+              className="p-1.5 text-lg transition-transform hover:scale-125 border-none bg-transparent cursor-pointer focus:outline-none"
+              title={`Calificar con ${star} estrella${star > 1 ? 's' : ''} (o clic para desmarcar)`}
             >
               <FiStar
-                className={`w-7 h-7 transition-colors ${
+                className={`w-7 h-7 transition-colors pointer-events-none ${
                   valorActual > 0 && star <= valorActual
                     ? 'text-amber-400 fill-amber-400 drop-shadow-xs'
                     : 'text-zinc-300 dark:text-zinc-600 hover:text-amber-300'
@@ -102,14 +115,6 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
               </p>
             </div>
           </div>
-          {onCancelar && (
-            <button
-              onClick={onCancelar}
-              className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-lg p-1 bg-transparent border-none cursor-pointer"
-            >
-              ✕
-            </button>
-          )}
         </div>
 
         {/* Mensaje */}
@@ -178,20 +183,11 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
           </label>
 
           {/* Botones */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-            {onCancelar && (
-              <button
-                type="button"
-                onClick={onCancelar}
-                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition border-none cursor-pointer"
-              >
-                Omitir
-              </button>
-            )}
+          <div className="flex items-center justify-end pt-2 border-t border-zinc-100 dark:border-zinc-800">
             <button
               type="submit"
               disabled={enviando || dificultad === 0 || claridadDocente === 0 || disponibilidad === 0}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition border-none flex items-center gap-1.5 ${
+              className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold shadow-sm transition border-none flex items-center justify-center gap-1.5 ${
                 dificultad === 0 || claridadDocente === 0 || disponibilidad === 0
                   ? 'bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
                   : 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer hover:shadow'

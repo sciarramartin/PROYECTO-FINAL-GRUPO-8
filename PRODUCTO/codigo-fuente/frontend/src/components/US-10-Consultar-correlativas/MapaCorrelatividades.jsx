@@ -577,7 +577,6 @@ const MapaCorrelatividades = () => {
                     materia={nodoSeleccionado}
                     nuevoEstado={estadoPendiente}
                     onCompletada={() => ejecutarCambioEstado(estadoPendiente)}
-                    onCancelar={() => ejecutarCambioEstado(estadoPendiente)}
                 />
             )}
         </div>
