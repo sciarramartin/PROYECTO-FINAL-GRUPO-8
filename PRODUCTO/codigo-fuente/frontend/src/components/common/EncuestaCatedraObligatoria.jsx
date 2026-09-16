@@ -14,16 +14,16 @@ const TooltipInfo = () => {
       >
         !
       </span>
-      <span className="pointer-events-none absolute bottom-full right-0 sm:left-1/2 sm:-translate-x-1/2 mb-2 w-72 p-3 bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-100 text-[11px] leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 border border-zinc-700 font-normal normal-case text-left">
+      <span className="pointer-events-none absolute bottom-full right-0 sm:left-1/2 sm:-translate-x-1/2 mb-2 w-80 p-3 bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-100 text-[11px] leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 border border-zinc-700 font-normal normal-case text-left">
         <span className="font-bold text-amber-300 dark:text-amber-400 block mb-1.5">
-          🔒 Privacidad de tu reseña
+          🔒 Privacidad y destino de tu reseña
         </span>
         <div className="space-y-1.5 text-zinc-300 dark:text-zinc-300 text-[11px]">
           <p>
-            <strong className="text-white">✓ Si es anónima:</strong> Tu reseña se publica sin tu nombre, usuario ni foto de perfil (se muestra como <em>"Estudiante Anónimo"</em>).
+            <strong className="text-white">✓ Si es anónima:</strong> Tu reseña se publica protegiendo tu identidad (aparecerá como <em>"Estudiante Anónimo"</em>, ocultando tu nombre, usuario y foto).
           </p>
           <p>
-            <strong className="text-white">✕ Si no es anónima:</strong> Tu reseña mostrará públicamente tu nombre, usuario y foto de perfil junto a tus valoraciones.
+            <strong className="text-white">✕ Si no es anónima:</strong> Tu reseña, calificaciones y comentarios se publicarán vinculados a tu nombre, usuario y foto de perfil en el módulo de <strong>Métricas y Reseñas de la Materia</strong> (sección de estadísticas e historial de cursada).
           </p>
         </div>
         <span className="absolute top-full right-4 sm:left-1/2 sm:-translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-800"></span>
