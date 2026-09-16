@@ -24,6 +24,7 @@ const MapaCorrelatividades = () => {
     const [modalComisionAbierto, setModalComisionAbierto] = useState(false);
     const [modalEncuestaAbierto, setModalEncuestaAbierto] = useState(false);
     const [estadoPendiente, setEstadoPendiente] = useState(null);
+    const [misEncuestas, setMisEncuestas] = useState([]);
 
     const colores = {
         aprobada: { background: '#d1fae5', border: '#10b981' }, 
@@ -41,15 +42,20 @@ const MapaCorrelatividades = () => {
             const usuarioObj = usuarioInfo ? JSON.parse(usuarioInfo) : null;
             const id_carrera = usuarioObj?.id_carrera || null;
             const userPlanId = usuarioObj?.id_plan_academico || null;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-            const [resPlanes, progresoData] = await Promise.all([
+            const [resPlanes, progresoData, resEncuestas] = await Promise.all([
                 axios.get(`${API_URL}/planes-academicos?id_carrera=${id_carrera}`),
-                obtenerProgreso()
+                obtenerProgreso(),
+                axios.get(`${API_URL}/encuestas-catedra/mis-encuestas`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }).catch(() => ({ data: [] }))
             ]);
 
             setPlanes(resPlanes.data);
             setProgreso(progresoData);
+            setMisEncuestas(resEncuestas.data || []);
 
             let activePlanId = userPlanId;
             if (!activePlanId && resPlanes.data.length > 0) {
@@ -380,8 +386,18 @@ const MapaCorrelatividades = () => {
         if (nuevoEstado === 'Cursando') {
             setModalComisionAbierto(true);
         } else if (nuevoEstado === 'Regular' || nuevoEstado === 'Aprobada') {
-            setEstadoPendiente(nuevoEstado);
-            setModalEncuestaAbierto(true);
+            // Verificar si el alumno ya respondió la encuesta para esta materia,
+            // o si está pasando de Regular a Aprobada (ya evaluó la cursada al quedar Regular).
+            const yaRespondioEncuesta = misEncuestas.some(e => e.id_materia === nodoSeleccionado.id);
+            const esTransicionRegularAAprobada = nodoSeleccionado.estadoActual === 'Regular' && nuevoEstado === 'Aprobada';
+
+            if (yaRespondioEncuesta || esTransicionRegularAAprobada) {
+                // No pedir encuesta duplicada, guardar estado directamente
+                ejecutarCambioEstado(nuevoEstado);
+            } else {
+                setEstadoPendiente(nuevoEstado);
+                setModalEncuestaAbierto(true);
+            }
         } else {
             ejecutarCambioEstado(nuevoEstado);
         }
@@ -576,7 +592,12 @@ const MapaCorrelatividades = () => {
                 <EncuestaCatedraObligatoria
                     materia={nodoSeleccionado}
                     nuevoEstado={estadoPendiente}
-                    onCompletada={() => ejecutarCambioEstado(estadoPendiente)}
+                    onCompletada={() => {
+                        if (nodoSeleccionado) {
+                            setMisEncuestas(prev => [...prev, { id_materia: nodoSeleccionado.id }]);
+                        }
+                        ejecutarCambioEstado(estadoPendiente);
+                    }}
                     onCancelar={() => {
                         setModalEncuestaAbierto(false);
                         setEstadoPendiente(null);
