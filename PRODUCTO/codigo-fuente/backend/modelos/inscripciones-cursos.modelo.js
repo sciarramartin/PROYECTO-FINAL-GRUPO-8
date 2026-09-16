@@ -8,11 +8,9 @@ const inscripcionesCursos = baseDeDatos.define('inscripciones_cursos', {
         autoIncrement: true
     },
     fecha_inscripcion: {
-        type: DataTypes.DATEONLY, 
-        allowNull: true,
-        validate: {
-            is: /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(19|20)[0-9]{2}$/
-        }
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
     },
     id_usuario: {
         type: DataTypes.INTEGER,
@@ -23,12 +21,12 @@ const inscripcionesCursos = baseDeDatos.define('inscripciones_cursos', {
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
-    }, 
+    },
     id_curso: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'cursos', 
+            model: 'cursos',
             key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -39,9 +37,9 @@ const inscripcionesCursos = baseDeDatos.define('inscripciones_cursos', {
     timestamps: false,
 
     indexes: [
-            {
-                fields: ['id_usuario', 'id_curso'] // Índice para búsquedas por usuario
-            }
+        {
+            fields: ['id_usuario', 'id_curso'] // Índice para búsquedas por usuario
+        }
     ]
 });
 

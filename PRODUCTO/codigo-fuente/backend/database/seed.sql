@@ -385,9 +385,10 @@ INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES
 
 
 
-INSERT INTO inscripciones_cursos (fecha_inscripcion, id_usuario, id_curso) VALUES ("25/12/2023", 1, 1);
-INSERT INTO inscripciones_cursos (fecha_inscripcion, id_usuario, id_curso) VALUES ("25/12/2023", 1, 2);
-INSERT INTO inscripciones_cursos (fecha_inscripcion, id_usuario, id_curso) VALUES ("25/12/2023", 2, 3);
+INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 1);
+INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 1);
+INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 2);
+INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (2, 3);
 -- ===============================================================
 -- PERFILES DE USUARIOS SEED
 -- ===============================================================

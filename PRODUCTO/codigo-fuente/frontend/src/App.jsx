@@ -23,6 +23,7 @@ const MuroForo = lazy(() => import('./components/us-foro/MuroForo'));
 const ListaMateriales = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/ListaMateriales'));
 const MuroMaterialEstudio = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/MuroMaterialEstudio'));
 const CrearMaterialEstudio = lazy(() => import('./components/US-18-Agregar-Material-estudio/CrearMaterialEstudio'));
+const ListaMaterias = lazy(() => import('./components/US-84-Historial-Inscripciones/ListaMaterias'));
 
 
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
@@ -53,6 +54,15 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <p className="text-gray-400">Bienvenido al Dashboard</p>
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          {/* Rutas de Materias */}
+          <Route path="/materias" element={
+            <RutaPrivada>
+              <Layout>
+                <ListaMaterias />
               </Layout>
             </RutaPrivada>
           } />
