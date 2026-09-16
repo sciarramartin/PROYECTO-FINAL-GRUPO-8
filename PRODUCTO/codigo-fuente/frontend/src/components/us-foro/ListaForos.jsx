@@ -8,16 +8,13 @@ import {
   FiShare2, 
   FiArrowUp, 
   FiArrowDown, 
-  FiPlus, 
   FiTrendingUp, 
   FiClock, 
   FiChevronRight, 
   FiBookOpen, 
   FiAward, 
-  FiInfo,
   FiFilter
 } from "react-icons/fi";
-import CrearPublicacion from "./CrearPublicacion";
 import CompartirPublicacion from "./CompartirPublicacion";
 
 const ListaForos = () => {
@@ -40,9 +37,6 @@ const ListaForos = () => {
   const [hasMore, setHasMore] = useState(false);
   const [totalFeed, setTotalFeed] = useState(0);
   const [mensajeToast, setMensajeToast] = useState("");
-
-  // Vista de creación de post
-  const [modoCrear, setModoCrear] = useState(false);
 
   // Modal Compartir
   const [compartirData, setCompartirData] = useState({ isOpen: false, post: null });
@@ -192,28 +186,12 @@ const ListaForos = () => {
     }
   };
 
-  // Si estamos en modo crear publicación:
-  if (modoCrear) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <CrearPublicacion
-          materiasDisponibles={materias}
-          onCancelar={() => setModoCrear(false)}
-          onPublicacionCreada={() => {
-            setModoCrear(false);
-            cargarFeed(true);
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
       
       {/* Toast de confirmación */}
       {mensajeToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-semibold animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-semibold animate-fade-in">
           <span>✓</span>
           <span>{mensajeToast}</span>
         </div>
@@ -228,40 +206,27 @@ const ListaForos = () => {
         />
       )}
 
-      {/* Grid Principal de 2 Columnas (70% Centro - 30% Derecha) */}
+      {/* Grid Principal de 2 Columnas (Feed a la izquierda, Materias más ancha a la derecha) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* ========================================================================= */}
-        {/* COLUMNA CENTRAL: FEED DE PUBLICACIONES (lg:col-span-8)                    */}
+        {/* COLUMNA CENTRAL: FEED DE PUBLICACIONES (lg:col-span-7)                    */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-7 space-y-6">
           
           {/* Header Banner del Feed */}
           <div className="bg-gradient-to-r from-indigo-900 via-indigo-850 to-slate-900 rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
             <div className="absolute right-0 top-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-xl">💬</span>
-                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
-                    Comunidad Universitaria • UTN FRC
-                  </span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                  Feed Académico Global
-                </h1>
-                <p className="text-xs sm:text-sm text-indigo-200 mt-1 max-w-xl">
-                  Consultá dudas, compartí apuntes, debatí sobre cátedras y enterate de las últimas novedades.
-                </p>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-xl">💬</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+                  Comunidad Universitaria • UTN FRC
+                </span>
               </div>
-
-              <button
-                onClick={() => setModoCrear(true)}
-                className="px-5 py-3 bg-white hover:bg-indigo-50 text-indigo-900 rounded-2xl text-xs font-extrabold shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 shrink-0 cursor-pointer border-none"
-              >
-                <FiPlus className="w-4 h-4 text-indigo-600 stroke-[3]" />
-                <span>Nueva Publicación</span>
-              </button>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                Feed Académico Global
+              </h1>
             </div>
           </div>
 
@@ -527,9 +492,9 @@ const ListaForos = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* BANDA LATERAL DERECHA: FOROS POR MATERIA (lg:col-span-4 sticky)           */}
+        {/* BANDA LATERAL DERECHA: FOROS POR MATERIA (lg:col-span-5 sticky)           */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-4 space-y-5 lg:sticky lg:top-6">
+        <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-6">
           
           {/* Tarjeta de Foros por Materia */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 space-y-4">
@@ -573,7 +538,7 @@ const ListaForos = () => {
                 <p className="text-xs text-slate-500">No hay materias que coincidan.</p>
               </div>
             ) : (
-              <div className="space-y-1.5 max-h-[440px] overflow-y-auto pr-1">
+              <div className="space-y-1.5 max-h-[480px] overflow-y-auto pr-1">
                 {materiasFiltradas.map((materia) => {
                   const paleta = getColoresCirculo(materia.id);
                   const iniciales = getIniciales(materia.nombre);
@@ -614,17 +579,6 @@ const ListaForos = () => {
                 })}
               </div>
             )}
-
-            {/* Banner de Ayuda / Normas del Foro */}
-            <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-2xl flex gap-2.5 text-[11px] text-slate-600 leading-relaxed">
-              <FiInfo className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-slate-800 mb-0.5">Espacio Colaborativo</p>
-                <p className="text-slate-500">
-                  Participá con respeto y aportá valor a los demás estudiantes.
-                </p>
-              </div>
-            </div>
 
           </div>
 
