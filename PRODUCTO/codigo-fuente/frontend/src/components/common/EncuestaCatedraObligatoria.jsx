@@ -3,9 +3,9 @@ import axios from 'axios';
 import { FiStar, FiCheckCircle, FiShield, FiMessageCircle, FiAward } from 'react-icons/fi';
 
 const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCancelar }) => {
-  const [dificultad, setDificultad] = useState(3);
-  const [claridadDocente, setClaridadDocente] = useState(4);
-  const [disponibilidad, setDisponibilidad] = useState(4);
+  const [dificultad, setDificultad] = useState(0);
+  const [claridadDocente, setClaridadDocente] = useState(0);
+  const [disponibilidad, setDisponibilidad] = useState(0);
   const [esAnonima, setEsAnonima] = useState(true);
   const [comentario, setComentario] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -16,8 +16,15 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
 
   const handleEnviar = async (e) => {
     e.preventDefault();
-    setEnviando(true);
     setError('');
+
+    // Validar que el usuario haya seleccionado un valor para todas las categorías
+    if (dificultad === 0 || claridadDocente === 0 || disponibilidad === 0) {
+      setError('Por favor califica todos los aspectos requeridos (Dificultad, Claridad docente y Disponibilidad) antes de continuar.');
+      return;
+    }
+
+    setEnviando(true);
 
     try {
       await axios.post(
@@ -45,25 +52,28 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
 
   const renderEstrellas = (valorActual, onChange, label, descripcion) => {
     return (
-      <div className="space-y-1 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+      <div className="space-y-1 bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700/60">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-800">{label}</label>
-          <span className="text-xs font-extrabold text-amber-600 font-mono">{valorActual}/5</span>
+          <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{label}</label>
+          <span className={`text-xs font-extrabold font-mono ${valorActual > 0 ? 'text-amber-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
+            {valorActual > 0 ? `${valorActual}/5` : '-/5'}
+          </span>
         </div>
-        <p className="text-[11px] text-slate-400">{descripcion}</p>
+        <p className="text-[11px] text-zinc-400 dark:text-zinc-500">{descripcion}</p>
         <div className="flex items-center gap-1.5 pt-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
               onClick={() => onChange(star)}
-              className="p-1 text-lg transition hover:scale-110 border-none bg-transparent cursor-pointer"
+              className="p-1 text-lg transition hover:scale-125 border-none bg-transparent cursor-pointer"
+              title={`Calificar con ${star} estrella${star > 1 ? 's' : ''}`}
             >
               <FiStar
                 className={`w-6 h-6 transition ${
-                  star <= valorActual
+                  valorActual > 0 && star <= valorActual
                     ? 'text-amber-400 fill-amber-400 drop-shadow-xs'
-                    : 'text-slate-300'
+                    : 'text-zinc-300 dark:text-zinc-600 hover:text-amber-300'
                 }`}
               />
             </button>
@@ -74,28 +84,28 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans">
+      <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col gap-4">
         
         {/* Cabecera */}
-        <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+        <div className="flex items-start justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-black text-lg">
+            <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center font-black text-lg">
               📝
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-slate-800">
+              <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-50">
                 Encuesta de Cátedra al Finalizar Cursada
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
-                Materia: <strong className="text-slate-700">{materia?.nombre}</strong> ({nuevoEstado})
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                Materia: <strong className="text-zinc-700 dark:text-zinc-200">{materia?.nombre}</strong> ({nuevoEstado})
               </p>
             </div>
           </div>
           {onCancelar && (
             <button
               onClick={onCancelar}
-              className="text-slate-400 hover:text-slate-700 text-lg p-1 bg-transparent border-none cursor-pointer"
+              className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-lg p-1 bg-transparent border-none cursor-pointer"
             >
               ✕
             </button>
@@ -103,15 +113,15 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
         </div>
 
         {/* Mensaje */}
-        <div className="p-3 bg-amber-50/60 border border-amber-100/80 rounded-2xl text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
-          <FiAward className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100/80 dark:border-amber-900/40 rounded-2xl text-xs text-amber-900 dark:text-amber-300 leading-relaxed flex items-start gap-2.5">
+          <FiAward className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <span>
             ¡Felicitaciones por completar la cursada! Tu opinión sincera ayuda a los próximos alumnos a conocer la dinámica docente y metodología de evaluación de la cátedra.
           </span>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 text-red-600 border border-red-100 rounded-xl text-xs font-semibold">
+          <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl text-xs font-semibold">
             ⚠️ {error}
           </div>
         )}
@@ -141,7 +151,7 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
 
           {/* Comentario Opcional */}
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">
+            <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">
               Consejo o recomendación para futuros estudiantes (opcional)
             </label>
             <textarea
@@ -149,39 +159,43 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
               value={comentario}
               onChange={(e) => setComentario(e.target.value)}
               placeholder="¿Qué tips le darías a alguien que está por cursar esta materia?..."
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:bg-white focus:border-amber-500 transition text-slate-800 resize-none"
+              className="w-full p-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs outline-none focus:bg-white dark:focus:bg-zinc-900 focus:border-amber-500 transition text-zinc-800 dark:text-zinc-200 resize-none"
             />
           </div>
 
           {/* Checkbox Anónimo */}
-          <label className="flex items-center gap-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer select-none">
+          <label className="flex items-center gap-2.5 p-2.5 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={esAnonima}
               onChange={(e) => setEsAnonima(e.target.checked)}
               className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
             />
-            <div className="flex items-center gap-1.5 text-xs text-slate-700 font-medium">
-              <FiShield className="w-3.5 h-3.5 text-amber-600" />
+            <div className="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
+              <FiShield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span>Publicar mi reseña de forma <strong>100% anónima</strong></span>
             </div>
           </label>
 
           {/* Botones */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
             {onCancelar && (
               <button
                 type="button"
                 onClick={onCancelar}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border-none cursor-pointer"
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition border-none cursor-pointer"
               >
                 Omitir
               </button>
             )}
             <button
               type="submit"
-              disabled={enviando}
-              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow transition border-none cursor-pointer flex items-center gap-1.5"
+              disabled={enviando || dificultad === 0 || claridadDocente === 0 || disponibilidad === 0}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition border-none flex items-center gap-1.5 ${
+                dificultad === 0 || claridadDocente === 0 || disponibilidad === 0
+                  ? 'bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
+                  : 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer hover:shadow'
+              }`}
             >
               <FiCheckCircle className="w-4 h-4" />
               <span>{enviando ? 'Guardando...' : 'Enviar Encuesta y Guardar Estado'}</span>
