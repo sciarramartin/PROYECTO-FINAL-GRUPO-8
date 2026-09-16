@@ -375,11 +375,15 @@ const ListaForos = () => {
                           {/* Badge de Materia vinculada */}
                           <button
                             onClick={() => navigate(`/foros/${pub.id_materia}`)}
-                            className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition border border-indigo-100/80 flex items-center gap-1 cursor-pointer text-[11px]"
+                            title={`Ir al foro exclusivo de ${materiaNombre}`}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition border border-indigo-200/80 cursor-pointer text-[11px] group"
                           >
-                            <FiBookOpen className="w-3 h-3" />
-                            <span className="truncate max-w-[160px]">{materiaNombre}</span>
-                            {materiaCodigo && <span className="text-indigo-400 font-mono">({materiaCodigo})</span>}
+                            <FiBookOpen className="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
+                            <span>Materia: <strong className="font-extrabold">{materiaNombre}</strong></span>
+                            {materiaCodigo && <span className="text-indigo-400 font-mono text-[10px]">({materiaCodigo})</span>}
+                            {pub.Materia?.nivel_anio && (
+                              <span className="text-indigo-400 font-normal text-[10px] hidden sm:inline">• {pub.Materia.nivel_anio}° Año</span>
+                            )}
                           </button>
 
                           {/* Badge de Categoría */}

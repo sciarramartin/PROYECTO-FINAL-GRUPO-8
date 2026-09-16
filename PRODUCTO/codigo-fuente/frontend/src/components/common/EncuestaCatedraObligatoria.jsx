@@ -32,7 +32,7 @@ const TooltipInfo = () => {
   );
 };
 
-const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada }) => {
+const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCancelar }) => {
   const [dificultad, setDificultad] = useState(0);
   const [claridadDocente, setClaridadDocente] = useState(0);
   const [disponibilidad, setDisponibilidad] = useState(0);
@@ -145,6 +145,16 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada }) => {
               </p>
             </div>
           </div>
+          {onCancelar && (
+            <button
+              type="button"
+              onClick={onCancelar}
+              className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-base p-1.5 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition border-none cursor-pointer"
+              title="Cerrar sin guardar"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Mensaje */}

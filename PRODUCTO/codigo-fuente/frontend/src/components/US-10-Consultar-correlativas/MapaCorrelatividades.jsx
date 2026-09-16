@@ -577,6 +577,10 @@ const MapaCorrelatividades = () => {
                     materia={nodoSeleccionado}
                     nuevoEstado={estadoPendiente}
                     onCompletada={() => ejecutarCambioEstado(estadoPendiente)}
+                    onCancelar={() => {
+                        setModalEncuestaAbierto(false);
+                        setEstadoPendiente(null);
+                    }}
                 />
             )}
         </div>
