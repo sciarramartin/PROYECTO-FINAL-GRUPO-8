@@ -322,7 +322,7 @@ router.get('/feed', verificarToken, async (req, res) => {
                 updatedAt: pub.updatedAt,
                 id_materia: pub.id_materia,
                 Autor: pub.Autor,
-                Materia: pub.Materia,
+                Materia: pub.Materia || pub.materium || null,
                 Etiquetas: pub.Etiquetas || [],
                 cantComentarios,
                 esGuardada: !!guardada

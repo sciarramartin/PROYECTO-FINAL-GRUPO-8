@@ -329,10 +329,12 @@ const ListaForos = () => {
           ) : (
             <div className="space-y-4">
               {publicaciones.map((pub) => {
+                const materiaObj = pub.Materia || pub.materium || materias.find((m) => m.id === pub.id_materia) || {};
                 const autorNombre = pub.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido}`.trim() : "Estudiante UTN";
                 const autorUsername = pub.Autor?.nombre_usuario || "usuario";
-                const materiaNombre = pub.Materia?.nombre || "Materia";
-                const materiaCodigo = pub.Materia?.codigo || "";
+                const materiaNombre = materiaObj.nombre || "Materia";
+                const materiaCodigo = materiaObj.codigo || "";
+                const materiaNivel = materiaObj.nivel_anio ? `${materiaObj.nivel_anio}° Año` : "";
                 const fechaFormat = new Date(pub.createdAt).toLocaleDateString("es-AR", {
                   day: "2-digit",
                   month: "short"
@@ -381,8 +383,8 @@ const ListaForos = () => {
                             <FiBookOpen className="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
                             <span>Materia: <strong className="font-extrabold">{materiaNombre}</strong></span>
                             {materiaCodigo && <span className="text-indigo-400 font-mono text-[10px]">({materiaCodigo})</span>}
-                            {pub.Materia?.nivel_anio && (
-                              <span className="text-indigo-400 font-normal text-[10px] hidden sm:inline">• {pub.Materia.nivel_anio}° Año</span>
+                            {materiaNivel && (
+                              <span className="text-indigo-400 font-normal text-[10px] hidden sm:inline">• {materiaNivel}</span>
                             )}
                           </button>
 
