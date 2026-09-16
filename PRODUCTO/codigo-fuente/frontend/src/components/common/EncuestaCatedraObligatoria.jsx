@@ -60,17 +60,17 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
           </span>
         </div>
         <p className="text-[11px] text-zinc-400 dark:text-zinc-500">{descripcion}</p>
-        <div className="flex items-center gap-1.5 pt-1">
+        <div className="flex items-center justify-center gap-3 pt-2 pb-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
               onClick={() => onChange(star)}
-              className="p-1 text-lg transition hover:scale-125 border-none bg-transparent cursor-pointer"
+              className="p-1.5 text-lg transition-transform hover:scale-125 border-none bg-transparent cursor-pointer"
               title={`Calificar con ${star} estrella${star > 1 ? 's' : ''}`}
             >
               <FiStar
-                className={`w-6 h-6 transition ${
+                className={`w-7 h-7 transition-colors ${
                   valorActual > 0 && star <= valorActual
                     ? 'text-amber-400 fill-amber-400 drop-shadow-xs'
                     : 'text-zinc-300 dark:text-zinc-600 hover:text-amber-300'
