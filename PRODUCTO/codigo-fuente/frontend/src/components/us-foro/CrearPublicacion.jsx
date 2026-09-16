@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionCreada, onCancelar }) => {
+const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDisponibles = [], onPublicacionCreada, onCancelar }) => {
+    const [selectedMateriaId, setSelectedMateriaId] = useState(idMateriaActual || '');
     const [titulo, setTitulo] = useState('');
     const [contenido, setContenido] = useState('');
     const [categoria, setCategoria] = useState('Duda'); // 'General', 'Duda', 'Opinión', 'Recurso'
@@ -138,6 +139,12 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
             return;
         }
 
+        const idMateriaFinal = idMateriaActual || selectedMateriaId;
+        if (!idMateriaFinal) {
+            setError('Debes seleccionar una materia para publicar.');
+            return;
+        }
+
         try {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token'); 
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -150,7 +157,7 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    id_materia: idMateriaActual, // Asociado automáticamente
+                    id_materia: Number(idMateriaFinal),
                     titulo: titulo.trim(),
                     contenido: contenido.trim(),
                     categoria: categoria,
@@ -175,23 +182,38 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
             }
             setEtiquetasLista([]);
 
-            // Esperamos 2 segundos para que el usuario vea el cartel verde de éxito y volvemos al muro
+            // Esperamos 1.5 segundos para que el usuario vea el cartel verde de éxito y volvemos
             setTimeout(() => {
                 if (typeof onPublicacionCreada === 'function') {
                     onPublicacionCreada(); 
                 }
-            }, 2000);
+            }, 1500);
 
         } catch (err) {
             setError(err.message);
         }
     };
 
+    const materiaNombreMostrada = idMateriaActual 
+        ? nombreMateriaActual 
+        : (materiasDisponibles.find(m => m.id === Number(selectedMateriaId))?.nombre || "Materia seleccionada");
+
     return (
         <div className="p-6 bg-gray-50 min-h-screen flex flex-col gap-4 font-sans">
             {/* Breadcrumb de navegación superior */}
-            <div className="text-xs text-gray-400 flex gap-2">
-                <span>Foros</span> &gt; <span className="text-indigo-600 font-medium">{nombreMateriaActual}</span> &gt; <span>Crear publicación</span>
+            <div className="flex items-center justify-between">
+                <div className="text-xs text-gray-400 flex gap-2 items-center">
+                    <span>Foros</span> &gt; <span className="text-indigo-600 font-medium">{materiaNombreMostrada}</span> &gt; <span>Crear publicación</span>
+                </div>
+                {onCancelar && (
+                    <button
+                        type="button"
+                        onClick={onCancelar}
+                        className="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 rounded-xl transition cursor-pointer"
+                    >
+                        ✕ Cancelar
+                    </button>
+                )}
             </div>
 
             <div className="flex flex-col gap-1 mb-2">
@@ -222,15 +244,28 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, onPublicacionC
                         <span className="text-[10px] text-gray-400 float-right mt-1">{titulo.length}/100</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Materia (asociada automáticamente)</label>
-                            <input 
-                                type="text" 
-                                value={nombreMateriaActual} 
-                                disabled 
-                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-500 font-medium cursor-not-allowed"
-                            />
+                            <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Materia *</label>
+                            {materiasDisponibles && materiasDisponibles.length > 0 && !idMateriaActual ? (
+                                <select 
+                                    value={selectedMateriaId} 
+                                    onChange={(e) => setSelectedMateriaId(e.target.value)}
+                                    className="w-full p-3 border border-gray-200 rounded-xl text-xs bg-white outline-none focus:border-indigo-500 text-gray-700 font-medium"
+                                >
+                                    <option value="">-- Seleccionar materia --</option>
+                                    {materiasDisponibles.map(m => (
+                                        <option key={m.id} value={m.id}>{m.nombre} ({m.codigo})</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input 
+                                    type="text" 
+                                    value={nombreMateriaActual || "Materia seleccionada"} 
+                                    disabled 
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-500 font-medium cursor-not-allowed"
+                                />
+                            )}
                         </div>
                         <div>
                             <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Categoría / Tipo de post</label>

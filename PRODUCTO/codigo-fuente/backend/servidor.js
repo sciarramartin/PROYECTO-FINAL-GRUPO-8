@@ -45,6 +45,7 @@ const rutasPublicacion = require('./controladores/Foro-controllers/publicacion.c
 const rutasComentario = require('./controladores/Foro-controllers/comentario.controller.js');
 const rutasRepositorio = require('./controladores/material.controlador.js');
 const rutasMaterialCalificaciones = require('./controladores/material-calificacion.controlador.js');
+const rutasEncuestasCatedra = require('./controladores/encuesta-catedra.controlador.js');
 const rutasIA = require('./controladores/ia.controlador.js');
 const ragService = require('./servicios/rag.servicio.js');
 
@@ -126,6 +127,7 @@ app.use('/api/publicaciones', rutasPublicacion);
 app.use('/api/foro/comentarios', rutasComentario);
 app.use('/api/repositorio', rutasRepositorio);
 app.use('/api/materiales-calificaciones', rutasMaterialCalificaciones);
+app.use('/api/encuestas-catedra', rutasEncuestasCatedra);
 app.use('/api/ia', rutasIA);
 
 // Ruta base

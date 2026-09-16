@@ -207,6 +207,30 @@ ForoReporte.belongsTo(ForoComentario, { foreignKey: 'id_comentario', as: 'Coment
 ForoPublicacion.hasMany(ForoEtiqueta, { foreignKey: 'id_publicacion', as: 'Etiquetas', onDelete: 'CASCADE' });
 ForoEtiqueta.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
 
+// Relaciones de Curso e Inscripciones
+const Curso = require('./curso.modelo');
+const inscripcionesCursos = require('./inscripciones-cursos.modelo');
+const { EncuestaCatedra } = require('./EncuestaCatedra');
+
+Curso.belongsTo(Materia, { foreignKey: 'id_materia' });
+Materia.hasMany(Curso, { foreignKey: 'id_materia' });
+
+inscripcionesCursos.belongsTo(Curso, { foreignKey: 'id_curso' });
+Curso.hasMany(inscripcionesCursos, { foreignKey: 'id_curso' });
+
+inscripcionesCursos.belongsTo(Usuario, { foreignKey: 'id_usuario' });
+Usuario.hasMany(inscripcionesCursos, { foreignKey: 'id_usuario' });
+
+// Relaciones de Encuestas de Cátedra
+EncuestaCatedra.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'Estudiante' });
+Usuario.hasMany(EncuestaCatedra, { foreignKey: 'id_usuario' });
+
+EncuestaCatedra.belongsTo(Materia, { foreignKey: 'id_materia', as: 'Materia' });
+Materia.hasMany(EncuestaCatedra, { foreignKey: 'id_materia', as: 'Encuestas' });
+
+EncuestaCatedra.belongsTo(Curso, { foreignKey: 'id_curso', as: 'Curso' });
+Curso.hasMany(EncuestaCatedra, { foreignKey: 'id_curso' });
+
 module.exports = {
     Usuario,
     TipoUsuario,
@@ -226,6 +250,10 @@ module.exports = {
     ForoPublicacionGuardada,
     ForoReporte,
     ForoEtiqueta,
-    MaterialDeEstudioCalificaciones
+    MaterialDeEstudioCalificaciones,
+    Curso,
+    inscripcionesCursos,
+    EncuestaCatedra
 };
+
 

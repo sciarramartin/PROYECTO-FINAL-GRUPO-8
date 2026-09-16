@@ -241,13 +241,40 @@ router.get('/materias/:materiaId/mis-aportes', verificarToken, async (req, res) 
     }
 });
 
-// GET /api/foro/feed - Obtener un feed paginado de todas las materias ordenado por relevancia (votos, luego fecha)
+// GET /api/foro/feed - Obtener un feed paginado de todas las materias con filtros
 router.get('/feed', verificarToken, async (req, res) => {
     try {
+        const { Op } = require('sequelize');
         const limit = parseInt(req.query.limit) || 10;
         const offset = parseInt(req.query.offset) || 0;
+        const { categoria, orden, busqueda, id_materia } = req.query;
+
+        // Construir condiciones WHERE
+        const whereClause = {};
+        if (categoria && categoria !== 'Todas' && categoria !== '') {
+            whereClause.categoria = categoria;
+        }
+        if (id_materia) {
+            whereClause.id_materia = id_materia;
+        }
+        if (busqueda && busqueda.trim()) {
+            const termino = `%${busqueda.trim()}%`;
+            whereClause[Op.or] = [
+                { titulo: { [Op.like]: termino } },
+                { contenido: { [Op.like]: termino } }
+            ];
+        }
+
+        // Orden
+        let orderCondition = [['votos', 'DESC'], ['createdAt', 'DESC']];
+        if (orden === 'reciente') {
+            orderCondition = [['createdAt', 'DESC']];
+        } else if (orden === 'votos') {
+            orderCondition = [['votos', 'DESC'], ['createdAt', 'DESC']];
+        }
 
         const { count, rows: publicaciones } = await ForoPublicacion.findAndCountAll({
+            where: whereClause,
             limit,
             offset,
             include: [
@@ -264,13 +291,18 @@ router.get('/feed', verificarToken, async (req, res) => {
                 },
                 {
                     model: Materia,
-                    attributes: ['id', 'nombre', 'codigo']
+                    attributes: ['id', 'nombre', 'codigo', 'nivel_anio', 'cuatrimestre']
+                },
+                {
+                    model: ForoEtiqueta,
+                    as: 'Etiquetas',
+                    attributes: ['id', 'nombre']
                 }
             ],
-            order: [['votos', 'DESC'], ['createdAt', 'DESC']]
+            order: orderCondition
         });
 
-        // Formatear con la cantidad de comentarios y si está guardada para el usuario actual
+        // Formatear con comentarios, si está guardada, y etiquetas
         const publicacionesConStats = await Promise.all(publicaciones.map(async (pub) => {
             const cantComentarios = await ForoComentario.count({
                 where: { id_publicacion: pub.id }
@@ -291,6 +323,7 @@ router.get('/feed', verificarToken, async (req, res) => {
                 id_materia: pub.id_materia,
                 Autor: pub.Autor,
                 Materia: pub.Materia,
+                Etiquetas: pub.Etiquetas || [],
                 cantComentarios,
                 esGuardada: !!guardada
             };

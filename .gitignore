@@ -20,3 +20,8 @@ npm-debug.log*
 # Antigravity AI Agent files
 .agents/
 skills-lock.json
+
+# Obsidian Brain / Vault Local Privado
+brain-obsidian/
+.obsidian/
+

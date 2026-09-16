@@ -36,7 +36,7 @@ export const obtenerProgreso = async () => {
     return res.data;
 };
 
-export const actualizarEstadoMateria = async (id_materia, estado) => {
-    const res = await api.put(`/progreso/${id_materia}`, { estado });
+export const actualizarEstadoMateria = async (id_materia, estado, id_curso = null) => {
+    const res = await api.put(`/progreso/${id_materia}`, { estado, id_curso });
     return res.data;
 };
