@@ -24,6 +24,7 @@ const ListaMateriales = lazy(() => import('./components/US-16-Consultar-Material
 const MuroMaterialEstudio = lazy(() => import('./components/US-16-Consultar-Materiales-estudio/MuroMaterialEstudio'));
 const CrearMaterialEstudio = lazy(() => import('./components/US-18-Agregar-Material-estudio/CrearMaterialEstudio'));
 const ListaMaterias = lazy(() => import('./components/US-84-Historial-Inscripciones/ListaMaterias'));
+const Dashboard = lazy(() => import('./components/Dashboard'));
 
 
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
@@ -52,9 +53,7 @@ const App = () => {
 
           <Route path="/dashboard" element={
             <RutaPrivada>
-              <Layout>
-                <p className="text-gray-400">Bienvenido al Dashboard</p>
-              </Layout>
+              <Dashboard />
             </RutaPrivada>
           } />
 

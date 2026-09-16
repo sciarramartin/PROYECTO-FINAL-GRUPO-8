@@ -222,8 +222,6 @@ ForoPublicacion.hasMany(ForoEtiqueta, { foreignKey: 'id_publicacion', as: 'Etiqu
 ForoEtiqueta.belongsTo(ForoPublicacion, { foreignKey: 'id_publicacion' });
 
 // Relaciones de Curso e Inscripciones
-const Curso = require('./curso.modelo');
-const inscripcionesCursos = require('./inscripciones-cursos.modelo');
 const { EncuestaCatedra } = require('./EncuestaCatedra');
 
 Curso.belongsTo(Materia, { foreignKey: 'id_materia' });
