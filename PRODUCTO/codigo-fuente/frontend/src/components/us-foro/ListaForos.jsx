@@ -215,8 +215,33 @@ const ListaForos = () => {
         <div className="lg:col-span-7 space-y-6">
           
           {/* Header Banner del Feed */}
-          <div className="bg-gradient-to-r from-indigo-900 via-indigo-850 to-slate-900 rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-900 via-indigo-850 to-slate-900 rounded-3xl p-6 text-white shadow-md relative">
             <div className="absolute right-0 top-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            {/* Ícono de Información con Tooltip en la esquina superior derecha */}
+            <div className="absolute top-5 right-5 z-20">
+              <span className="relative inline-flex items-center group cursor-pointer select-none">
+                <span
+                  aria-label="Información sobre el feed del foro"
+                  className="w-5 h-5 rounded-full border border-indigo-300/60 text-indigo-200 hover:text-white hover:border-white flex items-center justify-center text-[10px] font-black transition-all group-hover:scale-110 bg-indigo-950/40"
+                >
+                  !
+                </span>
+                <span className="pointer-events-none absolute top-full right-0 mt-2 w-72 p-3.5 bg-zinc-900/95 text-white text-xs leading-relaxed rounded-2xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 border border-zinc-700 font-normal normal-case text-left backdrop-blur-sm">
+                  <span className="font-bold text-amber-300 block mb-1">
+                    💡 Dinámica del Feed
+                  </span>
+                  <p className="text-zinc-200 mb-1.5 text-[11px] leading-relaxed">
+                    En este feed se muestran las <strong>publicaciones más relevantes de todas las materias</strong>.
+                  </p>
+                  <p className="text-zinc-400 text-[11px] leading-relaxed">
+                    En caso de querer ir a una materia específica, buscá en la sección <strong>"Foros por Materia"</strong> a la derecha.
+                  </p>
+                  <span className="absolute bottom-full right-1.5 -mb-1 border-4 border-transparent border-b-zinc-900"></span>
+                </span>
+              </span>
+            </div>
+
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-xl">💬</span>
@@ -225,7 +250,7 @@ const ListaForos = () => {
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Foro Académico Global
+                Foro Académico
               </h1>
             </div>
           </div>
