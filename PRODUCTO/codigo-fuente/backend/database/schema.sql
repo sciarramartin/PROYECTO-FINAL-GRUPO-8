@@ -185,10 +185,9 @@ CREATE TABLE inscripciones_cursos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_usuario INTEGER NOT NULL,
     id_curso INTEGER NOT NULL,
-    fecha_inscripcion TEXT NOT NULL DEFAULT 'No Cursada',
+    fecha_inscripcion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE(id_usuario, id_curso)
+    FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 -- AMISTADES
 -- =========================

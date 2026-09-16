@@ -20,6 +20,8 @@ const { MaterialDeEstudio } = require('./MaterialDeEstudio');
 const { MaterialReaccion } = require('./MaterialReaccion');
 const { ForoEtiqueta } = require('./ForoEtiqueta');
 const { MaterialDeEstudioCalificaciones } = require('./MaterialDeEstudioCalificaciones');
+const Curso = require('./curso.modelo');
+const inscripcionesCursos = require('./inscripciones-cursos.modelo');
 
 Usuario.belongsTo(TipoUsuario, {
     foreignKey: 'id_tipo_usuario'
@@ -38,6 +40,18 @@ EstadoMateria.belongsTo(Materia, { foreignKey: 'id_materia' });
 
 Materia.belongsTo(Carrera, { foreignKey: 'id_carrera' });
 Carrera.hasMany(Materia, { foreignKey: 'id_carrera' });
+
+// Relación de Materia con Curso
+Materia.hasMany(Curso, { foreignKey: 'id_materia', as: 'cursos', onDelete: 'CASCADE' });
+Curso.belongsTo(Materia, { foreignKey: 'id_materia' });
+
+// Relación de Curso con inscripciones_cursos
+Curso.hasMany(inscripcionesCursos, { foreignKey: 'id_curso', as: 'inscripciones', onDelete: 'CASCADE' });
+inscripcionesCursos.belongsTo(Curso, { foreignKey: 'id_curso' });
+
+// Relación de Usuario con inscripciones_cursos
+Usuario.hasMany(inscripcionesCursos, { foreignKey: 'id_usuario', onDelete: 'CASCADE' });
+inscripcionesCursos.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
 // Relaciones de Plan Académico
 PlanAcademico.belongsTo(Carrera, { foreignKey: 'id_carrera' });

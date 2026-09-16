@@ -24,6 +24,21 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.get('/:id/estadisticas-inscripciones', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fechaDesde, fechaHasta } = req.query;
+        const estadisticas = await MateriaService.obtenerEstadisticasInscripciones(id, fechaDesde, fechaHasta);
+        res.json(estadisticas);
+    } catch (error) {
+        console.error(error);
+        if (error.message === 'Materia no encontrada') {
+            return res.status(404).json({ error: error.message });
+        }
+        res.status(500).json({ error: 'Hubo un error al obtener las estadísticas de inscripciones.' });
+    }
+});
+
 router.post('/', verificarToken, verificarAdmin, async (req, res) => {
     console.log("POST /materias -> req.body =", req.body);
     try {
