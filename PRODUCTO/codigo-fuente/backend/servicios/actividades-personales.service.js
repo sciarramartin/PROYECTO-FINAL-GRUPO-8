@@ -1,6 +1,4 @@
 const Actividad = require('../modelos/actividad-personal.modelo');
-const { inscripcionesCursos, Curso, Materia, EstadoMateria } = require('../modelos/asociaciones');
-const { Op } = require('sequelize');
 
 const mapToCamelCase = (actividad) => {
     return {
@@ -10,87 +8,21 @@ const mapToCamelCase = (actividad) => {
         duracion: actividad.duracion,
         dias: actividad.dias,
         color: actividad.color,
-        idUsuario: actividad.id_usuario,
-        esCurso: false
+        idUsuario: actividad.id_usuario
     };
 };
 
 const findAllByUserId = async (idUsuario) => {
     try {
-        console.log("Buscando actividades y cursos para el usuario con ID:", idUsuario);
+        console.log("Buscando actividades para el usuario con ID:", idUsuario);
         const registros = await Actividad.findAll({
             where: {
                 id_usuario: idUsuario
             }
         });
-        const actividadesPersonales = registros.map((act) => mapToCamelCase(act));
-
-        // Obtener cursos inscriptos activos del estudiante para sincronizar con el horario (SCRUM-100 & US-84)
-        // Solo mostramos comisiones de materias que el estudiante esté 'Cursando' activamente
-        let cursosInscriptos = [];
-        try {
-            const materiasCursando = await EstadoMateria.findAll({
-                where: { id_usuario: idUsuario, estado: 'Cursando' },
-                attributes: ['id_materia']
-            });
-
-            const idsMateriasCursando = materiasCursando.map(m => m.id_materia);
-
-            if (idsMateriasCursando.length > 0) {
-                const inscripciones = await inscripcionesCursos.findAll({
-                    where: { id_usuario: idUsuario },
-                    include: [
-                        {
-                            model: Curso,
-                            where: { id_materia: { [Op.in]: idsMateriasCursando } },
-                            include: [
-                                {
-                                    model: Materia,
-                                    attributes: ['id', 'nombre', 'codigo']
-                                }
-                            ]
-                        }
-                    ],
-                    order: [
-                        ['fecha_inscripcion', 'DESC'],
-                        ['id', 'DESC']
-                    ]
-                });
-
-                // Seleccionar solo la inscripción más reciente por materia (evita duplicar comisiones si recursó o cambió comisión)
-                const materiasProcesadas = new Set();
-                const inscripcionesActivas = [];
-
-                for (const insc of inscripciones) {
-                    if (insc.curso && !materiasProcesadas.has(insc.curso.id_materia)) {
-                        materiasProcesadas.add(insc.curso.id_materia);
-                        inscripcionesActivas.push(insc);
-                    }
-                }
-
-                cursosInscriptos = inscripcionesActivas.map(i => {
-                    const c = i.curso;
-                    const matObj = c.Materia || c.materium;
-                    const matNombre = matObj ? matObj.nombre : 'Materia';
-                    return {
-                        id: `curso-${c.id}`,
-                        idCurso: c.id,
-                        idMateria: c.id_materia,
-                        nombre: `📚 ${matNombre} (${c.nombre})`,
-                        horaInicio: c.hora_inicio ? c.hora_inicio.slice(0, 5) : '08:00',
-                        duracion: c.duracion || 180,
-                        dias: c.dias || 0,
-                        color: '#818cf8', // Color azul/índigo distinguido para clases académicas
-                        esCurso: true,
-                        idUsuario
-                    };
-                });
-            }
-        } catch (errInsc) {
-            console.error("Error al cargar cursos inscriptos para el horario:", errInsc);
-        }
-
-        return [...actividadesPersonales, ...cursosInscriptos];
+        return registros.map((act) => {
+            return mapToCamelCase(act);
+        });
     } catch (error) {
         throw error;
     }
@@ -134,27 +66,24 @@ const create = async (actividadData, idUsuario) => {
             color = generarColorRandom();
         }
 
+        
         const nuevoRegistro = await Actividad.create({ 
             nombre, 
             hora_inicio: horaInicio, 
             duracion, 
             dias, 
             color,
-            id_usuario: idUsuario
+            id_usuario: idUsuario // O como manejes la autenticación
         });
         return mapToCamelCase(nuevoRegistro);
     } catch (error) {
         throw error;
     }
 };
-
 // PUT - Actualizar una actividad por ID
 const update = async (idUsuario, id, actividadData) => {
     try {
-        if (typeof id === 'string' && id.startsWith('curso-')) {
-            throw new Error('Los cursos académicos se gestionan desde el Grafo de Correlatividades.');
-        }
-
+        // Primero verificamos si la actividad existe
         const actividadExistente = await Actividad.findOne({
             where: {
                 id_usuario: idUsuario,
@@ -184,10 +113,12 @@ const update = async (idUsuario, id, actividadData) => {
             throw new Error('La duración debe ser entre 1 y 1440 minutos');
         }
         
+        // Si no se envía color, mantener el existente o generar uno nuevo
         if (color === undefined) {
             color = actividadExistente.color || generarColorRandom();
         }
         
+        // Preparar datos para actualizar
         const datosActualizar = {};
         if (nombre !== undefined) datosActualizar.nombre = nombre;
         if (horaInicio !== undefined) datosActualizar.hora_inicio = horaInicio;
@@ -195,6 +126,7 @@ const update = async (idUsuario, id, actividadData) => {
         if (dias !== undefined) datosActualizar.dias = dias;
         if (color !== undefined) datosActualizar.color = color;
         
+        // Realizar actualización
         await Actividad.update(datosActualizar, {
             where: {
                 id_usuario: idUsuario,
@@ -202,6 +134,7 @@ const update = async (idUsuario, id, actividadData) => {
             }
         });
         
+        // Obtener actividad actualizada
         const actividadActualizada = await Actividad.findOne({
             where: {
                 id_usuario: idUsuario,
@@ -218,18 +151,7 @@ const update = async (idUsuario, id, actividadData) => {
 // DELETE - Eliminar una actividad por ID
 const deleteById = async (id, idUsuario) => {
     try {
-        if (typeof id === 'string' && id.startsWith('curso-')) {
-            const idCurso = parseInt(id.replace('curso-', ''), 10);
-            await inscripcionesCursos.destroy({
-                where: { id_usuario: idUsuario, id_curso: idCurso }
-            });
-            return { 
-                id: id, 
-                eliminado: true, 
-                mensaje: 'Inscripción a curso removida del horario' 
-            };
-        }
-
+        // Verificar si la actividad existe
         const actividadExistente = await Actividad.findByPk(id);
         
         if (!actividadExistente) {
@@ -240,6 +162,7 @@ const deleteById = async (id, idUsuario) => {
             throw new Error('no permitido');
         }
         
+        // Eliminar la actividad
         await Actividad.destroy({
             where: { id: id }
         });
@@ -255,4 +178,5 @@ const deleteById = async (id, idUsuario) => {
     }
 };
 
+// Exportar todos los métodos
 module.exports = { findAllByUserId, create, update, deleteById };

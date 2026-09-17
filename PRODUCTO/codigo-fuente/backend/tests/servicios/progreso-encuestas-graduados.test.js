@@ -1,6 +1,5 @@
 const ProgresoService = require('../../servicios/progreso.servicio');
 const MateriaService = require('../../servicios/materia.servicio');
-const ActividadesService = require('../../servicios/actividades-personales.service');
 const { EstadoMateria, Materia, Curso, inscripcionesCursos, Usuario, Carrera } = require('../../modelos/asociaciones');
 
 describe('Pruebas Unitarias: Progreso, Sincronización de Comisiones y Graduados (Sprint Activo)', () => {
@@ -54,19 +53,6 @@ describe('Pruebas Unitarias: Progreso, Sincronización de Comisiones y Graduados
         expect(typeof stats.totalRecursados).toBe('number');
         expect(Array.isArray(stats.porComision)).toBe(true);
     });
-
-    test('6. findAllByUserId del horario solo incluye comisiones de materias en estado Cursando', async () => {
-        // Ponemos materia 1 en Regular
-        await ProgresoService.actualizarEstadoMateria(1, 1, 'Regular');
-        let actividades = await ActividadesService.findAllByUserId(1);
-        const cursosEnHorario = actividades.filter(a => a.esCurso && a.idMateria === 1);
-        expect(cursosEnHorario.length).toBe(0);
-
-        // Pasamos materia 1 a Cursando con curso 1
-        await ProgresoService.actualizarEstadoMateria(1, 1, 'Cursando', 1);
-        actividades = await ActividadesService.findAllByUserId(1);
-        const cursosCursando = actividades.filter(a => a.esCurso && a.idMateria === 1);
-        expect(cursosCursando.length).toBe(1);
-    });
 });
+
 
