@@ -1,5 +1,6 @@
 const Actividad = require('../modelos/actividad-personal.modelo');
-const { inscripcionesCursos, Curso, Materia } = require('../modelos/asociaciones');
+const { inscripcionesCursos, Curso, Materia, EstadoMateria } = require('../modelos/asociaciones');
+const { Op } = require('sequelize');
 
 const mapToCamelCase = (actividad) => {
     return {
@@ -24,40 +25,67 @@ const findAllByUserId = async (idUsuario) => {
         });
         const actividadesPersonales = registros.map((act) => mapToCamelCase(act));
 
-        // Obtener cursos inscriptos del estudiante para sincronizar con el horario (SCRUM-100)
+        // Obtener cursos inscriptos activos del estudiante para sincronizar con el horario (SCRUM-100 & US-84)
+        // Solo mostramos comisiones de materias que el estudiante esté 'Cursando' activamente
         let cursosInscriptos = [];
         try {
-            const inscripciones = await inscripcionesCursos.findAll({
-                where: { id_usuario: idUsuario },
-                include: [
-                    {
-                        model: Curso,
-                        include: [
-                            {
-                                model: Materia,
-                                attributes: ['id', 'nombre', 'codigo']
-                            }
-                        ]
-                    }
-                ]
+            const materiasCursando = await EstadoMateria.findAll({
+                where: { id_usuario: idUsuario, estado: 'Cursando' },
+                attributes: ['id_materia']
             });
 
-            cursosInscriptos = inscripciones.filter(i => i.curso).map(i => {
-                const c = i.curso;
-                const matNombre = c.Materia ? c.Materia.nombre : 'Materia';
-                return {
-                    id: `curso-${c.id}`,
-                    idCurso: c.id,
-                    idMateria: c.id_materia,
-                    nombre: `📚 ${matNombre} (${c.nombre})`,
-                    horaInicio: c.hora_inicio ? c.hora_inicio.slice(0, 5) : '08:00',
-                    duracion: c.duracion || 180,
-                    dias: c.dias || 0,
-                    color: '#818cf8', // Color azul/índigo distinguido para clases académicas
-                    esCurso: true,
-                    idUsuario
-                };
-            });
+            const idsMateriasCursando = materiasCursando.map(m => m.id_materia);
+
+            if (idsMateriasCursando.length > 0) {
+                const inscripciones = await inscripcionesCursos.findAll({
+                    where: { id_usuario: idUsuario },
+                    include: [
+                        {
+                            model: Curso,
+                            where: { id_materia: { [Op.in]: idsMateriasCursando } },
+                            include: [
+                                {
+                                    model: Materia,
+                                    attributes: ['id', 'nombre', 'codigo']
+                                }
+                            ]
+                        }
+                    ],
+                    order: [
+                        ['fecha_inscripcion', 'DESC'],
+                        ['id', 'DESC']
+                    ]
+                });
+
+                // Seleccionar solo la inscripción más reciente por materia (evita duplicar comisiones si recursó o cambió comisión)
+                const materiasProcesadas = new Set();
+                const inscripcionesActivas = [];
+
+                for (const insc of inscripciones) {
+                    if (insc.curso && !materiasProcesadas.has(insc.curso.id_materia)) {
+                        materiasProcesadas.add(insc.curso.id_materia);
+                        inscripcionesActivas.push(insc);
+                    }
+                }
+
+                cursosInscriptos = inscripcionesActivas.map(i => {
+                    const c = i.curso;
+                    const matObj = c.Materia || c.materium;
+                    const matNombre = matObj ? matObj.nombre : 'Materia';
+                    return {
+                        id: `curso-${c.id}`,
+                        idCurso: c.id,
+                        idMateria: c.id_materia,
+                        nombre: `📚 ${matNombre} (${c.nombre})`,
+                        horaInicio: c.hora_inicio ? c.hora_inicio.slice(0, 5) : '08:00',
+                        duracion: c.duracion || 180,
+                        dias: c.dias || 0,
+                        color: '#818cf8', // Color azul/índigo distinguido para clases académicas
+                        esCurso: true,
+                        idUsuario
+                    };
+                });
+            }
         } catch (errInsc) {
             console.error("Error al cargar cursos inscriptos para el horario:", errInsc);
         }

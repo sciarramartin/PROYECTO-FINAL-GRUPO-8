@@ -33,7 +33,7 @@ class ProgresoService {
             });
         }
 
-        // Sincronización automática de inscripciones_cursos (SCRUM-100)
+        // Sincronización automática no destructiva de inscripciones_cursos (SCRUM-100 & US-84)
         try {
             const cursosDeMateria = await Curso.findAll({
                 where: { id_materia: Number(id_materia) },
@@ -42,25 +42,26 @@ class ProgresoService {
             const idsCursos = cursosDeMateria.map(c => c.id);
 
             if (estado === 'Cursando') {
+                const hoy = new Date().toISOString().split('T')[0];
                 if (id_curso) {
-                    // Remover inscripciones previas de esta materia para evitar duplicidad de comisiones
-                    if (idsCursos.length > 0) {
-                        await inscripcionesCursos.destroy({
-                            where: {
-                                id_usuario,
-                                id_curso: { [Op.in]: idsCursos }
-                            }
+                    // Inscribir a la comisión seleccionada de forma no destructiva (preserva historial)
+                    const inscripcionExistente = await inscripcionesCursos.findOne({
+                        where: {
+                            id_usuario,
+                            id_curso: Number(id_curso),
+                            fecha_inscripcion: hoy
+                        }
+                    });
+
+                    if (!inscripcionExistente) {
+                        await inscripcionesCursos.create({
+                            id_usuario,
+                            id_curso: Number(id_curso),
+                            fecha_inscripcion: hoy
                         });
                     }
-
-                    // Inscribir a la comisión seleccionada
-                    await inscripcionesCursos.create({
-                        id_usuario,
-                        id_curso: Number(id_curso),
-                        fecha_inscripcion: new Date().toISOString().split('T')[0]
-                    });
                 } else if (idsCursos.length === 1) {
-                    // Si hay un único curso disponible y no se especificó, inscribir por defecto
+                    // Si hay un único curso disponible y no se especificó, inscribir por defecto si no existe
                     const existeInscripcion = await inscripcionesCursos.findOne({
                         where: { id_usuario, id_curso: idsCursos[0] }
                     });
@@ -68,21 +69,13 @@ class ProgresoService {
                         await inscripcionesCursos.create({
                             id_usuario,
                             id_curso: idsCursos[0],
-                            fecha_inscripcion: new Date().toISOString().split('T')[0]
+                            fecha_inscripcion: hoy
                         });
                     }
                 }
-            } else if (['Regular', 'Aprobada', 'No Cursada'].includes(estado)) {
-                // Al finalizar o cancelar cursada, remover automáticamente de comisiones y horario
-                if (idsCursos.length > 0) {
-                    await inscripcionesCursos.destroy({
-                        where: {
-                            id_usuario,
-                            id_curso: { [Op.in]: idsCursos }
-                        }
-                    });
-                }
             }
+            // Al cambiar a 'Regular', 'Aprobada' o 'No Cursada', NO se borran registros de inscripciones_cursos.
+            // El historial se mantiene intacto para el cálculo de recursantes (US-84).
         } catch (syncError) {
             console.error('Error al sincronizar inscripciones_cursos desde el grafo:', syncError);
         }
