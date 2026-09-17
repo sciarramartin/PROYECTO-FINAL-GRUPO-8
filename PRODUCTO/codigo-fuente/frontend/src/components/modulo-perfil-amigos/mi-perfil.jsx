@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FiArrowUp, FiArrowDown, FiMessageSquare, FiBookmark } from "react-icons/fi";
+import InsigniaGraduado from "../common/InsigniaGraduado";
 
 // Avatares predefinidos (Emojis con fondos vibrantes en HSL)
 const AVATARES_PREDEFINIDOS = [
@@ -55,6 +56,7 @@ const MiPerfil = () => {
   // Estados de control
   const [editando, setEditando] = useState(false);
   const [carreras, setCarreras] = useState([]);
+  const [estadoGraduacion, setEstadoGraduacion] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
@@ -206,6 +208,16 @@ const MiPerfil = () => {
       // 1. Cargar lista de carreras
       const carrerasRes = await axios.get(`${apiUrl}/carreras`);
       setCarreras(carrerasRes.data);
+
+      // Cargar estado de graduación para la insignia (US-MET-11)
+      try {
+        const gradRes = await axios.get(`${apiUrl}/progreso/estado-graduacion`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setEstadoGraduacion(gradRes.data);
+      } catch (e) {
+        console.log('No se pudo verificar estado de graduación');
+      }
 
       // 2. Cargar perfil propio del estudiante
       const perfilRes = await axios.get(`${apiUrl}/perfiles/mi-perfil`, {
@@ -897,6 +909,20 @@ const MiPerfil = () => {
               <p className="text-xs text-gray-400 mt-2 text-left">
                 🎓 Carrera Oficial: <span className="font-semibold text-gray-700">{CARRERAS[usuarioInfo.id_carrera] || "No seleccionada"}</span>
               </p>
+
+              {/* Insignia o Progreso de Graduación (US-MET-11) */}
+              {estadoGraduacion?.esGraduado ? (
+                <div className="mt-2">
+                  <InsigniaGraduado carrera={CARRERAS[usuarioInfo.id_carrera]} />
+                </div>
+              ) : estadoGraduacion?.porcentaje > 0 ? (
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="w-28 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-indigo-600 h-1.5 rounded-full transition-all" style={{ width: `${estadoGraduacion.porcentaje}%` }}></div>
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-500">{estadoGraduacion.porcentaje}% ({estadoGraduacion.materiasAprobadas}/{estadoGraduacion.totalMaterias} materias)</span>
+                </div>
+              ) : null}
             </div>
 
             {/* Botón Editar en Esquina Superior Derecha */}

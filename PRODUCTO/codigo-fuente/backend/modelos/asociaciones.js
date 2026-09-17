@@ -242,6 +242,7 @@ module.exports = {
     ForoEtiqueta,
     MaterialDeEstudioCalificaciones,
     Curso,
-    inscripcionesCursos
+    inscripcionesCursos,
+    PlanAcademico
 };
 

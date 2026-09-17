@@ -15,6 +15,53 @@ router.get('/', verificarToken, async (req, res) => {
     }
 });
 
+// Obtener progreso curricular y cumplimiento de electivas del alumno (US-MET-02)
+router.get('/progreso-curricular', verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const progreso = await ProgresoService.obtenerProgresoCurricular(id_usuario);
+        return res.json(progreso);
+    } catch (error) {
+        console.error('Error al obtener progreso curricular:', error);
+        res.status(500).json({ error: 'Error al consultar el progreso curricular.' });
+    }
+});
+
+// Obtener proyección de tiempo estimado de graduación y simulación de ritmo (US-MET-03)
+router.get('/proyeccion-graduacion', verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const proyeccion = await ProgresoService.obtenerProyeccionGraduacion(id_usuario);
+        return res.json(proyeccion);
+    } catch (error) {
+        console.error('Error al obtener proyección de graduación:', error);
+        res.status(500).json({ error: 'Error al calcular la proyección de graduación.' });
+    }
+});
+
+// Obtener estado de graduación del alumno (logueado o por id_usuario en perfil público) (US-MET-11)
+router.get('/estado-graduacion', verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.query.id_usuario ? Number(req.query.id_usuario) : req.usuario.id;
+        const graduacion = await ProgresoService.verificarGraduacion(id_usuario);
+        return res.json(graduacion);
+    } catch (error) {
+        console.error('Error al verificar graduación:', error);
+        res.status(500).json({ error: 'Error al consultar estado de graduación.' });
+    }
+});
+
+// Obtener métricas agregadas de graduados y tasa de egreso (US-MET-11)
+router.get('/metricas-graduados', verificarToken, async (req, res) => {
+    try {
+        const metricas = await ProgresoService.obtenerMetricasGraduados();
+        return res.json(metricas);
+    } catch (error) {
+        console.error('Error al obtener métricas de graduados:', error);
+        res.status(500).json({ error: 'Error al consultar métricas de graduación.' });
+    }
+});
+
 // Actualizar el estado de una materia para el alumno logueado
 router.put('/:id_materia', verificarToken, async (req, res) => {
     try {
@@ -33,7 +80,6 @@ router.put('/:id_materia', verificarToken, async (req, res) => {
     }
 });
 
-
 router.get('/materias-habilitadas', verificarToken, async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -44,4 +90,5 @@ router.get('/materias-habilitadas', verificarToken, async (req, res) => {
         res.status(500).json({ error: 'Error al obtener el progreso del estudiante.' });
     }
 });
+
 module.exports = router;
