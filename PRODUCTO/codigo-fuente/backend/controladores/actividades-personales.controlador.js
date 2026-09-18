@@ -13,6 +13,16 @@ router.get("/", verificarToken, async (req, res) => {
     }
 });
 
+router.get("/estadistica-horas", verificarToken, async (req, res) => {
+    try {
+        const registros = await Actividad.findEstadistics(req.usuario.id, req.usuario.id_carrera);
+        console.log("Registros encontrados:", registros);
+        res.json(registros);
+    } catch (error) {
+        res.status(500).json({ error: 'Hubo un error al obtener los registros.' });
+    }
+});
+
 router.post("/", verificarToken, async (req, res) => {
     try {
 

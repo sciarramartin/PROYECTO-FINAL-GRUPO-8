@@ -6,6 +6,7 @@ import ProgresoCurricularCard from './common/ProgresoCurricularCard';
 import ProyeccionGraduacion from './common/ProyeccionGraduacion';
 import MetricaGraduados from './common/MetricaGraduados';
 import InsigniaGraduado from './common/InsigniaGraduado';
+import MetricaHorario from './common/MetricaHorario';
 import { FiGrid, FiAward, FiBarChart2, FiUser, FiInfo, FiLayers, FiArrowRight } from 'react-icons/fi';
 
 const Dashboard = () => {
@@ -90,6 +91,12 @@ const Dashboard = () => {
 
           {/* US-MET-03: Proyección de Graduación con Simulador Interactivo */}
           <ProyeccionGraduacion />
+        </div>
+
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <MetricaHorario/>
+          </div>
         </div>
 
         {/* ========================================================================= */}

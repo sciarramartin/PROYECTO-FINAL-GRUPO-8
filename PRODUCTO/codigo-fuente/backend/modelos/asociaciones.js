@@ -22,6 +22,7 @@ const { ForoEtiqueta } = require('./ForoEtiqueta');
 const { MaterialDeEstudioCalificaciones } = require('./MaterialDeEstudioCalificaciones');
 const Curso = require('./curso.modelo');
 const inscripcionesCursos = require('./inscripciones-cursos.modelo');
+const Actividad = require('./actividad-personal.modelo');
 
 Usuario.belongsTo(TipoUsuario, {
     foreignKey: 'id_tipo_usuario'
@@ -30,6 +31,9 @@ Usuario.belongsTo(TipoUsuario, {
 Usuario.belongsTo(Carrera, {
     foreignKey: 'id_carrera'
 });
+
+// Relación de usuario y actividades-personales
+Usuario.hasMany(Actividad, { foreignKey: 'id_usuario' });
 
 // Relación de EstadoMateria y Materia
 Usuario.hasMany(EstadoMateria, { foreignKey: 'id_usuario' });
