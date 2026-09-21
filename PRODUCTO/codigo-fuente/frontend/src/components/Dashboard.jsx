@@ -7,12 +7,14 @@ import ProyeccionGraduacion from './common/ProyeccionGraduacion';
 import MetricaGraduados from './common/MetricaGraduados';
 import InsigniaGraduado from './common/InsigniaGraduado';
 import MetricaHorario from './common/MetricaHorario';
-import { FiGrid, FiAward, FiBarChart2, FiUser, FiInfo, FiLayers, FiArrowRight } from 'react-icons/fi';
+import MetricaReputacion from './common/MetricaReputacion';
+import { FiGrid, FiAward, FiBarChart2, FiUser, FiInfo, FiLayers, FiArrowRight, FiFileText } from 'react-icons/fi';
 
 const Dashboard = () => {
   const [estadoGraduacion, setEstadoGraduacion] = useState(null);
   const [usuario, setUsuario] = useState(null);
-
+  const [datosReputacion, setDatosReputacion] = useState(null);
+  
   useEffect(() => {
     const fetchDatosEstudiante = async () => {
       try {
@@ -26,10 +28,17 @@ const Dashboard = () => {
         setEstadoGraduacion(resGrad.data);
 
         // Consultar datos del usuario activo
-        const resUser = await axios.get(`${apiUrl}/usuarios/perfil`, {
+        const resUser = await axios.get(`${apiUrl}/perfiles/mi-perfil`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUsuario(resUser.data);
+        //setUsuario(resUser.data.usuario || resUser.data);
+
+        // const resRep = await axios.get(`${apiUrl}/reputacion/mi-reputacion`, {
+        //   headers: { Authorization: `Bearer ${token}` }
+        // });
+        // setDatosReputacion(resRep.data);
+        
       } catch (err) {
         console.error('Error al cargar datos de usuario en Dashboard:', err);
       }
@@ -75,6 +84,7 @@ const Dashboard = () => {
                 Métricas Personales de Avance y Graduación
               </h2>
             </div>
+            
             {/* Acceso directo a Historial de Cursadas y Recursadas (US-MET-04) */}
             <Link 
               to="/materias" 
@@ -117,6 +127,33 @@ const Dashboard = () => {
 
           {/* US-MET-11: Métricas de Graduados, Tasa de Egreso y Duración de Carrera */}
           <MetricaGraduados />
+        </div>
+
+        {/* ============================================================================ */}
+        {/* SECCIÓN 3: REPUTACIÓN Y COLABORACIÓN EN LA COMUNIDAD (US-METRICA-REPUTACION) */}
+        {/* ============================================================================ */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+              <h2 className="text-sm font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
+                Métricas de Reputación y Aportes Académicos
+              </h2>
+            </div>
+            
+            {/* Acceso directo a la sección de Apuntes y Colaboración */}
+            <Link 
+              to="/apuntes" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 px-3 py-1.5 rounded-lg transition-colors border border-amber-200/60 dark:border-amber-800/50 shadow-xs"
+            >
+              <FiFileText className="w-3.5 h-3.5" />
+              <span>Mis Aportes y Apuntes</span>
+              <FiArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* Métrica de Reputación del Estudiante y Colaboración */}
+          <MetricaReputacion />
         </div>
 
       </div>
