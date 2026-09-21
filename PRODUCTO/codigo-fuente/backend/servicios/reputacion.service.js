@@ -13,9 +13,7 @@ const determinarRango = (puntos) => {
 const calcularReputacionEstudiante = async (idUsuario) => {
     try {
         const anoActual = new Date().getFullYear();
-        //Generamos el string ISO para evitar problemas de tipos de fecha en SQLite
         const inicioAno = `${anoActual}-01-01 00:00:00`;
-
         // 1. Obtener materiales del usuario publicados este año
         const materiales = await MaterialDeEstudio.findAll({
             attributes: ['id', 'descargas', 'fecha_de_publicacion'],
@@ -37,29 +35,29 @@ const calcularReputacionEstudiante = async (idUsuario) => {
 
         // 2. Consultar calificaciones si el usuario subió materiales
         if (idsMateriales.length > 0) {
-            const calificaciones = await MaterialDeEstudioCalificaciones.findAll({
+            const puntuaciones = await MaterialDeEstudioCalificaciones.findAll({
+                attributes: ['puntuacion'],
                 where: {
-                    id_material: {
-                        [Op.in]: idsMateriales
-                    }
+                    id_material: { [Op.in]: idsMateriales }
                 },
                 raw: true
             });
 
-            totalVotos = calificaciones.length;
+            totalVotos = puntuaciones.length;
 
             if (totalVotos > 0) {
-                const sumaPuntuaciones = calificaciones.reduce((acc, cal) => acc + Number(cal.puntuacion || 0), 0);
+                const sumaPuntuaciones = puntuaciones.reduce((acc, c) => acc + Number(c.puntuacion || 0), 0);
                 promedioEstrellas = parseFloat((sumaPuntuaciones / totalVotos).toFixed(1));
             }
         }
-
         // const totalApuntes = 2;
         // const promedioEstrellas = 3.9;
         // const totalVotos = 5;
         // const totalDescargas = 61;
 
         // 3. Cálculo de puntos acumulados
+        // Podés otorgar el bono del promedio solo si el usuario supera un umbral mínimo de valoraciones
+        //const bonoPromedio = totalVotos >= 3 ? Math.round(promedioEstrellas * 15) : 0;
         const puntosAnuales = Math.round(
             (totalApuntes * 10) +
             (promedioEstrellas * 15) +
@@ -89,12 +87,12 @@ const calcularReputacionEstudiante = async (idUsuario) => {
         return {
             puntosAnuales: 0,
             anoLectivo: anoActual,
-            rango: determinarRango(puntosAnuales),
+            rango: determinarRango(0),
             metricasAnuales: {
-                totalApuntes ,
-                promedioEstrellas ,
-                totalVotos ,
-                totalDescargas 
+                totalApuntes: 0,
+                promedioEstrellas: 0,
+                totalVotos: 0,
+                totalDescargas: 0 
             }
         };
     }

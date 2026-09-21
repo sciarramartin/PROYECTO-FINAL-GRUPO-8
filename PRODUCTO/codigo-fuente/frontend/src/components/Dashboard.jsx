@@ -34,10 +34,13 @@ const Dashboard = () => {
         setUsuario(resUser.data);
         //setUsuario(resUser.data.usuario || resUser.data);
 
-        // const resRep = await axios.get(`${apiUrl}/reputacion/mi-reputacion`, {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // });
-        // setDatosReputacion(resRep.data);
+        const resReputacion = await axios.get(`${apiUrl}/reputacion/mi-reputacion`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        //Imprimimos la respuesta exacta que viene de la API
+        console.log('📡 Datos de reputación recibidos del backend:', resReputacion.data);
+        setDatosReputacion(resReputacion.data);
         
       } catch (err) {
         console.error('Error al cargar datos de usuario en Dashboard:', err);
@@ -153,7 +156,7 @@ const Dashboard = () => {
           </div>
 
           {/* Métrica de Reputación del Estudiante y Colaboración */}
-          <MetricaReputacion />
+          <MetricaReputacion datosReputacion={datosReputacion}/>
         </div>
 
       </div>

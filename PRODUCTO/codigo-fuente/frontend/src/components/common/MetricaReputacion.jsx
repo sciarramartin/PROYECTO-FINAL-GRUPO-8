@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { FiAward, FiStar, FiDownload, FiFileText, FiCheckCircle, FiInfo } from 'react-icons/fi';
 
 const TooltipInfo = ({ texto }) => (
@@ -15,13 +16,20 @@ const TooltipInfo = ({ texto }) => (
 );
 
 const MetricaReputacion = ({ datosReputacion, className = '' }) => {
-  // Desestructuramos directamente los datos calculados
+
   const {
-    puntosAnuales = '154,5',
-    anoLectivo = '2026',
-    rango = { nivel: 3, titulo: 'Mentor Comunitario', insignia: '🥇' },
-    metricasAnuales = { totalApuntes: 2, promedioEstrellas: '3.9', totalVotos: 5, totalDescargas: 61 }
+    puntosAnuales = 0,
+    anoLectivo ,
+    rango = {},
+    metricasAnuales = {}
   } = datosReputacion || {};
+
+  const {
+    totalApuntes = 0,
+    promedioEstrellas = '0.0',
+    totalVotos = 0,
+    totalDescargas = 0
+  } = metricasAnuales;
 
   return (
     <div className={`bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm p-6 space-y-5 ${className}`}>
@@ -66,7 +74,7 @@ const MetricaReputacion = ({ datosReputacion, className = '' }) => {
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-black text-zinc-800 dark:text-zinc-100">
-              {metricasAnuales.totalApuntes}
+              {totalApuntes}
             </span>
             <span className="text-[10px] text-zinc-400 dark:text-zinc-500">subidos</span>
           </div>
@@ -79,7 +87,7 @@ const MetricaReputacion = ({ datosReputacion, className = '' }) => {
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-black text-zinc-800 dark:text-zinc-100">
-              {metricasAnuales.promedioEstrellas}
+              {promedioEstrellas}
             </span>
             <span className="text-[10px] text-amber-500">★</span>
           </div>
@@ -92,7 +100,7 @@ const MetricaReputacion = ({ datosReputacion, className = '' }) => {
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-black text-zinc-800 dark:text-zinc-100">
-              {metricasAnuales.totalVotos}
+              {totalVotos}
             </span>
             <span className="text-[10px] text-zinc-400 dark:text-zinc-500">recibidos</span>
           </div>
@@ -105,7 +113,7 @@ const MetricaReputacion = ({ datosReputacion, className = '' }) => {
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-black text-zinc-800 dark:text-zinc-100">
-              {metricasAnuales.totalDescargas}
+              {totalDescargas}
             </span>
             <span className="text-[10px] text-zinc-400 dark:text-zinc-500">totales</span>
           </div>
