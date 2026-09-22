@@ -1,6 +1,7 @@
 const ProgresoService = require('../../servicios/progreso.servicio');
 const MateriaService = require('../../servicios/materia.servicio');
-const { EstadoMateria, Materia, Curso, inscripcionesCursos, Usuario, Carrera } = require('../../modelos/asociaciones');
+const { EstadoMateria, Materia, Curso, inscripcionesCursos, Usuario, Carrera, Actividad } = require('../../modelos/asociaciones');
+const { Op } = require('sequelize');
 
 describe('Pruebas Unitarias: Progreso, Sincronización de Comisiones y Graduados (Sprint Activo)', () => {
 
@@ -82,4 +83,75 @@ describe('Pruebas Unitarias: Progreso, Sincronización de Comisiones y Graduados
             expect(proyeccion).toHaveProperty('mensaje');
         }
     });
+
+    test('8. Debe sincronizar automáticamente la tabla actividad al pasar a Cursando, actualizar al cambiar comisión y eliminar al pasar a Aprobada', async () => {
+        const idUsuario = 1;
+        const idMateria = 1; // Matemática / Análisis Matemático
+        const materia = await Materia.findByPk(idMateria);
+        expect(materia).not.toBeNull();
+
+        // 8.1. Limpiar cualquier actividad previa de esta materia
+        await Actividad.destroy({
+            where: {
+                id_usuario: idUsuario,
+                [Op.or]: [
+                    { nombre: `Cursado: ${materia.nombre}` },
+                    { nombre: { [Op.like]: `Cursado: ${materia.nombre} (%` } }
+                ]
+            }
+        });
+
+        // 8.2. Pasar a 'Cursando' seleccionando la comisión 1 (Turno Mañana: 08:00, duracion: 90, dias: 1)
+        await ProgresoService.actualizarEstadoMateria(idUsuario, idMateria, 'Cursando', 1);
+
+        let actividad = await Actividad.findOne({
+            where: {
+                id_usuario: idUsuario,
+                [Op.or]: [
+                    { nombre: `Cursado: ${materia.nombre}` },
+                    { nombre: { [Op.like]: `Cursado: ${materia.nombre} (%` } }
+                ]
+            }
+        });
+        expect(actividad).not.toBeNull();
+        expect(actividad.hora_inicio).toBe('08:00');
+        expect(actividad.duracion).toBe(90);
+        expect(actividad.dias).toBe(1);
+        expect(actividad.color).toBe('#8B5CF6');
+
+        // 8.3. Cambiar de comisión a la comisión 2 (Turno Tarde: 14:00, duracion: 90, dias: 1)
+        // Debe actualizar el horario de la actividad existente sin duplicarla
+        await ProgresoService.actualizarEstadoMateria(idUsuario, idMateria, 'Cursando', 2);
+
+        const actividadesMateria = await Actividad.findAll({
+            where: {
+                id_usuario: idUsuario,
+                [Op.or]: [
+                    { nombre: `Cursado: ${materia.nombre}` },
+                    { nombre: { [Op.like]: `Cursado: ${materia.nombre} (%` } }
+                ]
+            }
+        });
+        expect(actividadesMateria.length).toBe(1); // Exactamente 1 fila, sin duplicados
+        expect(actividadesMateria[0].hora_inicio).toBe('14:00');
+
+        // 8.4. Pasar a 'Aprobada': Debe eliminar la actividad de la agenda/métricas pero preservar inscripciones_cursos
+        const inscripcionesAntes = await inscripcionesCursos.count({ where: { id_usuario: idUsuario } });
+        await ProgresoService.actualizarEstadoMateria(idUsuario, idMateria, 'Aprobada');
+
+        const actividadEliminada = await Actividad.findOne({
+            where: {
+                id_usuario: idUsuario,
+                [Op.or]: [
+                    { nombre: `Cursado: ${materia.nombre}` },
+                    { nombre: { [Op.like]: `Cursado: ${materia.nombre} (%` } }
+                ]
+            }
+        });
+        expect(actividadEliminada).toBeNull(); // Se liberó el bloque del calendario y métricas
+
+        const inscripcionesDespues = await inscripcionesCursos.count({ where: { id_usuario: idUsuario } });
+        expect(inscripcionesDespues).toBeGreaterThanOrEqual(inscripcionesAntes); // Historial académico intacto
+    });
 });
+

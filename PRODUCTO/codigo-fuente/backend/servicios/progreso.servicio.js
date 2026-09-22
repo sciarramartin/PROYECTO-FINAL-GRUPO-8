@@ -1,4 +1,4 @@
-const { EstadoMateria, Materia, CorrelativaXMateria, Curso, inscripcionesCursos, Usuario, Carrera, PlanAcademico } = require('../modelos/asociaciones');
+const { EstadoMateria, Materia, CorrelativaXMateria, Curso, inscripcionesCursos, Usuario, Carrera, PlanAcademico, Actividad } = require('../modelos/asociaciones');
 const { Op } = require('sequelize');
 
 class ProgresoService {
@@ -78,6 +78,63 @@ class ProgresoService {
             // El historial se mantiene intacto para el cálculo de recursantes (US-84).
         } catch (syncError) {
             console.error('Error al sincronizar inscripciones_cursos desde el grafo:', syncError);
+        }
+
+        // Sincronización automática con la tabla actividad (Horarios y Métrica de Balance Semanal)
+        try {
+            const materia = await Materia.findByPk(Number(id_materia), { attributes: ['id', 'nombre'] });
+            if (materia) {
+                const prefijoActividad = `Cursado: ${materia.nombre}`;
+                const whereActividadMateria = {
+                    id_usuario: Number(id_usuario),
+                    [Op.or]: [
+                        { nombre: prefijoActividad },
+                        { nombre: { [Op.like]: `${prefijoActividad} (%` } }
+                    ]
+                };
+
+                const cursosDeMateria = await Curso.findAll({
+                    where: { id_materia: Number(id_materia) },
+                    attributes: ['id']
+                });
+                const idsCursos = cursosDeMateria.map(c => c.id);
+
+                if (estado === 'Cursando') {
+                    const targetCursoId = id_curso ? Number(id_curso) : (idsCursos.length === 1 ? idsCursos[0] : null);
+                    if (targetCursoId) {
+                        const curso = await Curso.findByPk(targetCursoId);
+                        if (curso) {
+                            const nombreActividad = `${prefijoActividad} (${curso.nombre})`;
+                            const actividadExistente = await Actividad.findOne({ where: whereActividadMateria });
+
+                            if (actividadExistente) {
+                                // Actualizar curso/comisión existente (evita duplicar al cambiar de turno/comisión)
+                                actividadExistente.nombre = nombreActividad;
+                                actividadExistente.hora_inicio = curso.hora_inicio;
+                                actividadExistente.duracion = curso.duracion;
+                                actividadExistente.dias = curso.dias;
+                                actividadExistente.color = '#8B5CF6';
+                                await actividadExistente.save();
+                            } else {
+                                // Crear nueva actividad en el calendario semanal
+                                await Actividad.create({
+                                    nombre: nombreActividad,
+                                    hora_inicio: curso.hora_inicio,
+                                    duracion: curso.duracion,
+                                    dias: curso.dias,
+                                    color: '#8B5CF6',
+                                    id_usuario: Number(id_usuario)
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    // Si pasa a 'Aprobada', 'Regular' o 'No Cursada', desocupar la franja horaria y restar las horas semanales
+                    await Actividad.destroy({ where: whereActividadMateria });
+                }
+            }
+        } catch (actividadSyncError) {
+            console.error('Error al sincronizar actividad en horario desde el grafo:', actividadSyncError);
         }
 
         return registro;

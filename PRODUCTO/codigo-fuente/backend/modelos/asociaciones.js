@@ -270,7 +270,8 @@ module.exports = {
     Curso,
     inscripcionesCursos,
     EncuestaCatedra,
-    PlanAcademico
+    PlanAcademico,
+    Actividad
 };
 
 
