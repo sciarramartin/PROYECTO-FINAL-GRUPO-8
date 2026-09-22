@@ -15,10 +15,34 @@ router.get('/', verificarToken, async (req, res) => {
     }
 });
 
-// Obtener estado de graduación del alumno logueado (SCRUM-90)
-router.get('/estado-graduacion', verificarToken, async (req, res) => {
+// Obtener progreso curricular y cumplimiento de electivas del alumno (US-MET-02)
+router.get('/progreso-curricular', verificarToken, async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
+        const progreso = await ProgresoService.obtenerProgresoCurricular(id_usuario);
+        return res.json(progreso);
+    } catch (error) {
+        console.error('Error al obtener progreso curricular:', error);
+        res.status(500).json({ error: 'Error al consultar el progreso curricular.' });
+    }
+});
+
+// Obtener proyección de tiempo estimado de graduación y simulación de ritmo (US-MET-03)
+router.get('/proyeccion-graduacion', verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const proyeccion = await ProgresoService.obtenerProyeccionGraduacion(id_usuario);
+        return res.json(proyeccion);
+    } catch (error) {
+        console.error('Error al obtener proyección de graduación:', error);
+        res.status(500).json({ error: 'Error al calcular la proyección de graduación.' });
+    }
+});
+
+// Obtener estado de graduación del alumno (logueado o por id_usuario en perfil público) (US-MET-11 / SCRUM-90)
+router.get('/estado-graduacion', verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.query.id_usuario ? Number(req.query.id_usuario) : req.usuario.id;
         const graduacion = await ProgresoService.verificarGraduacion(id_usuario);
         return res.json(graduacion);
     } catch (error) {
@@ -27,7 +51,7 @@ router.get('/estado-graduacion', verificarToken, async (req, res) => {
     }
 });
 
-// Obtener métricas agregadas de graduados y tasa de egreso (SCRUM-90)
+// Obtener métricas agregadas de graduados y tasa de egreso (US-MET-11 / SCRUM-90)
 router.get('/metricas-graduados', verificarToken, async (req, res) => {
     try {
         const metricas = await ProgresoService.obtenerMetricasGraduados();

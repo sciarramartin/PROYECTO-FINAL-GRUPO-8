@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import InsigniaGraduado from "../common/InsigniaGraduado";
 
 // Helper para traducir IDs de carreras a sus nombres oficiales
 const CARRERAS = {
@@ -21,6 +22,7 @@ const PerfilPublico = () => {
 
   const [estudiante, setEstudiante] = useState(null);
   const [perfil, setPerfil] = useState(null);
+  const [estadoGraduacion, setEstadoGraduacion] = useState(null);
   const [relacion, setRelacion] = useState("ninguno"); // ninguno, pendiente_enviada, pendiente_recibida, aceptado, mismo_usuario
   const [cargando, setCargando] = useState(true);
   const [procesandoAccion, setProcesandoAccion] = useState(false);
@@ -74,6 +76,16 @@ const PerfilPublico = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRelacion(relacionRes.data.estado);
+
+      // 3. Obtener estado de graduación (US-MET-11)
+      try {
+        const gradRes = await axios.get(`${apiUrl}/progreso/estado-graduacion?id_usuario=${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setEstadoGraduacion(gradRes.data);
+      } catch (e) {
+        console.log('No se pudo verificar estado de graduación para este perfil');
+      }
       
     } catch (err) {
       console.error("Error al cargar perfil público:", err);
@@ -499,6 +511,13 @@ const PerfilPublico = () => {
             <p className="text-xs text-gray-400 mt-2 text-left">
               🎓 Carrera: <span className="font-semibold text-gray-700">{CARRERAS[estudiante.id_carrera] || "Ingeniería"}</span>
             </p>
+
+            {/* Insignia de Graduado/a (US-MET-11) */}
+            {estadoGraduacion?.esGraduado && (
+              <div className="mt-2 text-left">
+                <InsigniaGraduado carrera={CARRERAS[estudiante.id_carrera]} />
+              </div>
+            )}
           </div>
         </div>
 

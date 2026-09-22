@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FiArrowUp, FiArrowDown, FiMessageSquare, FiBookmark } from "react-icons/fi";
+import InsigniaGraduado from "../common/InsigniaGraduado";
 
 // Avatares predefinidos (Emojis con fondos vibrantes en HSL)
 const AVATARES_PREDEFINIDOS = [
@@ -55,6 +56,7 @@ const MiPerfil = () => {
   // Estados de control
   const [editando, setEditando] = useState(false);
   const [carreras, setCarreras] = useState([]);
+  const [estadoGraduacion, setEstadoGraduacion] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
@@ -92,9 +94,6 @@ const MiPerfil = () => {
   const [cargandoActividad, setCargandoActividad] = useState(true);
   const [tabActiva, setTabActiva] = useState("publicaciones"); // "publicaciones" o "comentarios"
 
-  // Estado de graduación (SCRUM-90)
-  const [estadoGraduacion, setEstadoGraduacion] = useState(null);
-
   useEffect(() => {
     if (token) {
       cargarActividadForo();
@@ -128,12 +127,12 @@ const MiPerfil = () => {
     setError("");
     try {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      
+
       // 1. Cargar lista de carreras
       const carrerasRes = await axios.get(`${apiUrl}/carreras`);
       setCarreras(carrerasRes.data);
 
-      // 2. Cargar estado de graduación (SCRUM-90)
+      // 2. Cargar estado de graduación para la insignia (US-MET-11 / SCRUM-90)
       try {
         const gradRes = await axios.get(`${apiUrl}/progreso/estado-graduacion`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -701,13 +700,10 @@ const MiPerfil = () => {
               <p className="text-xs text-gray-400 mt-2 text-left">
                 🎓 Carrera Oficial: <span className="font-semibold text-gray-700">{CARRERAS[usuarioInfo.id_carrera] || "No seleccionada"}</span>
               </p>
-              
-              {/* Insignia o Progreso de Graduación (SCRUM-90) */}
+              {/* Insignia o Progreso de Graduación (US-MET-11 / SCRUM-90) */}
               {estadoGraduacion?.esGraduado ? (
-                <div className="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-gradient-to-r from-amber-500/15 via-emerald-500/15 to-indigo-500/15 border border-amber-300 rounded-xl text-xs font-black text-amber-700 shadow-2xs">
-                  <span>🎓</span>
-                  <span>Ingeniero/a Graduado/a • UTN FRC</span>
-                  <span className="text-[10px] bg-amber-200/60 text-amber-900 px-1.5 py-0.2 rounded-md font-mono font-bold">100% Aprobado</span>
+                <div className="mt-2">
+                  <InsigniaGraduado carrera={CARRERAS[usuarioInfo.id_carrera]} />
                 </div>
               ) : estadoGraduacion?.porcentaje > 0 ? (
                 <div className="flex items-center gap-2 mt-2">
