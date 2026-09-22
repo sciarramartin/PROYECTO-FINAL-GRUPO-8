@@ -14,7 +14,7 @@ const Dashboard = () => {
   const [estadoGraduacion, setEstadoGraduacion] = useState(null);
   const [usuario, setUsuario] = useState(null);
   const [datosReputacion, setDatosReputacion] = useState(null);
-  
+
   useEffect(() => {
     const fetchDatosEstudiante = async () => {
       try {
@@ -39,7 +39,7 @@ const Dashboard = () => {
 
         console.log('📡 Datos de reputación recibidos del backend:', resReputacion.data);
         setDatosReputacion(resReputacion.data);
-        
+
       } catch (err) {
         console.error('Error al cargar datos de usuario en Dashboard:', err);
       }
@@ -51,7 +51,7 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 font-sans">
-        
+
         {/* Encabezado Principal del Dashboard */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
           <div className="space-y-1">
@@ -85,10 +85,10 @@ const Dashboard = () => {
                 Métricas Personales de Avance y Graduación
               </h2>
             </div>
-            
+
             {/* Acceso directo a Historial de Cursadas y Recursadas (US-MET-04) */}
-            <Link 
-              to="/materias" 
+            <Link
+              to="/materias"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors border border-indigo-200/60 shadow-xs"
             >
               <FiLayers className="w-3.5 h-3.5" />
@@ -106,12 +106,39 @@ const Dashboard = () => {
 
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <MetricaHorario/>
+            <MetricaHorario />
           </div>
         </div>
 
+        {/* ============================================================================ */}
+        {/* SECCIÓN 2: REPUTACIÓN Y COLABORACIÓN EN LA COMUNIDAD (US-METRICA-REPUTACION) */}
+        {/* ============================================================================ */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+              <h2 className="text-sm font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
+                Métricas de Reputación y Aportes Académicos
+              </h2>
+            </div>
+
+            {/* Acceso directo a la sección de Apuntes y Colaboración */}
+            <Link
+              to="/apuntes"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 px-3 py-1.5 rounded-lg transition-colors border border-amber-200/60 dark:border-amber-800/50 shadow-xs"
+            >
+              <FiFileText className="w-3.5 h-3.5" />
+              <span>Mis Aportes y Apuntes</span>
+              <FiArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* Métrica de Reputación del Estudiante y Colaboración */}
+          <MetricaReputacion datosReputacion={datosReputacion} />
+        </div>
+
         {/* ========================================================================= */}
-        {/* 🏛️ SECCIÓN 2: ANALÍTICAS INSTITUCIONALES (US-MET-11)                       */}
+        {/* 🏛️ SECCIÓN 3: ANALÍTICAS INSTITUCIONALES (US-MET-11)                       */}
         {/* ========================================================================= */}
         <div className="space-y-4 pt-6 border-t border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center justify-between">
@@ -128,33 +155,6 @@ const Dashboard = () => {
 
           {/* US-MET-11: Métricas de Graduados, Tasa de Egreso y Duración de Carrera */}
           <MetricaGraduados />
-        </div>
-
-        {/* ============================================================================ */}
-        {/* SECCIÓN 3: REPUTACIÓN Y COLABORACIÓN EN LA COMUNIDAD (US-METRICA-REPUTACION) */}
-        {/* ============================================================================ */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-              <h2 className="text-sm font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
-                Métricas de Reputación y Aportes Académicos
-              </h2>
-            </div>
-            
-            {/* Acceso directo a la sección de Apuntes y Colaboración */}
-            <Link 
-              to="/apuntes" 
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 px-3 py-1.5 rounded-lg transition-colors border border-amber-200/60 dark:border-amber-800/50 shadow-xs"
-            >
-              <FiFileText className="w-3.5 h-3.5" />
-              <span>Mis Aportes y Apuntes</span>
-              <FiArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {/* Métrica de Reputación del Estudiante y Colaboración */}
-          <MetricaReputacion datosReputacion={datosReputacion}/>
         </div>
 
       </div>
