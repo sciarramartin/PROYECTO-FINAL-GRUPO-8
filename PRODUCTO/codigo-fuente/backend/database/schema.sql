@@ -414,4 +414,28 @@ CREATE TABLE foro_etiquetas (
     FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- =========================
+-- ENCUESTAS DE CATEDRA (US-85)
+-- =========================
+CREATE TABLE IF NOT EXISTS encuestas_catedra (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL,
+    id_materia INTEGER NOT NULL,
+    id_curso INTEGER DEFAULT NULL,
+    dificultad INTEGER NOT NULL CHECK (dificultad BETWEEN 1 AND 5),
+    claridad_docente INTEGER NOT NULL CHECK (claridad_docente BETWEEN 1 AND 5),
+    disponibilidad INTEGER NOT NULL CHECK (disponibilidad BETWEEN 1 AND 5),
+    es_anonima BOOLEAN NOT NULL DEFAULT 0,
+    comentario TEXT DEFAULT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_encuestas_materia ON encuestas_catedra(id_materia);
+CREATE INDEX IF NOT EXISTS idx_encuestas_usuario_materia ON encuestas_catedra(id_usuario, id_materia);
+
+
 

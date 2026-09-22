@@ -21,6 +21,7 @@ require('./modelos/MaterialDeEstudio');
 require('./modelos/ForoPublicacionGuardada');
 require('./modelos/ForoReporte');
 require('./modelos/MaterialDeEstudioCalificaciones');
+require('./modelos/EncuestaCatedra');
 
 require('./modelos/asociaciones');
 
