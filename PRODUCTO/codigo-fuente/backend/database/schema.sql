@@ -89,6 +89,8 @@ CREATE TABLE materias (
     cuatrimestre INTEGER NOT NULL,
     
     visible_en_grafo BOOLEAN NOT NULL DEFAULT 1,
+    es_electiva BOOLEAN NOT NULL DEFAULT 0,
+    puntos INTEGER NOT NULL DEFAULT 0,
 
     id_carrera INTEGER,
     id_plan_academico INTEGER,

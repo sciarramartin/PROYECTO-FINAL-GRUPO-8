@@ -153,5 +153,48 @@ describe('Pruebas Unitarias: Progreso, Sincronización de Comisiones y Graduados
         const inscripcionesDespues = await inscripcionesCursos.count({ where: { id_usuario: idUsuario } });
         expect(inscripcionesDespues).toBeGreaterThanOrEqual(inscripcionesAntes); // Historial académico intacto
     });
+
+    test('9. Debe calcular con exactitud los puntos de materias electivas hacia título intermedio (4 pts) y de grado (20 pts) (US-MET-02)', async () => {
+        const idUsuario = 2; // Estudiante Juancho
+
+        // 9.1. Limpiar estados de electivas para el usuario de prueba
+        await EstadoMateria.destroy({
+            where: {
+                id_usuario: idUsuario,
+                id_materia: { [Op.in]: [101, 102, 103, 104, 105, 106, 107, 108] }
+            }
+        });
+
+        let progreso = await ProgresoService.obtenerProgresoCurricular(idUsuario);
+        expect(progreso.electivas.puntosObtenidos).toBe(0);
+        expect(progreso.electivas.cumpleIntermedio).toBe(false);
+        expect(progreso.electivas.cumpleGrado).toBe(false);
+        expect(progreso.electivas.porcentajeIntermedio).toBe(0);
+        expect(progreso.electivas.porcentajeGrado).toBe(0);
+
+        // 9.2. Aprobar electiva de 4 puntos (ELEC-CLD id: 105)
+        await ProgresoService.actualizarEstadoMateria(idUsuario, 105, 'Aprobada');
+
+        progreso = await ProgresoService.obtenerProgresoCurricular(idUsuario);
+        expect(progreso.electivas.puntosObtenidos).toBe(4);
+        expect(progreso.electivas.cumpleIntermedio).toBe(true); // 4/4 pts -> Cumple título intermedio!
+        expect(progreso.electivas.porcentajeIntermedio).toBe(100);
+        expect(progreso.electivas.porcentajeGrado).toBe(20); // 4/20 pts = 20%
+        expect(progreso.electivas.cumpleGrado).toBe(false);
+        expect(progreso.electivas.materiasAprobadas.length).toBe(1);
+        expect(progreso.electivas.materiasAprobadas[0].puntos).toBe(4);
+
+        // 9.3. Aprobar electiva de 2 puntos (ELEC-GRN id: 104) y una de 3 puntos (ELEC-OBJ id: 101)
+        await ProgresoService.actualizarEstadoMateria(idUsuario, 104, 'Aprobada');
+        await ProgresoService.actualizarEstadoMateria(idUsuario, 101, 'Aprobada');
+
+        progreso = await ProgresoService.obtenerProgresoCurricular(idUsuario);
+        expect(progreso.electivas.puntosObtenidos).toBe(9); // 4 + 2 + 3 = 9 pts
+        expect(progreso.electivas.cumpleIntermedio).toBe(true);
+        expect(progreso.electivas.porcentajeIntermedio).toBe(100);
+        expect(progreso.electivas.porcentajeGrado).toBe(45); // 9 / 20 = 45%
+        expect(progreso.electivas.puntosFaltantesGrado).toBe(11); // 20 - 9 = 11 pts restantes
+        expect(progreso.electivas.materiasAprobadas.length).toBe(3);
+    });
 });
 

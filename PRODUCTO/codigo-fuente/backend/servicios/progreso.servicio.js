@@ -163,11 +163,17 @@ class ProgresoService {
         });
 
         const aprobadasIds = new Set(progresos.map(p => p.id_materia));
-        const totalMaterias = materiasPlan.length;
-        const materiasAprobadas = materiasPlan.filter(m => aprobadasIds.has(m.id)).length;
+        const obligatoriasPlan = materiasPlan.filter(m => !m.es_electiva);
+        const electivasPlan = materiasPlan.filter(m => m.es_electiva);
+
+        const totalMaterias = obligatoriasPlan.length;
+        const materiasAprobadas = obligatoriasPlan.filter(m => aprobadasIds.has(m.id)).length;
+
+        const electivasAprobadas = electivasPlan.filter(m => aprobadasIds.has(m.id));
+        const puntosElectivas = electivasAprobadas.reduce((acc, m) => acc + (m.puntos || 0), 0);
 
         // Detectar materia terminal (Proyecto Final / Tesis / PRO5)
-        const materiaTerminal = materiasPlan.find(m => 
+        const materiaTerminal = obligatoriasPlan.find(m => 
             (m.codigo && m.codigo.toUpperCase() === 'PRO5') || 
             (m.nombre && m.nombre.toLowerCase().includes('proyecto final')) || 
             (m.nombre && m.nombre.toLowerCase().includes('práctica')) ||
@@ -175,7 +181,7 @@ class ProgresoService {
         );
 
         const materiaTerminalAprobada = materiaTerminal ? aprobadasIds.has(materiaTerminal.id) : (materiasAprobadas === totalMaterias);
-        const esGraduado = (materiasAprobadas >= totalMaterias) && materiaTerminalAprobada;
+        const esGraduado = (materiasAprobadas >= totalMaterias) && (puntosElectivas >= 20) && materiaTerminalAprobada;
         const porcentaje = Math.min(100, Math.round((materiasAprobadas / totalMaterias) * 100));
 
         return {
@@ -183,6 +189,8 @@ class ProgresoService {
             porcentaje,
             materiasAprobadas,
             totalMaterias,
+            puntosElectivas,
+            cumpleElectivasGrado: puntosElectivas >= 20,
             materiaTerminalAprobada,
             materiaTerminalNombre: materiaTerminal ? materiaTerminal.nombre : 'Proyecto Final',
             carreraId: usuario.id_carrera
@@ -218,13 +226,14 @@ class ProgresoService {
             estadosMap.set(e.id_materia, e.estado);
         });
 
+        const obligatoriasPlan = materiasPlan.filter(m => !m.es_electiva);
+        const electivasPlan = materiasPlan.filter(m => m.es_electiva);
+
         let materiasAprobadas = 0;
         let materiasRegulares = 0;
         let materiasCursando = 0;
-        let electivasAprobadas = 0;
-        const electivasRequeridas = 4; // Requisito estándar de Ordenanza Plan ISI UTN FRC (2 en 4° y 2 en 5°)
 
-        // Agrupación por nivel de año (1° a 5°)
+        // Agrupación por nivel de año (1° a 5°) considerando las materias obligatorias del plan
         const desglosePorNivel = {
             1: { nivel: 1, nombre: '1° Año', total: 0, aprobadas: 0, regulares: 0, cursando: 0, pendientes: 0 },
             2: { nivel: 2, nombre: '2° Año', total: 0, aprobadas: 0, regulares: 0, cursando: 0, pendientes: 0 },
@@ -233,20 +242,17 @@ class ProgresoService {
             5: { nivel: 5, nombre: '5° Año', total: 0, aprobadas: 0, regulares: 0, cursando: 0, pendientes: 0 }
         };
 
-        materiasPlan.forEach(m => {
+        obligatoriasPlan.forEach(m => {
             const nivel = m.nivel_anio || 1;
             if (desglosePorNivel[nivel]) {
                 desglosePorNivel[nivel].total += 1;
             }
 
             const estado = estadosMap.get(m.id) || 'No Cursada';
-            const esElectiva = (m.nombre && m.nombre.toLowerCase().includes('electiv')) || 
-                               (m.codigo && m.codigo.toLowerCase().includes('elec'));
 
             if (estado === 'Aprobada') {
                 materiasAprobadas += 1;
                 if (desglosePorNivel[nivel]) desglosePorNivel[nivel].aprobadas += 1;
-                if (esElectiva) electivasAprobadas += 1;
             } else if (estado === 'Regular') {
                 materiasRegulares += 1;
                 if (desglosePorNivel[nivel]) desglosePorNivel[nivel].regulares += 1;
@@ -256,20 +262,75 @@ class ProgresoService {
             }
         });
 
-        // Completar pendientes y porcentajes por nivel
+        // Completar pendientes y porcentajes por nivel de obligatorias
         Object.keys(desglosePorNivel).forEach(k => {
             const n = desglosePorNivel[k];
             n.pendientes = Math.max(0, n.total - n.aprobadas);
             n.porcentaje = n.total > 0 ? Number(((n.aprobadas / n.total) * 100).toFixed(1)) : 0;
         });
 
-        const totalMaterias = materiasPlan.length;
+        // Cálculo de Puntos de Electivas (US-MET-02)
+        // Reglas UTN ISI: 4 pts para Título Intermedio, 20 pts para Título de Grado (Ingeniería)
+        let puntosElectivasAprobadas = 0;
+        const electivasAprobadasList = [];
+        const electivasCursandoList = [];
+        const electivasRegularesList = [];
+
+        electivasPlan.forEach(m => {
+            const estado = estadosMap.get(m.id) || 'No Cursada';
+            const puntos = m.puntos || 3;
+            const item = {
+                id: m.id,
+                codigo: m.codigo,
+                nombre: m.nombre,
+                nivel_anio: m.nivel_anio,
+                cuatrimestre: m.cuatrimestre,
+                puntos,
+                estado
+            };
+
+            if (estado === 'Aprobada') {
+                puntosElectivasAprobadas += puntos;
+                electivasAprobadasList.push(item);
+            } else if (estado === 'Cursando') {
+                electivasCursandoList.push(item);
+            } else if (estado === 'Regular') {
+                electivasRegularesList.push(item);
+            }
+        });
+
+        const puntosRequeridosIntermedio = 4;
+        const puntosRequeridosGrado = 20;
+
+        const porcentajeIntermedio = Math.min(100, Math.round((puntosElectivasAprobadas / puntosRequeridosIntermedio) * 100));
+        const porcentajeGrado = Math.min(100, Math.round((puntosElectivasAprobadas / puntosRequeridosGrado) * 100));
+
+        const totalMaterias = obligatoriasPlan.length;
         const materiasPendientes = Math.max(0, totalMaterias - materiasAprobadas);
         const porcentajeAvance = totalMaterias > 0 
             ? Number(((materiasAprobadas / totalMaterias) * 100).toFixed(1)) 
             : 0;
 
-        const cumplimientoElectivas = Math.min(100, Math.round((electivasAprobadas / electivasRequeridas) * 100));
+        const electivasResumen = {
+            puntosObtenidos: puntosElectivasAprobadas,
+            puntosRequeridosIntermedio,
+            puntosRequeridosGrado,
+            porcentajeIntermedio,
+            porcentajeGrado,
+            cumpleIntermedio: puntosElectivasAprobadas >= puntosRequeridosIntermedio,
+            cumpleGrado: puntosElectivasAprobadas >= puntosRequeridosGrado,
+            puntosFaltantesIntermedio: Math.max(0, puntosRequeridosIntermedio - puntosElectivasAprobadas),
+            puntosFaltantesGrado: Math.max(0, puntosRequeridosGrado - puntosElectivasAprobadas),
+            materiasAprobadas: electivasAprobadasList,
+            materiasCursando: electivasCursandoList,
+            materiasRegulares: electivasRegularesList,
+            totalAprobadas: electivasAprobadasList.length,
+            // Campos de compatibilidad:
+            aprobadas: electivasAprobadasList.length,
+            requeridas: 4,
+            porcentaje: porcentajeGrado,
+            texto: `${puntosElectivasAprobadas} / ${puntosRequeridosGrado} pts (Grado) • ${puntosElectivasAprobadas >= puntosRequeridosIntermedio ? '4/4 pts (Intermedio listo)' : `${puntosElectivasAprobadas}/4 pts (Intermedio)`}`
+        };
 
         return {
             totalMaterias,
@@ -278,12 +339,7 @@ class ProgresoService {
             materiasCursando,
             materiasPendientes,
             porcentajeAvance,
-            electivas: {
-                aprobadas: electivasAprobadas,
-                requeridas: electivasRequeridas,
-                porcentaje: cumplimientoElectivas,
-                texto: `${electivasAprobadas} de ${electivasRequeridas} materias electivas obligatorias`
-            },
+            electivas: electivasResumen,
             desglosePorNivel: Object.values(desglosePorNivel),
             carreraNombre: usuario.Carrera ? usuario.Carrera.nombre : 'Ingeniería en Sistemas',
             planNombre: usuario.PlanAcademico ? usuario.PlanAcademico.nombre : 'Plan 2023'

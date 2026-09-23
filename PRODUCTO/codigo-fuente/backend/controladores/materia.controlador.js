@@ -42,14 +42,14 @@ router.get('/:id/estadisticas-inscripciones', async (req, res) => {
 router.post('/', verificarToken, verificarAdmin, async (req, res) => {
     console.log("POST /materias -> req.body =", req.body);
     try {
-        const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = req.body;
+        const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo, es_electiva, puntos } = req.body;
 
         if (!codigo || !nombre || !nivel_anio || !cuatrimestre || !id_carrera) {
             return res.status(400).json({ error: 'El código, nombre, nivel/año, cuatrimestre y carrera son obligatorios.' });
         }
 
         const nuevaMateria = await MateriaService.crearMateria({
-            codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo
+            codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo, es_electiva, puntos
         });
 
         res.status(201).json(nuevaMateria);
