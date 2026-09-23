@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
-import { FiCheckCircle, FiBookOpen, FiClock, FiLayers, FiAward } from 'react-icons/fi';
+import { FiCheckCircle, FiBookOpen, FiClock, FiLayers, FiAward, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -28,6 +28,7 @@ const ProgresoCurricularCard = () => {
   const [progreso, setProgreso] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [mostrarDetalleElectivas, setMostrarDetalleElectivas] = useState(false);
 
   useEffect(() => {
     const fetchProgreso = async () => {
@@ -200,33 +201,103 @@ const ProgresoCurricularCard = () => {
             </div>
           </div>
 
-          {/* Sub-métrica Específica: Cumplimiento de Electivas (US-MET-02) */}
-          <div className="p-4 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/30 rounded-2xl border border-amber-200/80 dark:border-amber-900/50 space-y-2">
+          {/* Sub-métrica Específica: Cumplimiento de Electivas por Sistema de Puntos (US-MET-02) */}
+          <div className="p-4 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/30 rounded-2xl border border-amber-200/80 dark:border-amber-900/50 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <FiAward className="text-amber-600 dark:text-amber-400 text-sm" />
                 <span className="text-xs font-bold text-amber-900 dark:text-amber-300">
-                  Cumplimiento de Materias Electivas
+                  Materias Electivas y Créditos Académicos
                 </span>
-                <TooltipInfo texto="Métrica oficial del plan de estudios: se requieren 4 materias electivas obligatorias en el ciclo superior (4° y 5° año) para optar al título de grado." />
+                <TooltipInfo texto="Las electivas otorgan puntos académicos al aprobarse (en su mayoría 3 pts, con una de 4 pts y otra de 2 pts). Para el Título Intermedio se requieren 4 puntos y para el Título de Grado (Ingeniería) se requieren 20 puntos." />
               </div>
-              <span className="text-xs font-extrabold text-amber-700 dark:text-amber-400">
-                {progreso.electivas.texto}
+              <span className="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 rounded-full text-xs font-extrabold border border-amber-200 dark:border-amber-800">
+                {progreso.electivas?.puntosObtenidos || 0} pts obtenidos
               </span>
             </div>
 
-            {/* Barra de progreso de electivas */}
-            <div className="w-full bg-amber-100 dark:bg-amber-950/50 rounded-full h-2.5 overflow-hidden">
-              <div
-                className="bg-amber-500 h-2.5 rounded-full transition-all duration-500"
-                style={{ width: `${progreso.electivas.porcentaje}%` }}
-              ></div>
+            {/* Doble barra de progreso: Intermedio (4 pts) y Grado (20 pts) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {/* Título Intermedio */}
+              <div className="bg-white/70 dark:bg-zinc-800/60 p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-900/40">
+                <div className="flex items-center justify-between text-[11px] mb-1">
+                  <span className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
+                    🎓 Título Intermedio
+                  </span>
+                  <span className="font-extrabold text-amber-700 dark:text-amber-400">
+                    {progreso.electivas?.puntosObtenidos || 0} / 4 pts
+                  </span>
+                </div>
+                <div className="w-full bg-amber-100 dark:bg-amber-950/50 rounded-full h-2 overflow-hidden mb-1">
+                  <div
+                    className="bg-amber-500 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${progreso.electivas?.porcentajeIntermedio || 0}%` }}
+                  ></div>
+                </div>
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  {progreso.electivas?.cumpleIntermedio
+                    ? '✅ Requisito de 4 pts completado'
+                    : `Faltan ${progreso.electivas?.puntosFaltantesIntermedio} pts para el título intermedio`}
+                </span>
+              </div>
+
+              {/* Título de Grado */}
+              <div className="bg-white/70 dark:bg-zinc-800/60 p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-900/40">
+                <div className="flex items-center justify-between text-[11px] mb-1">
+                  <span className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
+                    🏛️ Título de Grado
+                  </span>
+                  <span className="font-extrabold text-indigo-700 dark:text-indigo-400">
+                    {progreso.electivas?.puntosObtenidos || 0} / 20 pts
+                  </span>
+                </div>
+                <div className="w-full bg-indigo-100 dark:bg-indigo-950/50 rounded-full h-2 overflow-hidden mb-1">
+                  <div
+                    className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${progreso.electivas?.porcentajeGrado || 0}%` }}
+                  ></div>
+                </div>
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  {progreso.electivas?.cumpleGrado
+                    ? '🎓 Requisito de 20 pts completado'
+                    : `Faltan ${progreso.electivas?.puntosFaltantesGrado} pts para graduarte de Ingeniero`}
+                </span>
+              </div>
             </div>
-            <p className="text-[11px] text-amber-800/80 dark:text-amber-400/80">
-              {progreso.electivas.aprobadas === progreso.electivas.requeridas
-                ? '✅ Cumplimiento completo de créditos electivos requeridos.'
-                : `Faltan ${progreso.electivas.requeridas - progreso.electivas.aprobadas} materias electivas para cumplir el requisito de graduación.`}
-            </p>
+
+            {/* Desplegable o Detalle de Electivas Aprobadas */}
+            {progreso.electivas?.materiasAprobadas && progreso.electivas.materiasAprobadas.length > 0 ? (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setMostrarDetalleElectivas(!mostrarDetalleElectivas)}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-amber-800 dark:text-amber-400 hover:underline cursor-pointer"
+                >
+                  <span>
+                    {mostrarDetalleElectivas ? 'Ocultar electivas aprobadas' : `Ver ${progreso.electivas.materiasAprobadas.length} electiva(s) aprobada(s)`}
+                  </span>
+                  {mostrarDetalleElectivas ? <FiChevronUp className="text-xs" /> : <FiChevronDown className="text-xs" />}
+                </button>
+
+                {mostrarDetalleElectivas && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {progreso.electivas.materiasAprobadas.map((e) => (
+                      <span
+                        key={e.id}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60 rounded-lg text-[10px] font-medium"
+                      >
+                        <FiCheckCircle className="text-emerald-500 text-[10px]" />
+                        {e.nombre} <strong className="text-amber-700 dark:text-amber-400">({e.puntos} pts)</strong>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-[10px] text-amber-800/80 dark:text-amber-400/80">
+                ℹ️ Las materias electivas aprobadas sumarán puntos automáticamente al registrar su estado en el sistema.
+              </p>
+            )}
           </div>
         </div>
       </div>

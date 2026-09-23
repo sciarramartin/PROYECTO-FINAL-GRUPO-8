@@ -25,7 +25,7 @@ export default function ModuloCorrelativas() {
   const [nuevoPlanNombre, setNuevoPlanNombre] = useState('');
 
   const [formData, setFormData] = useState({
-    codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: '', id_plan_academico: '', visible_en_grafo: false
+    codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: '', id_plan_academico: '', visible_en_grafo: false, es_electiva: false, puntos: 0
   });
 
   const cargarCarreras = async () => {
@@ -98,7 +98,7 @@ export default function ModuloCorrelativas() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : (name === 'puntos' ? Number(value) : value) });
   };
 
   const handleCheckboxChange = (id) => {
@@ -151,7 +151,7 @@ export default function ModuloCorrelativas() {
         await api.post('/materias', formData);
       }
       setEditandoId(null);
-      setFormData({ codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: selectedCarreraId, id_plan_academico: selectedPlanId, visible_en_grafo: false });
+      setFormData({ codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: selectedCarreraId, id_plan_academico: selectedPlanId, visible_en_grafo: false, es_electiva: false, puntos: 0 });
       
       const res = await api.get(`/materias?id_plan_academico=${selectedPlanId}`);
       setMaterias(res.data);
@@ -170,6 +170,8 @@ export default function ModuloCorrelativas() {
       id_carrera: materia.id_carrera || selectedCarreraId,
       id_plan_academico: materia.id_plan_academico || selectedPlanId,
       visible_en_grafo: !!materia.visible_en_grafo,
+      es_electiva: !!materia.es_electiva,
+      puntos: materia.puntos || 0,
       correlativas: materia.correlativas ? materia.correlativas.map(c => ({
         id: c.id,
         tipo_requisito: c.correlativas_x_materia?.tipo_requisito || 'regular'
@@ -190,7 +192,7 @@ export default function ModuloCorrelativas() {
 
   const cancelarEdicion = () => {
     setEditandoId(null);
-    setFormData({ codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: selectedCarreraId, id_plan_academico: selectedPlanId, visible_en_grafo: false });
+    setFormData({ codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: selectedCarreraId, id_plan_academico: selectedPlanId, visible_en_grafo: false, es_electiva: false, puntos: 0 });
   };
 
   return (
@@ -256,6 +258,11 @@ export default function ModuloCorrelativas() {
                           {!materia.visible_en_grafo && (
                             <span className="ml-2 text-xs font-semibold inline-block py-1 px-2 uppercase rounded text-amber-600 bg-amber-200 uppercase last:mr-0 mr-1">Oculta</span>
                           )}
+                          {materia.es_electiva && (
+                            <span className="ml-1 text-[10px] font-bold inline-block py-0.5 px-1.5 rounded text-purple-700 bg-purple-100">
+                              Electiva ({materia.puntos || 3} pts)
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-slate-600 truncate max-w-[200px]" title={materia.nombre}>{materia.nombre}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
@@ -302,19 +309,52 @@ export default function ModuloCorrelativas() {
                   <input type="text" name="nombre" required value={formData.nombre} onChange={handleInputChange} className="w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" placeholder="Ej: Álgebra y Geometría" />
                 </div>
                 
-                <div>
-                  <label className="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      name="visible_en_grafo"
-                      checked={!!formData.visible_en_grafo}
-                      onChange={handleInputChange}
-                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="font-semibold">Visible en Grafo para Alumnos</span>
-                  </label>
-                  <p className="text-xs text-slate-500 ml-6 mt-1">Si está desmarcado, los alumnos no verán esta materia en su mapa de correlatividades.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        name="visible_en_grafo"
+                        checked={!!formData.visible_en_grafo}
+                        onChange={handleInputChange}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="font-semibold">Visible en Grafo</span>
+                    </label>
+                    <p className="text-xs text-slate-500 ml-6 mt-1">Si está desmarcado, no se ve en el mapa de correlatividades.</p>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        name="es_electiva"
+                        checked={!!formData.es_electiva}
+                        onChange={handleInputChange}
+                        className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="font-semibold text-purple-900">Materia Electiva</span>
+                    </label>
+                    <p className="text-xs text-slate-500 ml-6 mt-1">Suma puntos para la métrica de electivas (US-MET-02).</p>
+                  </div>
                 </div>
+
+                {formData.es_electiva && (
+                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <label className="block text-sm font-medium text-purple-900 mb-1">Puntos Académicos que Otorga *</label>
+                    <input 
+                      type="number" 
+                      name="puntos" 
+                      min="1" 
+                      max="10" 
+                      value={formData.puntos || 3} 
+                      onChange={handleInputChange} 
+                      className="w-full rounded-md border-purple-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2 border bg-white" 
+                      placeholder="Ej: 3 (o 2 o 4)" 
+                    />
+                    <p className="text-xs text-purple-700 mt-1">Valores estándar: 3 pts (la mayoría), 4 pts (ej. Cloud) o 2 pts (ej. Green Software).</p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Cuatrimestre *</label>

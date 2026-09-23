@@ -30,6 +30,16 @@ const Materia = baseDeDatos.define('materia', {
         allowNull: false,
         defaultValue: false
     },
+    es_electiva: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    puntos: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
     id_carrera: {
         type: DataTypes.INTEGER,
         allowNull: true // True temporalmente para compatibilidad hacia atrás

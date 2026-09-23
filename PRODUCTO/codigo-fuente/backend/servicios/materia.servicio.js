@@ -27,7 +27,7 @@ const tieneCiclo = async (materiaDestinoId, materiaRequisitoId, visitados = new 
 };
 
 const crearMateria = async (datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo, es_electiva, puntos } = datos;
 
     // 1. Crear la materia principal
     const nuevaMateria = await Materia.create({
@@ -37,7 +37,9 @@ const crearMateria = async (datos) => {
         cuatrimestre,
         id_carrera,
         id_plan_academico,
-        visible_en_grafo: visible_en_grafo ?? false
+        visible_en_grafo: visible_en_grafo ?? false,
+        es_electiva: es_electiva ?? false,
+        puntos: puntos ?? 0
     });
 
     // 2. Si vienen correlativas, asignarlas con su tipo de requisito
@@ -86,7 +88,7 @@ const obtenerPorId = async (id) => {
 };
 
 const actualizarMateria = async (id, datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo, es_electiva, puntos } = datos;
     const materia = await Materia.findByPk(id);
 
     if (!materia) throw new Error('Materia no encontrada');
@@ -99,7 +101,9 @@ const actualizarMateria = async (id, datos) => {
         cuatrimestre: cuatrimestre || materia.cuatrimestre,
         id_carrera: id_carrera !== undefined ? id_carrera : materia.id_carrera,
         id_plan_academico: id_plan_academico !== undefined ? id_plan_academico : materia.id_plan_academico,
-        visible_en_grafo: visible_en_grafo !== undefined ? visible_en_grafo : materia.visible_en_grafo
+        visible_en_grafo: visible_en_grafo !== undefined ? visible_en_grafo : materia.visible_en_grafo,
+        es_electiva: es_electiva !== undefined ? es_electiva : materia.es_electiva,
+        puntos: puntos !== undefined ? puntos : materia.puntos
     });
 
     // Actualizar correlativas si se envían

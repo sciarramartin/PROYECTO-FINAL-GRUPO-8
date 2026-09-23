@@ -171,6 +171,17 @@ INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, 
 INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo) VALUES (35, 'SSI5', 'Seguridad en los Sistemas de Información', 5, 1, 1, 1);
 INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo) VALUES (36, 'PFI5', 'Proyecto Final', 5, 3, 1, 1);
 
+-- MATERIAS ELECTIVAS (Plan ISI - Sistema de Puntos)
+-- La mayoría otorgan 3 puntos, una de 4 puntos (Cloud) y una de 2 puntos (Green Software)
+INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo, es_electiva, puntos) VALUES (101, 'ELEC-OBJ', 'Desarrollo de Software con Objetos', 4, 1, 1, 0, 1, 3);
+INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo, es_electiva, puntos) VALUES (102, 'ELEC-UX', 'Experiencia de Usuario (UX/UI)', 4, 2, 1, 0, 1, 3);
+INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo, es_electiva, puntos) VALUES (103, 'ELEC-SEC', 'Seguridad en Aplicaciones Web', 4, 2, 1, 0, 1, 3);
+INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo, es_electiva, puntos) VALUES (104, 'ELEC-GRN', 'Green Software y Sustentabilidad', 5, 1, 1, 0, 1, 2);
+INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo, es_electiva, puntos) VALUES (105, 'ELEC-CLD', 'Arquitectura y Desarrollo Cloud', 5, 1, 1, 0, 1, 4);
+INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo, es_electiva, puntos) VALUES (106, 'ELEC-DAT', 'Gobierno de Datos y Big Data', 5, 1, 1, 0, 1, 3);
+INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo, es_electiva, puntos) VALUES (107, 'ELEC-PLN', 'Procesamiento de Lenguaje Natural', 5, 2, 1, 0, 1, 3);
+INSERT INTO materias (id, codigo, nombre, nivel_anio, cuatrimestre, id_carrera, visible_en_grafo, es_electiva, puntos) VALUES (108, 'ELEC-VJG', 'Desarrollo de Videojuegos', 5, 2, 1, 0, 1, 3);
+
 -- ===============================================================
 -- CORRELATIVAS
 -- ===============================================================
@@ -309,6 +320,31 @@ INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tip
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 12, 'aprobada');
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 20, 'aprobada');
 INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (36, 23, 'aprobada');
+
+-- CORRELATIVAS DE MATERIAS ELECTIVAS
+-- (101) Desarrollo de Software con Objetos (3 pts) (requiere Paradigmas de Programación id 14 regular)
+INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (101, 14, 'regular');
+
+-- (102) UX/UI (3 pts) (requiere Desarrollo de Software id 20 regular)
+INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (102, 20, 'regular');
+
+-- (103) Seguridad en Aplicaciones Web (3 pts) (requiere Desarrollo de Software id 20 regular)
+INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (103, 20, 'regular');
+
+-- (104) Green Software y Sustentabilidad (2 pts) (requiere Calidad de Software id 25 regular)
+INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (104, 25, 'regular');
+
+-- (105) Arquitectura y Desarrollo Cloud (4 pts) (requiere Redes de Datos id 26 regular)
+INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (105, 26, 'regular');
+
+-- (106) Big Data (3 pts) (requiere Base de Datos id 19 aprobada)
+INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (106, 19, 'aprobada');
+
+-- (107) Procesamiento de Lenguaje Natural (3 pts) (requiere Inteligencia Artificial id 31 regular)
+INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (107, 31, 'regular');
+
+-- (108) Desarrollo de Videojuegos (3 pts) (requiere Desarrollo de Software id 20 aprobada)
+INSERT INTO correlativas_x_materia (materia_base_id, materia_correlativa_id, tipo_requisito) VALUES (108, 20, 'aprobada');
 
 
 -- ==============================================
