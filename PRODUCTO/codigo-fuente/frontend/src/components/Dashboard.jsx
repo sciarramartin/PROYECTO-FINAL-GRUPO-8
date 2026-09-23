@@ -8,6 +8,7 @@ import MetricaGraduados from './common/MetricaGraduados';
 import InsigniaGraduado from './common/InsigniaGraduado';
 import MetricaHorario from './common/MetricaHorario';
 import MetricaReputacion from './common/MetricaReputacion';
+import MetricaMaterialEstudio from './common/MetricaMaterialEstudio';
 import { FiGrid, FiAward, FiBarChart2, FiUser, FiInfo, FiLayers, FiArrowRight, FiFileText } from 'react-icons/fi';
 
 const Dashboard = () => {
@@ -155,6 +156,9 @@ const Dashboard = () => {
 
           {/* US-MET-11: Métricas de Graduados, Tasa de Egreso y Duración de Carrera */}
           <MetricaGraduados />
+
+          {/* US-MET-89: Métricas de Material de Estudio */}
+          <MetricaMaterialEstudio />
         </div>
 
       </div>
