@@ -2,6 +2,7 @@
 const { Perfil } = require('../modelos/Perfil');
 const { Usuario } = require('../modelos/Usuario');
 const { Carrera } = require('../modelos/Carrera');
+const { calcularReputacionEstudiante } = require('./reputacion.service');
 
 // Helper para verificar usuario
 const verificarUsuarioExiste = async (id) => {
@@ -39,6 +40,8 @@ const obtenerOcrearPerfil = async (idUsuario) => {
             mostrar_contacto: true
         }
     });
+
+    const reputacion = await calcularReputacionEstudiante(userId);
 
     return {
         usuario,

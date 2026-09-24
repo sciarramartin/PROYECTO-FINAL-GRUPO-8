@@ -3,6 +3,8 @@ import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
 import axios from 'axios';
 import { obtenerTodas, obtenerProgreso, actualizarEstadoMateria } from './services';
+import ModalSeleccionarComision from './ModalSeleccionarComision';
+import EncuestaCatedraObligatoria from '../common/EncuestaCatedraObligatoria';
 
 const MapaCorrelatividades = () => {
     const containerRef = useRef(null);
@@ -19,6 +21,10 @@ const MapaCorrelatividades = () => {
 
     const [nodoSeleccionado, setNodoSeleccionado] = useState(null);
     const [guardando, setGuardando] = useState(false);
+    const [modalComisionAbierto, setModalComisionAbierto] = useState(false);
+    const [modalEncuestaAbierto, setModalEncuestaAbierto] = useState(false);
+    const [estadoPendiente, setEstadoPendiente] = useState(null);
+    const [misEncuestas, setMisEncuestas] = useState([]);
 
     const colores = {
         aprobada: { background: '#d1fae5', border: '#10b981' }, 
@@ -36,15 +42,20 @@ const MapaCorrelatividades = () => {
             const usuarioObj = usuarioInfo ? JSON.parse(usuarioInfo) : null;
             const id_carrera = usuarioObj?.id_carrera || null;
             const userPlanId = usuarioObj?.id_plan_academico || null;
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-            const [resPlanes, progresoData] = await Promise.all([
+            const [resPlanes, progresoData, resEncuestas] = await Promise.all([
                 axios.get(`${API_URL}/planes-academicos?id_carrera=${id_carrera}`),
-                obtenerProgreso()
+                obtenerProgreso(),
+                axios.get(`${API_URL}/encuestas-catedra/mis-encuestas`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }).catch(() => ({ data: [] }))
             ]);
 
             setPlanes(resPlanes.data);
             setProgreso(progresoData);
+            setMisEncuestas(resEncuestas.data || []);
 
             let activePlanId = userPlanId;
             if (!activePlanId && resPlanes.data.length > 0) {
@@ -369,11 +380,34 @@ const MapaCorrelatividades = () => {
         }
     }, [progreso]);
 
-    const handleCambiarEstado = async (nuevoEstado) => {
+    const handleCambiarEstado = (nuevoEstado) => {
+        if (!nodoSeleccionado) return;
+        
+        if (nuevoEstado === 'Cursando') {
+            setModalComisionAbierto(true);
+        } else if (nuevoEstado === 'Regular' || nuevoEstado === 'Aprobada') {
+            // Verificar si el alumno ya respondió la encuesta para esta materia,
+            // o si está pasando de Regular a Aprobada (ya evaluó la cursada al quedar Regular).
+            const yaRespondioEncuesta = misEncuestas.some(e => e.id_materia === nodoSeleccionado.id);
+            const esTransicionRegularAAprobada = nodoSeleccionado.estadoActual === 'Regular' && nuevoEstado === 'Aprobada';
+
+            if (yaRespondioEncuesta || esTransicionRegularAAprobada) {
+                // No pedir encuesta duplicada, guardar estado directamente
+                ejecutarCambioEstado(nuevoEstado);
+            } else {
+                setEstadoPendiente(nuevoEstado);
+                setModalEncuestaAbierto(true);
+            }
+        } else {
+            ejecutarCambioEstado(nuevoEstado);
+        }
+    };
+
+    const ejecutarCambioEstado = async (nuevoEstado, idCurso = null) => {
         if (!nodoSeleccionado) return;
         try {
             setGuardando(true);
-            await actualizarEstadoMateria(nodoSeleccionado.id, nuevoEstado);
+            await actualizarEstadoMateria(nodoSeleccionado.id, nuevoEstado, idCurso);
             
             setProgreso(prev => {
                 const existe = prev.find(p => p.id_materia === nodoSeleccionado.id);
@@ -382,7 +416,9 @@ const MapaCorrelatividades = () => {
                 }
                 return [...prev, { id_materia: nodoSeleccionado.id, estado: nuevoEstado }];
             });
-            // El useEffect de arriba se encargará de refrescar la UI
+            setModalComisionAbierto(false);
+            setModalEncuestaAbierto(false);
+            setEstadoPendiente(null);
 
         } catch (err) {
             console.error(err);
@@ -540,6 +576,33 @@ const MapaCorrelatividades = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Modal Selección de Comisión (SCRUM-100) */}
+            {modalComisionAbierto && nodoSeleccionado && (
+                <ModalSeleccionarComision
+                    materia={nodoSeleccionado}
+                    onConfirmar={(idCurso) => ejecutarCambioEstado('Cursando', idCurso)}
+                    onCancelar={() => setModalComisionAbierto(false)}
+                />
+            )}
+
+            {/* Modal Encuesta de Cátedra Obligatoria (SCRUM-85) */}
+            {modalEncuestaAbierto && nodoSeleccionado && estadoPendiente && (
+                <EncuestaCatedraObligatoria
+                    materia={nodoSeleccionado}
+                    nuevoEstado={estadoPendiente}
+                    onCompletada={() => {
+                        if (nodoSeleccionado) {
+                            setMisEncuestas(prev => [...prev, { id_materia: nodoSeleccionado.id }]);
+                        }
+                        ejecutarCambioEstado(estadoPendiente);
+                    }}
+                    onCancelar={() => {
+                        setModalEncuestaAbierto(false);
+                        setEstadoPendiente(null);
+                    }}
+                />
             )}
         </div>
     );

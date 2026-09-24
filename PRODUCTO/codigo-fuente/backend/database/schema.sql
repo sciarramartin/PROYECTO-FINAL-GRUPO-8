@@ -1,15 +1,6 @@
 PRAGMA foreign_keys = ON;
 
 -- =========================
--- TIPOS DE USUARIO
--- =========================
-
-CREATE TABLE tipos_usuarios (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL UNIQUE
-);
-
--- =========================
 -- CARRERAS
 -- =========================
 
@@ -31,6 +22,15 @@ CREATE TABLE planes_academicos (
         REFERENCES carreras(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
+);
+
+-- =========================
+-- TIPOS DE USUARIO
+-- =========================
+
+CREATE TABLE tipos_usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL UNIQUE
 );
 
 -- =========================
@@ -89,6 +89,8 @@ CREATE TABLE materias (
     cuatrimestre INTEGER NOT NULL,
     
     visible_en_grafo BOOLEAN NOT NULL DEFAULT 1,
+    es_electiva BOOLEAN NOT NULL DEFAULT 0,
+    puntos INTEGER NOT NULL DEFAULT 0,
 
     id_carrera INTEGER,
     id_plan_academico INTEGER,
@@ -185,10 +187,9 @@ CREATE TABLE inscripciones_cursos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_usuario INTEGER NOT NULL,
     id_curso INTEGER NOT NULL,
-    fecha_inscripcion TEXT NOT NULL DEFAULT 'No Cursada',
+    fecha_inscripcion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE(id_usuario, id_curso)
+    FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 -- AMISTADES
 -- =========================
@@ -338,4 +339,105 @@ CREATE TABLE foro_reacciones (
     UNIQUE(id_publicacion, id_usuario),
     UNIQUE(id_comentario, id_usuario)
 );
+
+
+-- =========================
+-- MATERIALES DE ESTUDIO
+-- =========================
+CREATE TABLE materiales_estudio (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ubicacion TEXT NOT NULL,
+    id_materia INTEGER NOT NULL,
+    titulo TEXT NOT NULL,
+    etiquetas TEXT,
+    id_usuario INTEGER NOT NULL,
+    fecha_de_publicacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    likes INTEGER DEFAULT 0,
+    descargas INTEGER DEFAULT 0,
+    FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =======================================
+-- CALIFICACIONES DE MATERIALES DE ESTUDIO
+-- =======================================
+CREATE TABLE material_calificaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_material INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    puntuacion INTEGER NOT NULL CHECK (puntuacion >= 1 AND puntuacion <= 5),
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_material) REFERENCES materiales_estudio(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_material, id_usuario) -- un mismo estudiante solo puede tener 1 voto guardado por cada material
+);
+
+-- =========================
+-- PUBLICACIONES GUARDADAS
+-- =========================
+CREATE TABLE foro_publicaciones_guardadas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL,
+    id_publicacion INTEGER NOT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE(id_usuario, id_publicacion)
+);
+
+-- =========================
+-- REPORTES DE PUBLICACIONES
+-- =========================
+CREATE TABLE foro_reportes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario_reportador INTEGER NOT NULL,
+    id_publicacion INTEGER NOT NULL,
+    id_comentario INTEGER DEFAULT NULL,
+    descripcion TEXT NOT NULL,
+    resuelto BOOLEAN NOT NULL DEFAULT 0,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario_reportador) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_comentario) REFERENCES foro_comentarios(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- ETIQUETAS DE PUBLICACIONES
+-- =========================
+CREATE TABLE foro_etiquetas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_publicacion INTEGER NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_publicacion) REFERENCES foro_publicaciones(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- ENCUESTAS DE CATEDRA (US-85)
+-- =========================
+CREATE TABLE IF NOT EXISTS encuestas_catedra (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL,
+    id_materia INTEGER NOT NULL,
+    id_curso INTEGER DEFAULT NULL,
+    dificultad INTEGER NOT NULL CHECK (dificultad BETWEEN 1 AND 5),
+    claridad_docente INTEGER NOT NULL CHECK (claridad_docente BETWEEN 1 AND 5),
+    disponibilidad INTEGER NOT NULL CHECK (disponibilidad BETWEEN 1 AND 5),
+    es_anonima BOOLEAN NOT NULL DEFAULT 0,
+    comentario TEXT DEFAULT NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_materia) REFERENCES materias(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_curso) REFERENCES cursos(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_encuestas_materia ON encuestas_catedra(id_materia);
+CREATE INDEX IF NOT EXISTS idx_encuestas_usuario_materia ON encuestas_catedra(id_usuario, id_materia);
+
+
 

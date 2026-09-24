@@ -1,12 +1,15 @@
 // servicios/MateriaService.js
 const { Materia } = require('../modelos/materia.modelo');
+const Curso = require('../modelos/curso.modelo');
+const inscripcionesCursos = require('../modelos/inscripciones-cursos.modelo');
+const { Op } = require('sequelize');
 
 // Algoritmo recursivo DFS para buscar ciclos.
 // Verifica si 'materiaRequisitoId' requiere en algún punto a 'materiaDestinoId'
 const tieneCiclo = async (materiaDestinoId, materiaRequisitoId, visitados = new Set()) => {
     // Si la materia destino y el requisito son la misma, es un ciclo directo.
     if (materiaDestinoId === materiaRequisitoId) return true;
-    
+
     // Si ya visitamos este nodo en este camino, cortamos para no entrar en bucle infinito.
     if (visitados.has(materiaRequisitoId)) return false;
     visitados.add(materiaRequisitoId);
@@ -24,7 +27,7 @@ const tieneCiclo = async (materiaDestinoId, materiaRequisitoId, visitados = new 
 };
 
 const crearMateria = async (datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo, es_electiva, puntos } = datos;
 
     // 1. Crear la materia principal
     const nuevaMateria = await Materia.create({
@@ -34,7 +37,9 @@ const crearMateria = async (datos) => {
         cuatrimestre,
         id_carrera,
         id_plan_academico,
-        visible_en_grafo: visible_en_grafo ?? false
+        visible_en_grafo: visible_en_grafo ?? false,
+        es_electiva: es_electiva ?? false,
+        puntos: puntos ?? 0
     });
 
     // 2. Si vienen correlativas, asignarlas con su tipo de requisito
@@ -48,12 +53,12 @@ const crearMateria = async (datos) => {
         }
         // Construimos el array de relaciones para la tabla intermedia
         for (const req of correlativas) {
-            await nuevaMateria.addCorrelativa(req.id, { through: { tipo_requisito: req.tipo_requisito || 'regular' }});
+            await nuevaMateria.addCorrelativa(req.id, { through: { tipo_requisito: req.tipo_requisito || 'regular' } });
         }
     }
 
-    return await Materia.findByPk(nuevaMateria.id, { 
-        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    return await Materia.findByPk(nuevaMateria.id, {
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } }
     });
 };
 
@@ -75,15 +80,15 @@ const obtenerTodas = async (id_carrera, id_plan_academico) => {
 };
 
 const obtenerPorId = async (id) => {
-    const materia = await Materia.findByPk(id, { 
-        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    const materia = await Materia.findByPk(id, {
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } }
     });
     if (!materia) throw new Error('Materia no encontrada');
     return materia;
 };
 
 const actualizarMateria = async (id, datos) => {
-    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo } = datos;
+    const { codigo, nombre, nivel_anio, cuatrimestre, correlativas, id_carrera, id_plan_academico, visible_en_grafo, es_electiva, puntos } = datos;
     const materia = await Materia.findByPk(id);
 
     if (!materia) throw new Error('Materia no encontrada');
@@ -96,7 +101,9 @@ const actualizarMateria = async (id, datos) => {
         cuatrimestre: cuatrimestre || materia.cuatrimestre,
         id_carrera: id_carrera !== undefined ? id_carrera : materia.id_carrera,
         id_plan_academico: id_plan_academico !== undefined ? id_plan_academico : materia.id_plan_academico,
-        visible_en_grafo: visible_en_grafo !== undefined ? visible_en_grafo : materia.visible_en_grafo
+        visible_en_grafo: visible_en_grafo !== undefined ? visible_en_grafo : materia.visible_en_grafo,
+        es_electiva: es_electiva !== undefined ? es_electiva : materia.es_electiva,
+        puntos: puntos !== undefined ? puntos : materia.puntos
     });
 
     // Actualizar correlativas si se envían
@@ -110,12 +117,12 @@ const actualizarMateria = async (id, datos) => {
         // Limpiamos las viejas y agregamos las nuevas con su tipo
         await materia.setCorrelativas([]);
         for (const req of correlativas) {
-            await materia.addCorrelativa(req.id, { through: { tipo_requisito: req.tipo_requisito || 'regular' }});
+            await materia.addCorrelativa(req.id, { through: { tipo_requisito: req.tipo_requisito || 'regular' } });
         }
     }
 
-    return await Materia.findByPk(id, { 
-        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } } 
+    return await Materia.findByPk(id, {
+        include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } }
     });
 };
 
@@ -128,10 +135,88 @@ const eliminarMateria = async (id) => {
     return true;
 };
 
+const obtenerEstadisticasInscripciones = async (id_materia, fechaDesde, fechaHasta) => {
+    const materia = await Materia.findByPk(id_materia);
+    if (!materia) throw new Error('Materia no encontrada');
+
+    // Obtener cursos de la materia
+    const cursos = await Curso.findAll({ where: { id_materia } });
+    if (!cursos || cursos.length === 0) return { total: 0, porComision: [] };
+
+    const idsCursos = cursos.map(c => c.id);
+
+    const inscripcionesRaw = await inscripcionesCursos.findAll({
+        where: { id_curso: idsCursos },
+        include: [{ model: Curso, as: 'curso', attributes: ['nombre'] }]
+    });
+
+    const inscripciones = inscripcionesRaw.map(i => i.toJSON());
+
+    // Agrupar por usuario para determinar recursados
+    const inscripcionesPorUsuario = {};
+    inscripciones.forEach(ins => {
+        if (!inscripcionesPorUsuario[ins.id_usuario]) {
+            inscripcionesPorUsuario[ins.id_usuario] = [];
+        }
+        inscripcionesPorUsuario[ins.id_usuario].push(ins);
+    });
+
+    // Marcar recursados (la última no es recursado, las anteriores sí)
+    Object.values(inscripcionesPorUsuario).forEach(insList => {
+        insList.sort((a, b) => new Date(a.fecha_inscripcion) - new Date(b.fecha_inscripcion));
+        insList.forEach((ins, index) => {
+            ins.esRecursado = index !== insList.length - 1;
+        });
+    });
+
+    // Filtrar por fechas en memoria
+    let inscripcionesFiltradas = inscripciones;
+    if (fechaDesde || fechaHasta) {
+        const dDesde = fechaDesde ? new Date(fechaDesde) : new Date('1900-01-01');
+        const dHasta = fechaHasta ? new Date(fechaHasta) : new Date('2100-01-01');
+        dHasta.setHours(23, 59, 59, 999);
+
+        inscripcionesFiltradas = inscripciones.filter(ins => {
+            const fecha = new Date(ins.fecha_inscripcion);
+            return fecha >= dDesde && fecha <= dHasta;
+        });
+    }
+
+    const total = inscripcionesFiltradas.length;
+    let totalRecursados = 0;
+
+    // Agrupar por comisión (nombre del curso)
+    const porComision = {};
+    inscripcionesFiltradas.forEach(ins => {
+        const nombreComision = ins.curso ? ins.curso.nombre : 'Desconocida';
+        if (!porComision[nombreComision]) {
+            porComision[nombreComision] = { total: 0, recursados: 0 };
+        }
+        porComision[nombreComision].total += 1;
+        if (ins.esRecursado) {
+            porComision[nombreComision].recursados += 1;
+            totalRecursados += 1;
+        }
+    });
+
+    const comisionesArray = Object.keys(porComision).map(nombre => ({
+        comision: nombre,
+        cantidad: porComision[nombre].total,
+        recursados: porComision[nombre].recursados
+    }));
+
+    return {
+        total,
+        totalRecursados,
+        porComision: comisionesArray
+    };
+};
+
 module.exports = {
     crearMateria,
     obtenerTodas,
     obtenerPorId,
     actualizarMateria,
-    eliminarMateria
+    eliminarMateria,
+    obtenerEstadisticasInscripciones
 };

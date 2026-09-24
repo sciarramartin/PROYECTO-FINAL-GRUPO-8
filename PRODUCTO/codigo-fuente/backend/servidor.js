@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ override: true });
 const express = require('express');
 const cors = require('cors');
 
@@ -17,6 +17,11 @@ require('./modelos/Perfil');
 require('./modelos/ForoPublicacion');
 require('./modelos/ForoComentario');
 require('./modelos/ForoReaccion');
+require('./modelos/MaterialDeEstudio');
+require('./modelos/ForoPublicacionGuardada');
+require('./modelos/ForoReporte');
+require('./modelos/MaterialDeEstudioCalificaciones');
+require('./modelos/EncuestaCatedra');
 
 require('./modelos/asociaciones');
 
@@ -27,7 +32,7 @@ const rutasActividadesFlexibles = require('./controladores/actividades-flexibles
 const rutasCursos = require('./controladores/curso.controlador.js');
 const rutasInscripciones = require('./controladores/inscripciones-cursos.controlador.js');
 const rutasUsuarios = require('./controladores/controlador-usuarios.js');
-const rutasAuth = require('./controladores/auth.controller.js');       
+const rutasAuth = require('./controladores/auth.controller.js');
 const rutasMateria = require('./controladores/materia.controlador');
 const rutasCarreras = require('./controladores/controlador-carreras.js'); // para probar resgitro
 const rutasProgreso = require('./controladores/progreso.controlador.js');
@@ -39,6 +44,13 @@ const rutasPerfil = require('./controladores/perfil.controller.js');
 const rutasForo = require('./controladores/Foro-controllers/foro.controller.js');
 const rutasPublicacion = require('./controladores/Foro-controllers/publicacion.controller.js');
 const rutasComentario = require('./controladores/Foro-controllers/comentario.controller.js');
+const rutasRepositorio = require('./controladores/material.controlador.js');
+const rutasMaterialCalificaciones = require('./controladores/material-calificacion.controlador.js');
+const rutasEncuestasCatedra = require('./controladores/encuesta-catedra.controlador.js');
+const rutasIA = require('./controladores/ia.controlador.js');
+const ragService = require('./servicios/rag.servicio.js');
+const rutasReputacion = require('./controladores/reputacion.controller.js');
+const rutasMetricasMaterialEstudio = require('./controladores/metricasMaterialEstudio.controlador.js');
 
 
 const http = require('http');
@@ -99,7 +111,7 @@ app.use((req, res, next) => {
 });
 
 // Rutas
-app.use('/api/auth', rutasAuth);                                  
+app.use('/api/auth', rutasAuth);
 app.use('/api/materias', rutasMateria);
 app.use('/api/actividad-personal', rutasActividad);
 app.use('/api/planificador/actividades-flexibles', rutasActividadesFlexibles);
@@ -116,6 +128,12 @@ app.use('/api/perfiles', rutasPerfil);
 app.use('/api/foro', rutasForo);
 app.use('/api/publicaciones', rutasPublicacion);
 app.use('/api/foro/comentarios', rutasComentario);
+app.use('/api/repositorio', rutasRepositorio);
+app.use('/api/materiales-calificaciones', rutasMaterialCalificaciones);
+app.use('/api/reputacion', rutasReputacion);
+app.use('/api/encuestas-catedra', rutasEncuestasCatedra);
+app.use('/api/ia', rutasIA);
+app.use('/api/metricas-material-estudio', rutasMetricasMaterialEstudio);
 
 // Ruta base
 app.get('/', (req, res) => {
@@ -128,7 +146,9 @@ const iniciarServidor = async () => {
 
         await inicializarDB();
         console.log('Base de datos conectada correctamente.');
-        
+
+        // Inicializar corpus RAG de documentos y reglamentos académicos
+        await ragService.inicializar();
         const servidor = servidorHttp.listen(PUERTO, () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO} con soporte de WebSockets`);
         });
@@ -146,7 +166,14 @@ const iniciarServidor = async () => {
 
 process.on('uncaughtException', (error) => {
     console.error('Error no capturado:', error);
-    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('exit', (code) => {
+    console.log('Process exit with code:', code);
 });
 
 iniciarServidor();

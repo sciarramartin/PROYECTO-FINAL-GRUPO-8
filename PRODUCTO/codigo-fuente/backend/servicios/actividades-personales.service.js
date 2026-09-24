@@ -1,4 +1,5 @@
 const Actividad = require('../modelos/actividad-personal.modelo');
+const { Usuario } = require('../modelos/Usuario');
 
 const mapToCamelCase = (actividad) => {
     return {
@@ -27,6 +28,68 @@ const findAllByUserId = async (idUsuario) => {
         throw error;
     }
 };
+
+function contarDiasActivos(bitmask) {
+    let cantidad = 0;
+
+    while (bitmask > 0) {
+        cantidad += bitmask & 1;
+        bitmask >>= 1;
+    }
+
+    return cantidad;
+}
+
+function calcularHorasSemanales(actividades) {
+    return actividades.reduce((total, actividad) => {
+        const diasActivos = contarDiasActivos(actividad.dias);
+        const horasActividad = (actividad.duracion / 60) * diasActivos;
+
+        return total + horasActividad;
+    }, 0);
+}
+
+const findEstadistics = async (idUsuario, idCarrera) => {
+    try {
+        const metricas = {};
+
+        // Horas del alumno
+        const actividadesUsuario = await Actividad.findAll({
+            where: {
+                id_usuario: idUsuario
+            }
+        });
+
+        metricas.horasSemanales =
+            calcularHorasSemanales(actividadesUsuario);
+
+        // Todos los alumnos de la carrera
+
+        const usuariosCarrera = await Usuario.findAll({
+            where: {
+                id_carrera: idCarrera
+            },
+            include: [{
+                model: Actividad
+            }]
+        });
+
+        const sumaHoras = usuariosCarrera.reduce((total, usuario) => {
+            return total + calcularHorasSemanales(usuario.actividads || []);
+        }, 0);
+
+        metricas.horasSemanalesPromedio =
+            usuariosCarrera.length > 0
+                ? sumaHoras / usuariosCarrera.length
+                : 0;
+
+        return metricas;
+
+    } catch (error) {
+        throw error;
+    }
+};
+
 
 function generarColorRandom() {
     const colores = [
@@ -179,4 +242,4 @@ const deleteById = async (id, idUsuario) => {
 };
 
 // Exportar todos los métodos
-module.exports = { findAllByUserId, create, update, deleteById };
+module.exports = { findAllByUserId, findEstadistics, create, update, deleteById };

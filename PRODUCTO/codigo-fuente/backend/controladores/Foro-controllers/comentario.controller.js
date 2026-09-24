@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-//const { ForoComentario, Usuario } = require('../../modelos/asociaciones');
-const { Usuario } = require('../../modelos/Usuario');
-const { ForoComentario } = require('../../modelos/ForoComentario');
+const { ForoComentario, Usuario, ForoReporte, ForoPublicacion } = require('../../modelos/asociaciones');
 
 // Middleware para verificar autenticación (asumo que usan uno similar en el grupo)
 // Si su middleware se llama distinto, adaptalo (ej. verificarToken)
@@ -82,6 +80,79 @@ router.put('/:id', verificarToken, async (req, res) => {
     } catch (error) {
         console.error("Error al editar comentario:", error);
         res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
+// @route   POST /api/foro/comentarios/:id/reportar
+// @desc    Reportar un comentario
+// @access  Privado
+router.post('/:id/reportar', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { descripcion } = req.body;
+        const id_usuario_reportador = req.usuario.id;
+
+        if (!descripcion || !descripcion.trim()) {
+            return res.status(400).json({ error: 'La descripción del reporte es obligatoria.' });
+        }
+
+        if (descripcion.trim().length < 5) {
+            return res.status(400).json({ error: 'El motivo del reporte debe tener al menos 5 caracteres.' });
+        }
+
+        const comentario = await ForoComentario.findByPk(id);
+        if (!comentario) {
+            return res.status(404).json({ error: 'Comentario no encontrado.' });
+        }
+
+        const reporte = await ForoReporte.create({
+            id_usuario_reportador,
+            id_publicacion: comentario.id_publicacion,
+            id_comentario: id,
+            descripcion: descripcion.trim()
+        });
+
+        return res.status(201).json({ mensaje: 'Comentario reportado con éxito.', reporte });
+    } catch (error) {
+        console.error("Error al reportar comentario:", error);
+        return res.status(500).json({ error: 'Error al procesar el reporte del comentario.' });
+    }
+});
+
+// 4. ELIMINAR UN COMENTARIO
+// @route   DELETE /api/foro/comentarios/:id
+// @desc    Eliminar un comentario (permitido al autor del comentario o al autor de la publicación)
+// @access  Privado
+router.delete('/:id', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const id_usuario_actual = req.usuario?.id || req.user?.id;
+
+        const comentario = await ForoComentario.findByPk(id, {
+            include: [{ model: ForoPublicacion }]
+        });
+
+        if (!comentario) {
+            return res.status(404).json({ error: "Comentario no encontrado" });
+        }
+
+        // Regla de permisos:
+        // - El usuario es el creador del comentario.
+        // - O el usuario es el creador de la publicación donde está el comentario.
+        const esAutorComentario = comentario.id_usuario === id_usuario_actual;
+        const esAutorPublicacion = comentario.ForoPublicacion && comentario.ForoPublicacion.id_usuario === id_usuario_actual;
+
+        if (!esAutorComentario && !esAutorPublicacion) {
+            return res.status(403).json({ error: "No tienes permisos para eliminar este comentario" });
+        }
+
+        // Eliminar físicamente el comentario de la base de datos
+        await comentario.destroy();
+
+        return res.json({ mensaje: "Comentario eliminado con éxito" });
+    } catch (error) {
+        console.error("Error al eliminar comentario:", error);
+        return res.status(500).json({ error: "Error interno del servidor al eliminar el comentario" });
     }
 });
 

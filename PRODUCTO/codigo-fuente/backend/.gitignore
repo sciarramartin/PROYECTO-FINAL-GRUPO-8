@@ -1,3 +1,10 @@
 # .gitignore
 node_modules/
 .sqlite
+
+# Ignorar todo dentro de 2026
+repositorio/materiales/2026/*
+# No ignorar la carpeta 06
+!repositorio/materiales/2026/06/
+# No ignorar su contenido
+!repositorio/materiales/2026/06/**

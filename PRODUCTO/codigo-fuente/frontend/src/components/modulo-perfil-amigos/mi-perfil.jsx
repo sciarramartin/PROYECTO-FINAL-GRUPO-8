@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FiArrowUp, FiArrowDown, FiMessageSquare, FiBookmark } from "react-icons/fi";
+import InsigniaGraduado from "../common/InsigniaGraduado";
 
 // Avatares predefinidos (Emojis con fondos vibrantes en HSL)
 const AVATARES_PREDEFINIDOS = [
@@ -54,6 +56,7 @@ const MiPerfil = () => {
   // Estados de control
   const [editando, setEditando] = useState(false);
   const [carreras, setCarreras] = useState([]);
+  const [estadoGraduacion, setEstadoGraduacion] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
@@ -85,18 +88,61 @@ const MiPerfil = () => {
     mostrar_contacto: true
   });
 
+  // --- SUB-SECCIONES DE VISTA DE PERFIL ---
+  const [seccionActiva, setSeccionActiva] = useState("info"); // "info", "foro" o "feed"
+  const [actividadForo, setActividadForo] = useState({ publicaciones: [], comentarios: [] });
+  const [cargandoActividad, setCargandoActividad] = useState(true);
+  const [tabActiva, setTabActiva] = useState("publicaciones"); // "publicaciones" o "comentarios"
+
+  useEffect(() => {
+    if (token) {
+      cargarActividadForo();
+    }
+  }, [token]);
+
+  const cargarActividadForo = async () => {
+    try {
+      setCargandoActividad(true);
+      const response = await fetch("http://localhost:3000/api/perfiles/mi-perfil/foro-actividad", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setActividadForo(data);
+      }
+    } catch (err) {
+      console.error("Error al cargar la actividad del foro:", err);
+    } finally {
+      setCargandoActividad(false);
+    }
+  };
+
+
+
   // Carga inicial
   const inicializarDatos = async () => {
     setCargando(true);
     setError("");
     try {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      
+
       // 1. Cargar lista de carreras
       const carrerasRes = await axios.get(`${apiUrl}/carreras`);
       setCarreras(carrerasRes.data);
 
-      // 2. Cargar perfil propio del estudiante
+      // 2. Cargar estado de graduación para la insignia (US-MET-11 / SCRUM-90)
+      try {
+        const gradRes = await axios.get(`${apiUrl}/progreso/estado-graduacion`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setEstadoGraduacion(gradRes.data);
+      } catch (errGrad) {
+        console.error("Error al obtener graduación:", errGrad);
+      }
+
+      // 3. Cargar perfil propio del estudiante
       const perfilRes = await axios.get(`${apiUrl}/perfiles/mi-perfil`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -289,7 +335,7 @@ const MiPerfil = () => {
         ? nombreCompleto.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
         : "US";
       return (
-        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-100 text-indigo-650 flex items-center justify-center font-black shrink-0`}>
+        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black shrink-0`}>
           {iniciales}
         </div>
       );
@@ -325,10 +371,305 @@ const MiPerfil = () => {
   const nombreCompleto = `${usuarioInfo.nombre} ${usuarioInfo.apellido}`;
   const caracRestantes = 250 - perfilInfo.biografia.length;
 
+
+
+  const renderInfoAcademica = () => {
+    return (
+      <div className="p-6 space-y-6">
+        
+        {/* Grilla Académica */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Año de Cursado</h4>
+            <p className="text-sm font-bold text-gray-800 text-left">
+              {perfilInfo.anio_cursado ? `${perfilInfo.anio_cursado}° Año` : "No definido"}
+              {!perfilInfo.mostrar_anio_cursado && (
+                <span className="text-[9px] bg-red-50 text-red-500 font-bold px-1.5 py-0.5 rounded-md ml-2 inline-block">
+                  Oculto a otros
+                </span>
+              )}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Rol Preferido en Equipos</h4>
+            <p className="text-sm font-bold text-indigo-600 text-left">
+              {perfilInfo.rol_equipo || "No definido"}
+            </p>
+          </div>
+        </div>
+
+        {/* Biografía */}
+        {perfilInfo.biografia ? (
+          <div className="space-y-2 text-left">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Biografía</h4>
+            <p className="text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-xl p-4 italic leading-relaxed break-words">
+              "{perfilInfo.biografia}"
+            </p>
+          </div>
+        ) : (
+          <div className="text-center py-4 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+            <p className="text-xs text-gray-400">Aún no redactaste una biografía personal. Hacé clic en "Editar Perfil" para agregarla.</p>
+          </div>
+        )}
+
+        {/* Áreas de Interés */}
+        {perfilInfo.intereses.length > 0 && (
+          <div className="space-y-2 text-left">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Áreas de Interés de Estudio</h4>
+            <div className="flex flex-wrap gap-2">
+              {perfilInfo.intereses.map((int, idx) => (
+                <span
+                  key={idx}
+                  className="text-xs bg-indigo-50 border border-indigo-100 text-indigo-600 px-3 py-1 rounded-full font-bold"
+                >
+                  {int}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Redes y Canales de Contacto */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Canales de Contacto y Redes</h4>
+            {!perfilInfo.mostrar_contacto && (
+              <span className="text-[9px] bg-red-50 text-red-500 font-bold px-2 py-0.5 rounded-full">
+                Oculto a otros
+              </span>
+            )}
+          </div>
+
+          {(!perfilInfo.link_discord && !perfilInfo.link_telegram && !perfilInfo.link_whatsapp && !perfilInfo.link_github && !perfilInfo.link_linkedin) ? (
+            <p className="text-xs text-gray-400 italic text-left">No agregaste enlaces de contacto todavía.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              
+              {/* Discord */}
+              {perfilInfo.link_discord && (
+                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                  <span className="text-base">🎮</span>
+                  <span className="text-gray-500 font-semibold truncate">Discord: <strong className="text-gray-800">{perfilInfo.link_discord}</strong></span>
+                </div>
+              )}
+
+              {/* Telegram */}
+              {perfilInfo.link_telegram && (
+                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                  <span className="text-base">✈️</span>
+                  <span className="text-gray-500 font-semibold truncate">Telegram: <strong className="text-gray-800">{perfilInfo.link_telegram}</strong></span>
+                </div>
+              )}
+
+              {/* WhatsApp */}
+              {perfilInfo.link_whatsapp && (
+                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                  <span className="text-base">💬</span>
+                  <span className="text-gray-500 font-semibold truncate">WhatsApp: <strong className="text-gray-800">{perfilInfo.link_whatsapp}</strong></span>
+                </div>
+              )}
+
+              {/* GitHub */}
+              {perfilInfo.link_github && (
+                <a
+                  href={perfilInfo.link_github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 font-bold transition group"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">🐙</span> GitHub Profesional
+                  </span>
+                  <span className="text-gray-400 group-hover:text-gray-700 transition">➔</span>
+                </a>
+              )}
+
+              {/* LinkedIn */}
+              {perfilInfo.link_linkedin && (
+                <a
+                  href={perfilInfo.link_linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 font-bold transition group"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">💼</span> LinkedIn Profesional
+                  </span>
+                  <span className="text-gray-400 group-hover:text-gray-700 transition">➔</span>
+                </a>
+              )}
+
+            </div>
+          )}
+        </div>
+
+      </div>
+    );
+  };
+
+  const renderActividadForo = () => {
+    return (
+      <div className="p-6 space-y-6 bg-gray-50/20">
+        {/* Selector de sub-pestañas para publicaciones y comentarios */}
+        <div className="flex bg-white rounded-xl p-1 border border-gray-150 max-w-sm mx-auto shadow-sm">
+          <button
+            type="button"
+            onClick={() => setTabActiva("publicaciones")}
+            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+              tabActiva === "publicaciones"
+                ? "text-white bg-indigo-600 shadow-sm font-extrabold"
+                : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            📝 Publicaciones ({actividadForo.publicaciones.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setTabActiva("comentarios")}
+            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+              tabActiva === "comentarios"
+                ? "text-white bg-indigo-600 shadow-sm font-extrabold"
+                : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            💬 Comentarios ({actividadForo.comentarios.length})
+          </button>
+        </div>
+
+        {/* Contenido de la sub-pestaña */}
+        <div className="max-h-[400px] overflow-y-auto pr-1.5">
+          {cargandoActividad ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-2">
+              <div className="w-6 h-6 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+              <p className="text-[10px] text-gray-400 font-medium">Cargando actividad...</p>
+            </div>
+          ) : tabActiva === "publicaciones" ? (
+            actividadForo.publicaciones.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+                <span className="text-3xl block mb-2">📬</span>
+                <p className="text-xs text-gray-400 font-medium">Aún no publicó ninguna duda o aporte.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {actividadForo.publicaciones.map((pub) => {
+                  const fecha = new Date(pub.createdAt).toLocaleDateString("es-AR", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  });
+                  return (
+                    <div
+                      key={pub.id}
+                      onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
+                      className="group p-4 bg-white hover:bg-indigo-50/30 border border-gray-150 hover:border-indigo-150 rounded-xl transition duration-200 cursor-pointer flex flex-col gap-3 shadow-sm hover:shadow-md text-left"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                            {pub.Materia?.nombre || pub.materium?.nombre || pub.materia?.nombre || "Foro"}
+                          </span>
+                        </div>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
+                          pub.categoria === "Duda"
+                            ? "bg-amber-50 text-amber-600 border border-amber-100"
+                            : pub.categoria === "Recurso"
+                            ? "bg-green-50 text-green-600 border border-green-100"
+                            : pub.categoria === "Opinión"
+                            ? "bg-purple-50 text-purple-600 border border-purple-100"
+                            : "bg-indigo-50 text-indigo-600 border border-indigo-100"
+                        }`}>
+                          {pub.categoria || "General"}
+                        </span>
+                      </div>
+                      
+                      <h4 className="text-xs font-bold text-gray-800 group-hover:text-indigo-600 transition leading-snug">
+                        {pub.titulo}
+                      </h4>
+
+                      <p className="text-[11px] text-gray-455 line-clamp-2 leading-relaxed">
+                        {pub.contenido}
+                      </p>
+
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 mt-1 pt-2 border-t border-gray-150/50">
+                        <div className="flex items-center gap-1">
+                          <span>👍</span>
+                          <span className="font-bold text-gray-500">{pub.votos || 0} {pub.votos === 1 ? "voto" : "votos"}</span>
+                        </div>
+                        <span>{fecha}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : (
+            actividadForo.comentarios.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+                <span className="text-3xl block mb-2">💬</span>
+                <p className="text-xs text-gray-400 font-medium">Aún no realizó comentarios en los foros.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {actividadForo.comentarios.map((com) => {
+                  const fecha = new Date(com.createdAt).toLocaleDateString("es-AR", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  });
+                  const materiaId = com.ForoPublicacion?.id_materia;
+                  const postId = com.ForoPublicacion?.id;
+                  return (
+                    <div
+                      key={com.id}
+                      onClick={() => {
+                        if (materiaId && postId) {
+                          navigate(`/foros/${materiaId}/publicacion/${postId}`);
+                        }
+                      }}
+                      className="group p-4 bg-white hover:bg-indigo-50/30 border border-gray-150 hover:border-indigo-150 rounded-xl transition duration-200 cursor-pointer flex flex-col gap-2.5 shadow-sm hover:shadow-md text-left"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                            {com.ForoPublicacion?.Materia?.nombre || com.ForoPublicacion?.materium?.nombre || com.ForoPublicacion?.materia?.nombre || "Foro"}
+                          </span>
+                          <span className="text-[10px] text-gray-455 font-semibold truncate max-w-[200px]">
+                            En respuesta a: "{com.ForoPublicacion?.titulo || "Publicación"}"
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-gray-605 bg-gray-50/70 p-2.5 rounded-lg border border-gray-150/45 italic leading-relaxed break-words">
+                        "{com.contenido}"
+                      </p>
+
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 mt-1 pt-1">
+                        <div className="flex items-center gap-1">
+                          <span>👍</span>
+                          <span className="font-bold text-gray-500">{com.votos || 0} {com.votos === 1 ? "voto" : "votos"}</span>
+                        </div>
+                        <span>{fecha}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // --- VISTA DE PERFIL (Por defecto, Lectura limpia con botón de Editar) ---
   if (!editando) {
     return (
-      <div className="max-w-3xl mx-auto px-4 mt-6">
+      <div className="w-full mt-6 space-y-6">
         
         {/* Alerta de guardado exitoso */}
         {mensaje && (
@@ -345,20 +686,33 @@ const MiPerfil = () => {
             {renderFoto(perfilInfo.foto_perfil, nombreCompleto, "w-24 h-24 text-3xl")}
             
             <div className="text-center md:text-left min-w-0 flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 leading-tight truncate">
+              <h2 className="text-2xl font-bold text-gray-900 leading-tight truncate text-left">
                 {nombreCompleto}
               </h2>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-1.5">
                 <span className="text-xs text-gray-400">@{usuarioInfo.nombre_usuario}</span>
                 {perfilInfo.apodo && (
-                  <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-650 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
                     "{perfilInfo.apodo}"
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-gray-400 mt-2 text-left">
                 🎓 Carrera Oficial: <span className="font-semibold text-gray-700">{CARRERAS[usuarioInfo.id_carrera] || "No seleccionada"}</span>
               </p>
+              {/* Insignia o Progreso de Graduación (US-MET-11 / SCRUM-90) */}
+              {estadoGraduacion?.esGraduado ? (
+                <div className="mt-2">
+                  <InsigniaGraduado carrera={CARRERAS[usuarioInfo.id_carrera]} />
+                </div>
+              ) : estadoGraduacion?.porcentaje > 0 ? (
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="w-28 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-indigo-600 h-1.5 rounded-full transition-all" style={{ width: `${estadoGraduacion.porcentaje}%` }}></div>
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-500">{estadoGraduacion.porcentaje}% ({estadoGraduacion.materiasAprobadas}/{estadoGraduacion.totalMaterias} materias)</span>
+                </div>
+              ) : null}
             </div>
 
             {/* Botón Editar en Esquina Superior Derecha */}
@@ -370,136 +724,24 @@ const MiPerfil = () => {
             </button>
           </div>
 
-          {/* Información del Perfil */}
-          <div className="p-6 space-y-6">
-            
-            {/* Grilla Académica */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Año de Cursado</h4>
-                <p className="text-sm font-bold text-gray-800">
-                  {perfilInfo.anio_cursado ? `${perfilInfo.anio_cursado}° Año` : "No definido"}
-                  {!perfilInfo.mostrar_anio_cursado && (
-                    <span className="text-[9px] bg-red-50 text-red-500 font-bold px-1.5 py-0.5 rounded-md ml-2 inline-block">
-                      Oculto a otros
-                    </span>
-                  )}
-                </p>
+          {/* Split Content Section: Información Académica a la izquierda, Mi Actividad a la derecha */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-150 bg-white">
+            <div className="flex flex-col">
+              <div className="border-b border-gray-150 px-6 py-3.5 bg-gray-50/40">
+                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                  👤 Información Académica
+                </h3>
               </div>
-
-              <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Rol Preferido en Equipos</h4>
-                <p className="text-sm font-bold text-indigo-650">
-                  {perfilInfo.rol_equipo || "No definido"}
-                </p>
-              </div>
+              {renderInfoAcademica()}
             </div>
-
-            {/* Biografía */}
-            {perfilInfo.biografia ? (
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Biografía</h4>
-                <p className="text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-xl p-4 italic leading-relaxed break-words">
-                  "{perfilInfo.biografia}"
-                </p>
+            <div className="flex flex-col">
+              <div className="border-b border-gray-150 px-6 py-3.5 bg-gray-50/40">
+                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                  💬 Mi Actividad en el Foro
+                </h3>
               </div>
-            ) : (
-              <div className="text-center py-4 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
-                <p className="text-xs text-gray-400">Aún no redactaste una biografía personal. Hacé clic en "Editar Perfil" para agregarla.</p>
-              </div>
-            )}
-
-            {/* Áreas de Interés */}
-            {perfilInfo.intereses.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Áreas de Interés de Estudio</h4>
-                <div className="flex flex-wrap gap-2">
-                  {perfilInfo.intereses.map((int, idx) => (
-                    <span
-                      key={idx}
-                      className="text-xs bg-indigo-50 border border-indigo-100 text-indigo-650 px-3 py-1 rounded-full font-bold"
-                    >
-                      {int}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Redes y Canales de Contacto */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Canales de Contacto y Redes</h4>
-                {!perfilInfo.mostrar_contacto && (
-                  <span className="text-[9px] bg-red-50 text-red-500 font-bold px-2 py-0.5 rounded-full">
-                    Oculto a otros
-                  </span>
-                )}
-              </div>
-
-              {(!perfilInfo.link_discord && !perfilInfo.link_telegram && !perfilInfo.link_whatsapp && !perfilInfo.link_github && !perfilInfo.link_linkedin) ? (
-                <p className="text-xs text-gray-400 italic">No agregaste enlaces de contacto todavía.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  
-                  {/* Discord */}
-                  {perfilInfo.link_discord && (
-                    <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
-                      <span className="text-base">🎮</span>
-                      <span className="text-gray-500 font-semibold truncate">Discord: <strong className="text-gray-800">{perfilInfo.link_discord}</strong></span>
-                    </div>
-                  )}
-
-                  {/* Telegram */}
-                  {perfilInfo.link_telegram && (
-                    <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
-                      <span className="text-base">✈️</span>
-                      <span className="text-gray-500 font-semibold truncate">Telegram: <strong className="text-gray-800">{perfilInfo.link_telegram}</strong></span>
-                    </div>
-                  )}
-
-                  {/* WhatsApp */}
-                  {perfilInfo.link_whatsapp && (
-                    <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
-                      <span className="text-base">💬</span>
-                      <span className="text-gray-500 font-semibold truncate">WhatsApp: <strong className="text-gray-800">{perfilInfo.link_whatsapp}</strong></span>
-                    </div>
-                  )}
-
-                  {/* GitHub */}
-                  {perfilInfo.link_github && (
-                    <a
-                      href={perfilInfo.link_github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 font-bold transition group"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-base">🐙</span> GitHub Profesional
-                      </span>
-                      <span className="text-gray-400 group-hover:text-gray-700 transition">➔</span>
-                    </a>
-                  )}
-
-                  {/* LinkedIn */}
-                  {perfilInfo.link_linkedin && (
-                    <a
-                      href={perfilInfo.link_linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 font-bold transition group"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-base">💼</span> LinkedIn Profesional
-                      </span>
-                      <span className="text-gray-400 group-hover:text-gray-700 transition">➔</span>
-                    </a>
-                  )}
-
-                </div>
-              )}
+              {renderActividadForo()}
             </div>
-
           </div>
 
         </div>
@@ -510,7 +752,7 @@ const MiPerfil = () => {
 
   // --- MODO EDICIÓN (Se activa al hacer clic en Editar Perfil) ---
   return (
-    <div className="max-w-6xl mx-auto px-2">
+    <div className="w-full mt-6">
       
       {/* Cabecera de Página */}
       <div className="mb-6 flex items-center justify-between">
@@ -547,7 +789,7 @@ const MiPerfil = () => {
               {nombreCompleto}
             </h3>
             {perfilInfo.apodo && (
-              <p className="text-xs text-indigo-650 font-semibold bg-indigo-50 px-2.5 py-0.5 rounded-full mt-1.5 inline-block">
+              <p className="text-xs text-indigo-600 font-semibold bg-indigo-50 px-2.5 py-0.5 rounded-full mt-1.5 inline-block">
                 "{perfilInfo.apodo}"
               </p>
             )}
@@ -594,7 +836,7 @@ const MiPerfil = () => {
               <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Áreas de Interés</h4>
               <div className="flex flex-wrap gap-1.5">
                 {perfilInfo.intereses.map((int, i) => (
-                  <span key={i} className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-650 px-2 py-0.5 rounded-full font-bold">
+                  <span key={i} className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
                     {int}
                   </span>
                 ))}
@@ -682,7 +924,7 @@ const MiPerfil = () => {
                     />
                     <label
                       htmlFor="upload-file"
-                      className="px-3 py-2 border border-dashed border-gray-300 hover:border-indigo-500 rounded-xl text-xs font-bold text-gray-500 hover:text-indigo-650 cursor-pointer flex items-center gap-1.5 transition"
+                      className="px-3 py-2 border border-dashed border-gray-300 hover:border-indigo-500 rounded-xl text-xs font-bold text-gray-500 hover:text-indigo-600 cursor-pointer flex items-center gap-1.5 transition"
                     >
                       📷 Subir foto
                     </label>
@@ -815,7 +1057,7 @@ const MiPerfil = () => {
                         onClick={() => handleInteresToggle(interes)}
                         className={`px-3 py-1.5 rounded-full text-xs font-bold transition duration-200 cursor-pointer border ${
                           seleccionado
-                            ? "bg-indigo-600 text-white border-indigo-655 shadow-sm"
+                            ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
                             : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
                         }`}
                       >
@@ -908,7 +1150,7 @@ const MiPerfil = () => {
                     name="mostrar_anio_cursado"
                     checked={perfilInfo.mostrar_anio_cursado}
                     onChange={handleCheckboxChange}
-                    className="w-4 h-4 accent-indigo-650 shrink-0 cursor-pointer"
+                    className="w-4 h-4 accent-indigo-600 shrink-0 cursor-pointer"
                   />
                 </label>
 
@@ -922,7 +1164,7 @@ const MiPerfil = () => {
                     name="mostrar_contacto"
                     checked={perfilInfo.mostrar_contacto}
                     onChange={handleCheckboxChange}
-                    className="w-4 h-4 accent-indigo-650 shrink-0 cursor-pointer"
+                    className="w-4 h-4 accent-indigo-600 shrink-0 cursor-pointer"
                   />
                 </label>
               </div>
