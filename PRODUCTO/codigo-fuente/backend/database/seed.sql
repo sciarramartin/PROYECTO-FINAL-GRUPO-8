@@ -435,33 +435,7 @@ VALUES
 
 -- ===============================================================
 -- ===============================================================
--- FORO PUBLICACIONES Y COMENTARIOS SEED (Gestionado en sección de simulación)
--- ===============================================================
 UPDATE materias SET id_plan_academico = 2;
-
--- ===============================================================
--- MATERIALES DE ESTUDIO SEED
--- ===============================================================
-INSERT INTO materiales_estudio (ubicacion, id_materia, id_usuario, titulo, etiquetas, fecha_de_publicacion, likes, descargas)
-VALUES
-("materiales\\2026\\06\\1.pdf", 1, 2, 'Apunte completo Análisis Matemático I', '["analisis","resumen","primer parcial"]', '2026-06-20 10:00:00', 15, 42),
-("materiales\\2026\\06\\2.pdf", 2, 2, 'Ejercicios resueltos Álgebra', '["algebra","vectores","matrices"]', '2026-06-21 11:30:00', 8, 19),
-("materiales\\2026\\06\\3.pdf", 3, 1, 'Guía Práctica Química General', '["quimica","laboratorio","formulas"]', '2026-06-22 15:45:00', 24, 85);
-
--- ==============================================
--- CALIFICACIONES DE MATERIALES DE ESTUDIO SEED
--- ==============================================
-INSERT INTO material_calificaciones (id_material, id_usuario, puntuacion)
-VALUES
-(1, 1, 5),
-(1, 2, 4),
-(1, 3, 5),
-(2, 1, 3),
-(2, 3, 4),
-(3, 1, 5),
-(3, 2, 5),
-(3, 3, 5),
-(3, 4, 5);
 
 -- ===============================================================
 -- DATOS DE SIMULACIÓN (EQUIPO, VISITANTES, MATERIALES Y FORO)
@@ -506,35 +480,135 @@ VALUES
 (18, 'User 9', 1, 'Cuenta de prueba para evaluador / visitante N° 9.', '🎓', 'Evaluador', 1, 1),
 (19, 'User 10', 1, 'Cuenta de prueba para evaluador / visitante N° 10.', '🎓', 'Evaluador', 1, 1);
 
--- 3. MATERIALES DE ESTUDIO REALES (24 ARCHIVOS)
+-- 3. MATERIALES DE ESTUDIO REALES (24 ARCHIVOS ASIGNADOS AL EQUIPO)
 INSERT INTO materiales_estudio (id, ubicacion, id_materia, id_usuario, titulo, etiquetas, fecha_de_publicacion, likes, descargas)
 VALUES
-(4, 'materiales/2026/10/Resumen COM.pdf', 21, 5, 'Resumen Completo - Comunicación de Datos (Medios, Modulación y Protocolos)', '["comunicacion de datos","cda","resumen","parcial"]', '2026-09-25 14:30:00.000 +00:00', 18, 42),
-(5, 'materiales/2026/10/RESUMEN FINAL -ISW- ALEX.pdf', 25, 9, 'Resumen Final Completo - Ingeniería y Calidad de Software (ISW)', '["isw","calidad de software","final","resumen","testing"]', '2026-09-25 14:30:00.000 +00:00', 27, 64),
-(6, 'materiales/2026/10/Resumen 1 Parcial Analisis Matematico Teorico.pdf', 1, 7, 'Resumen Teórico 1er Parcial - Análisis Matemático I (Límites, Continuidad y Derivadas)', '["analisis 1","matematica","primer parcial","teorico"]', '2026-09-25 14:30:00.000 +00:00', 22, 58),
-(7, 'materiales/2026/10/Resumen analisis matematico 1.pdf', 1, 8, 'Apunte Integral Análisis Matemático I - Práctico con Ejercicios Tipo Parcial', '["analisis 1","integrales","derivadas","ejercicios"]', '2026-09-25 14:30:00.000 +00:00', 31, 79),
-(8, 'materiales/2026/10/ACO_-_Resumen-1-1.pdf', 7, 6, 'Resumen Arquitectura de Computadoras - Módulo 1 (Microarquitectura y Registros)', '["arquitectura","aco","cpu","registros"]', '2026-09-25 14:30:00.000 +00:00', 16, 41),
-(9, 'materiales/2026/10/resumen aco.pdf', 7, 5, 'Guía Rápida de Arquitectura de Computadoras (Assembler Intel 8086)', '["arquitectura","aco","assembler","resumen"]', '2026-09-25 14:30:00.000 +00:00', 14, 35),
-(10, 'materiales/2026/10/Apunte teo-pract ALUMNO IA.pdf', 31, 7, 'Apunte Teórico-Práctico Completo - Inteligencia Artificial (Búsquedas, Heurísticas y Redes)', '["inteligencia artificial","ia","machine learning","heuristica"]', '2026-09-25 14:30:00.000 +00:00', 34, 85),
-(11, 'materiales/2026/10/ASI_resumen_completo.pdf', 16, 9, 'Resumen Integral ASI - Análisis de Sistemas (Diagramas UML y Casos de Uso)', '["asi","analisis","casos de uso","uml","diagramas"]', '2026-09-25 14:30:00.000 +00:00', 25, 59),
-(12, 'materiales/2026/10/RESUMEN ASI TEORICO 1.pdf', 16, 8, 'Teórico ASI Parte 1 - Metodologías de Desarrollo y Ciclos de Vida', '["asi","teorico","parcial 1","metodologias"]', '2026-09-25 14:30:00.000 +00:00', 19, 47),
-(13, 'materiales/2026/10/RESUMEN ASI TEORICO 2.pdf', 16, 6, 'Teórico ASI Parte 2 - Requerimientos Funcionales y No Funcionales', '["asi","teorico","parcial 2","requerimientos"]', '2026-09-25 14:30:00.000 +00:00', 18, 43),
-(14, 'materiales/2026/10/Economia.pdf', 18, 5, 'Resumen General de Economía - Microeconomía y Macroeconomía', '["economia","microeconomia","macroeconomia","resumen"]', '2026-09-25 14:30:00.000 +00:00', 20, 49),
-(15, 'materiales/2026/10/Fisica II Teorico.pdf', 10, 7, 'Compendio Teórico Física II (Electromagnetismo, Óptica y Ondas)', '["fisica 2","electromagnetismo","optica","formulas"]', '2026-09-25 14:30:00.000 +00:00', 24, 62),
-(16, 'materiales/2026/10/Resumen - SIM.pdf', 28, 8, 'Resumen Clave Simulación - Modelos Matemáticos y Variables Aleatorias', '["simulacion","montecarlo","variables aleatorias","modelos"]', '2026-09-25 14:30:00.000 +00:00', 15, 38),
-(17, 'materiales/2026/10/Resumen - SSL.pdf', 13, 9, 'Resumen Sintaxis y Semántica (Gramáticas, Autómatas Finitos y Parsing LR/LL)', '["ssl","gramaticas","automatas","compiladores"]', '2026-09-25 14:30:00.000 +00:00', 29, 72),
-(18, 'materiales/2026/10/Resumen 1 KND Redes.pdf', 26, 6, 'Redes de Datos - Resumen KND Parte 1 (Modelo OSI y Arquitectura TCP/IP)', '["redes","knd","modelo osi","tcp ip"]', '2026-09-25 14:30:00.000 +00:00', 23, 54),
-(19, 'materiales/2026/10/Resumen 2 KND Redes.pdf', 26, 5, 'Redes de Datos - Resumen KND Parte 2 (Subnetting IPv4/IPv6 y Enrutamiento RIP/OSPF)', '["redes","knd","subnetting","enrutamiento"]', '2026-09-25 14:30:00.000 +00:00', 28, 68),
-(20, 'materiales/2026/10/Resumen 3 KND Redes.pdf', 26, 7, 'Redes de Datos - Resumen KND Parte 3 (Capas de Transporte y Aplicación: TCP, UDP, DNS, HTTP)', '["redes","knd","transporte","dns","http"]', '2026-09-25 14:30:00.000 +00:00', 21, 46),
-(21, 'materiales/2026/10/RESUMEN BASE DE DATOS1.pdf', 19, 8, 'Resumen SQL, Álgebra Relacional y Normalización 1FN a BCNF', '["base de datos","sql","algebra relacional","normalizacion"]', '2026-09-25 14:30:00.000 +00:00', 35, 88),
-(22, 'materiales/2026/10/RESUMEN DISEÑO DE SISTEMAS.pdf', 23, 9, 'Diseño de Sistemas - Patrones de Diseño GoF y Arquitecturas Limpias', '["diseno de sistemas","patrones gof","arquitectura","solid"]', '2026-09-25 14:30:00.000 +00:00', 38, 95),
-(23, 'materiales/2026/10/Resumen PyE final.pdf', 17, 6, 'Resumen Final Completo - Probabilidad y Estadística (Variables Discretas, Continuas e Inferencia)', '["probabilidad","estadistica","distribuciones","inferencia"]', '2026-09-25 14:30:00.000 +00:00', 26, 60),
-(24, 'materiales/2026/10/Resumen-Final-Inv.-Op-V3.pdf', 27, 7, 'Investigación Operativa - Resumen Final V3 (Método Simplex, Transporte y PERT/CPM)', '["investigacion operativa","simplex","transporte","pert cpm"]', '2026-09-25 14:30:00.000 +00:00', 23, 51),
-(25, 'materiales/2026/10/SOP - Resumen 1er parcial.pdf', 15, 5, 'Sistemas Operativos - Resumen 1er Parcial (Procesos, Hilos y Concurrencia)', '["sistemas operativos","sop","procesos","concurrencia"]', '2026-09-25 14:30:00.000 +00:00', 32, 76),
-(26, 'materiales/2026/10/SOP - Resumen 2do parcial.pdf', 15, 8, 'Sistemas Operativos - Resumen 2do Parcial (Memoria Virtual, Paginación y Segmentación)', '["sistemas operativos","sop","memoria virtual","paginacion"]', '2026-09-25 14:30:00.000 +00:00', 29, 70),
-(27, 'materiales/2026/10/SOP - Resúmen 3er Parcial.pdf', 15, 9, 'Sistemas Operativos - Resumen 3er Parcial (Sistemas de Archivos y Planificación de Disco)', '["sistemas operativos","sop","file systems","i/o"]', '2026-09-25 14:30:00.000 +00:00', 30, 74);
+(1, 'materiales/2026/10/Resumen COM.pdf', 21, 5, 'Resumen Completo - Comunicación de Datos (Medios, Modulación y Protocolos)', '["comunicacion de datos","cda","resumen","parcial"]', '2026-09-25 14:30:00', 18, 42),
+(2, 'materiales/2026/10/RESUMEN FINAL -ISW- ALEX.pdf', 25, 9, 'Resumen Final Completo - Ingeniería y Calidad de Software (ISW)', '["isw","calidad de software","final","resumen","testing"]', '2026-09-25 14:30:00', 27, 64),
+(3, 'materiales/2026/10/Resumen 1 Parcial Analisis Matematico Teorico.pdf', 1, 7, 'Resumen Teórico 1er Parcial - Análisis Matemático I (Límites, Continuidad y Derivadas)', '["analisis 1","matematica","primer parcial","teorico"]', '2026-09-25 14:30:00', 22, 58),
+(4, 'materiales/2026/10/Resumen analisis matematico 1.pdf', 1, 8, 'Apunte Integral Análisis Matemático I - Práctico con Ejercicios Tipo Parcial', '["analisis 1","integrales","derivadas","ejercicios"]', '2026-09-25 14:30:00', 31, 79),
+(5, 'materiales/2026/10/ACO_-_Resumen-1-1.pdf', 7, 6, 'Resumen Arquitectura de Computadoras - Módulo 1 (Microarquitectura y Registros)', '["arquitectura","aco","cpu","registros"]', '2026-09-25 14:30:00', 16, 41),
+(6, 'materiales/2026/10/resumen aco.pdf', 7, 5, 'Guía Rápida de Arquitectura de Computadoras (Assembler Intel 8086)', '["arquitectura","aco","assembler","resumen"]', '2026-09-25 14:30:00', 14, 35),
+(7, 'materiales/2026/10/Apunte teo-pract ALUMNO IA.pdf', 31, 7, 'Apunte Teórico-Práctico Completo - Inteligencia Artificial (Búsquedas, Heurísticas y Redes)', '["inteligencia artificial","ia","machine learning","heuristica"]', '2026-09-25 14:30:00', 34, 85),
+(8, 'materiales/2026/10/ASI_resumen_completo.pdf', 16, 9, 'Resumen Integral ASI - Análisis de Sistemas (Diagramas UML y Casos de Uso)', '["asi","analisis","casos de uso","uml","diagramas"]', '2026-09-25 14:30:00', 25, 59),
+(9, 'materiales/2026/10/RESUMEN ASI TEORICO 1.pdf', 16, 8, 'Teórico ASI Parte 1 - Metodologías de Desarrollo y Ciclos de Vida', '["asi","teorico","parcial 1","metodologias"]', '2026-09-25 14:30:00', 19, 47),
+(10, 'materiales/2026/10/RESUMEN ASI TEORICO 2.pdf', 16, 6, 'Teórico ASI Parte 2 - Requerimientos Funcionales y No Funcionales', '["asi","teorico","parcial 2","requerimientos"]', '2026-09-25 14:30:00', 18, 43),
+(11, 'materiales/2026/10/Economia.pdf', 18, 5, 'Resumen General de Economía - Microeconomía y Macroeconomía', '["economia","microeconomia","macroeconomia","resumen"]', '2026-09-25 14:30:00', 20, 49),
+(12, 'materiales/2026/10/Fisica II Teorico.pdf', 10, 7, 'Compendio Teórico Física II (Electromagnetismo, Óptica y Ondas)', '["fisica 2","electromagnetismo","optica","formulas"]', '2026-09-25 14:30:00', 24, 62),
+(13, 'materiales/2026/10/Resumen - SIM.pdf', 28, 8, 'Resumen Clave Simulación - Modelos Matemáticos y Variables Aleatorias', '["simulacion","montecarlo","variables aleatorias","modelos"]', '2026-09-25 14:30:00', 15, 38),
+(14, 'materiales/2026/10/Resumen - SSL.pdf', 13, 9, 'Resumen Sintaxis y Semántica (Gramáticas, Autómatas Finitos y Parsing LR/LL)', '["ssl","gramaticas","automatas","compiladores"]', '2026-09-25 14:30:00', 29, 72),
+(15, 'materiales/2026/10/Resumen 1 KND Redes.pdf', 26, 6, 'Redes de Datos - Resumen KND Parte 1 (Modelo OSI y Arquitectura TCP/IP)', '["redes","knd","modelo osi","tcp ip"]', '2026-09-25 14:30:00', 23, 54),
+(16, 'materiales/2026/10/Resumen 2 KND Redes.pdf', 26, 5, 'Redes de Datos - Resumen KND Parte 2 (Subnetting IPv4/IPv6 y Enrutamiento RIP/OSPF)', '["redes","knd","subnetting","enrutamiento"]', '2026-09-25 14:30:00', 28, 68),
+(17, 'materiales/2026/10/Resumen 3 KND Redes.pdf', 26, 7, 'Redes de Datos - Resumen KND Parte 3 (Capas de Transporte y Aplicación: TCP, UDP, DNS, HTTP)', '["redes","knd","transporte","dns","http"]', '2026-09-25 14:30:00', 21, 46),
+(18, 'materiales/2026/10/RESUMEN BASE DE DATOS1.pdf', 19, 8, 'Resumen SQL, Álgebra Relacional y Normalización 1FN a BCNF', '["base de datos","sql","algebra relacional","normalizacion"]', '2026-09-25 14:30:00', 35, 88),
+(19, 'materiales/2026/10/RESUMEN DISEÑO DE SISTEMAS.pdf', 23, 9, 'Diseño de Sistemas - Patrones de Diseño GoF y Arquitecturas Limpias', '["diseno de sistemas","patrones gof","arquitectura","solid"]', '2026-09-25 14:30:00', 38, 95),
+(20, 'materiales/2026/10/Resumen PyE final.pdf', 17, 6, 'Resumen Final Completo - Probabilidad y Estadística (Variables Discretas, Continuas e Inferencia)', '["probabilidad","estadistica","distribuciones","inferencia"]', '2026-09-25 14:30:00', 26, 60),
+(21, 'materiales/2026/10/Resumen-Final-Inv.-Op-V3.pdf', 27, 7, 'Investigación Operativa - Resumen Final V3 (Método Simplex, Transporte y PERT/CPM)', '["investigacion operativa","simplex","transporte","pert cpm"]', '2026-09-25 14:30:00', 23, 51),
+(22, 'materiales/2026/10/SOP - Resumen 1er parcial.pdf', 15, 5, 'Sistemas Operativos - Resumen 1er Parcial (Procesos, Hilos y Concurrencia)', '["sistemas operativos","sop","procesos","concurrencia"]', '2026-09-25 14:30:00', 32, 76),
+(23, 'materiales/2026/10/SOP - Resumen 2do parcial.pdf', 15, 8, 'Sistemas Operativos - Resumen 2do Parcial (Memoria Virtual, Paginación y Segmentación)', '["sistemas operativos","sop","memoria virtual","paginacion"]', '2026-09-25 14:30:00', 29, 70),
+(24, 'materiales/2026/10/SOP - Resúmen 3er Parcial.pdf', 15, 9, 'Sistemas Operativos - Resumen 3er Parcial (Sistemas de Archivos y Planificación de Disco)', '["sistemas operativos","sop","file systems","i/o"]', '2026-09-25 14:30:00', 30, 74);
 
--- 4. PUBLICACIONES DEL FORO (EXCLUSIVAS DE LOS 5 INTEGRANTES DEL EQUIPO)
+-- 4. CALIFICACIONES DE MATERIALES (ESTRELLAS DE EVALUACIÓN)
+INSERT INTO material_calificaciones (id, id_material, id_usuario, puntuacion)
+VALUES
+(1, 1, 6, 4),
+(2, 1, 7, 5),
+(3, 1, 8, 4),
+(4, 1, 9, 5),
+(5, 2, 5, 4),
+(6, 2, 6, 5),
+(7, 2, 7, 4),
+(8, 2, 8, 5),
+(9, 3, 5, 5),
+(10, 3, 6, 4),
+(11, 3, 8, 4),
+(12, 3, 9, 5),
+(13, 4, 5, 4),
+(14, 4, 6, 5),
+(15, 4, 7, 4),
+(16, 4, 9, 4),
+(17, 5, 5, 5),
+(18, 5, 7, 5),
+(19, 5, 8, 4),
+(20, 5, 9, 5),
+(21, 6, 6, 5),
+(22, 6, 7, 4),
+(23, 6, 8, 5),
+(24, 6, 9, 4),
+(25, 7, 5, 5),
+(26, 7, 6, 4),
+(27, 7, 8, 4),
+(28, 7, 9, 5),
+(29, 8, 5, 4),
+(30, 8, 6, 5),
+(31, 8, 7, 4),
+(32, 8, 8, 5),
+(33, 9, 5, 5),
+(34, 9, 6, 4),
+(35, 9, 7, 5),
+(36, 9, 9, 5),
+(37, 10, 5, 4),
+(38, 10, 7, 4),
+(39, 10, 8, 5),
+(40, 10, 9, 4),
+(41, 11, 6, 4),
+(42, 11, 7, 5),
+(43, 11, 8, 4),
+(44, 11, 9, 5),
+(45, 12, 5, 4),
+(46, 12, 6, 5),
+(47, 12, 8, 5),
+(48, 12, 9, 4),
+(49, 13, 5, 5),
+(50, 13, 6, 4),
+(51, 13, 7, 5),
+(52, 13, 9, 5),
+(53, 14, 5, 4),
+(54, 14, 6, 5),
+(55, 14, 7, 4),
+(56, 14, 8, 5),
+(57, 15, 5, 5),
+(58, 15, 7, 5),
+(59, 15, 8, 4),
+(60, 15, 9, 5),
+(61, 16, 6, 5),
+(62, 16, 7, 4),
+(63, 16, 8, 5),
+(64, 16, 9, 4),
+(65, 17, 5, 5),
+(66, 17, 6, 4),
+(67, 17, 8, 4),
+(68, 17, 9, 5),
+(69, 18, 5, 4),
+(70, 18, 6, 5),
+(71, 18, 7, 4),
+(72, 18, 9, 4),
+(73, 19, 5, 5),
+(74, 19, 6, 4),
+(75, 19, 7, 5),
+(76, 19, 8, 4),
+(77, 20, 5, 4),
+(78, 20, 7, 4),
+(79, 20, 8, 5),
+(80, 20, 9, 4),
+(81, 21, 5, 5),
+(82, 21, 6, 4),
+(83, 21, 8, 4),
+(84, 21, 9, 5),
+(85, 22, 6, 5),
+(86, 22, 7, 4),
+(87, 22, 8, 5),
+(88, 22, 9, 4),
+(89, 23, 5, 5),
+(90, 23, 6, 4),
+(91, 23, 7, 5),
+(92, 23, 9, 5),
+(93, 24, 5, 4),
+(94, 24, 6, 5),
+(95, 24, 7, 4),
+(96, 24, 8, 5);
+
+-- 5. PUBLICACIONES DEL FORO (EXCLUSIVAS DE LOS 5 INTEGRANTES DEL EQUIPO)
 INSERT INTO foro_publicaciones (id, id_materia, id_usuario, titulo, contenido, categoria, votos, createdAt, updatedAt)
 VALUES
 (1, 1, 7, 'Opinión sincera: ¿Conviene cursar Análisis I anual o cuatrimestral?', 'En mi experiencia, si vienen de un secundario flojo en matemática conviene hacerla anual para asentar bien los conceptos de límites y derivadas. En el cuatrimestral van a las chapas y si te atrasás dos clases con integrales estás al horno. Los parciales prácticos son largos pero justos.', 'Opinión', 4, '2026-09-26 10:00:00', '2026-09-26 10:00:00'),
@@ -567,7 +641,7 @@ VALUES
 (28, 32, 8, 'Ciencia de Datos: El ciclo completo de EDA, pipelines y feature engineering', 'Análisis exploratorio de datos (EDA), limpieza de datasets con Pandas, imputación de valores faltantes, detección de outliers y modelado predictivo. Muy práctica, se trabaja con Jupyter Notebooks y datasets reales de Kaggle y organismos públicos.', 'Opinión', 4, '2026-09-26 10:00:00', '2026-09-26 10:00:00'),
 (29, 35, 8, 'Seguridad en Sistemas: Criptografía, OWASP Top 10 y hardening', 'Criptografía simétrica (AES) y asimétrica (RSA, Curvas Elípticas), firmas digitales, certificados SSL/TLS y vulnerabilidades web típicas (SQL Injection, XSS, CSRF, IDOR). Toda persona que desarrolle software debería cursar esta materia para dejar de escribir código vulnerable.', 'Opinión', 4, '2026-09-26 10:00:00', '2026-09-26 10:00:00');
 
--- 5. COMENTARIOS Y DEBATES ANIDADOS (EXCLUSIVOS DEL EQUIPO)
+-- 6. COMENTARIOS Y DEBATES ANIDADOS (EXCLUSIVOS DEL EQUIPO)
 INSERT INTO foro_comentarios (id, id_publicacion, id_usuario, contenido, votos, id_comentario_padre, createdAt, updatedAt)
 VALUES
 (1, 1, 5, 'Totalmente de acuerdo Franco. Yo la hice anual con Roberto y fue lo mejor que pude hacer. En el práctico te toman mucho teoremas aplicados (Rolle y Valor Medio entran seguro).', 2, NULL, '2026-09-26 11:00:00', '2026-09-26 11:00:00'),
@@ -623,7 +697,7 @@ VALUES
 (51, 29, 5, 'Los laboratorios de pentesting en entornos controlados te demuestran lo fácil que se puede vulnerar una aplicación si no sanitizás inputs.', 2, NULL, '2026-09-26 11:00:00', '2026-09-26 11:00:00'),
 (52, 29, 6, '¡Totalmente! Principio de menor privilegio y autenticación segura siempre.', 2, NULL, '2026-09-26 11:00:00', '2026-09-26 11:00:00');
 
--- 6. REACCIONES (LIKES) REGISTRADAS (EXCLUSIVAS DEL EQUIPO)
+-- 7. REACCIONES (LIKES) REGISTRADAS (EXCLUSIVAS DEL EQUIPO)
 INSERT INTO foro_reacciones (id, id_publicacion, id_comentario, id_usuario, tipo, createdAt, updatedAt)
 VALUES
 (1, 1, NULL, 5, 'positivo', '2026-09-26 10:00:00', '2026-09-26 10:00:00'),

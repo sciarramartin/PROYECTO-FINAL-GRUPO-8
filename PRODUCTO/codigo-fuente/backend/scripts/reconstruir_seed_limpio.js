@@ -2,33 +2,275 @@
 const fs = require('fs');
 const path = require('path');
 const { baseDeDatos } = require('../database/base-de-datos');
-const { Usuario } = require('../modelos/Usuario');
-const { Perfil } = require('../modelos/Perfil');
-const { MaterialDeEstudio } = require('../modelos/MaterialDeEstudio');
-const { ForoPublicacion } = require('../modelos/ForoPublicacion');
-const { ForoComentario } = require('../modelos/ForoComentario');
-const { ForoReaccion } = require('../modelos/ForoReaccion');
-
-const HASH_EQUIPO = '$2b$10$tMM163ZUvpKEJZ8wDtJy3OLh438GhqL0tFHH29LyPZlnsf4j9Us0y'; // dalequemerecibo
-const HASH_VISITANTES = '$2b$10$ynJBpfXVhSz9lyc./3tqPeMs5lxafAhdN1ulyYqDcL1DUEAfLkaM6'; // 123456
 
 async function main() {
     await baseDeDatos.authenticate();
     console.log('Base de datos conectada.');
 
-    // 1. Asegurar usuarios del equipo (IDs 5..9)
-    const equipoData = [
-        { id: 5, mail: 'franciscofunes@gmail.com', nombre: 'Francisco', apellido: 'Funes', nombre_usuario: 'franciscofunes', rol: 'Backend Developer', apodo: 'Fran' },
-        { id: 6, mail: 'titomontivero@gmail.com', nombre: 'Tito', apellido: 'Montivero', nombre_usuario: 'titomontivero', rol: 'Fullstack Developer', apodo: 'Tito' },
-        { id: 7, mail: 'francososa@gmail.com', nombre: 'Franco', apellido: 'Sosa', nombre_usuario: 'francososa', rol: 'Team Lead / Fullstack', apodo: 'Franco' },
-        { id: 8, mail: 'martinsciarra@gmail.com', nombre: 'Martin', apellido: 'Sciarra', nombre_usuario: 'martinsciarra', rol: 'Software Architect', apodo: 'Tincho' },
-        { id: 9, mail: 'lucianazahr@gmail.com', nombre: 'Luciana', apellido: 'Zahr', nombre_usuario: 'lucianazahr', rol: 'Frontend / UI-UX', apodo: 'Lu' }
-    ];
-
     const franId = 5, titoId = 6, francoId = 7, tinchoId = 8, luId = 9;
     const teamIds = [franId, titoId, francoId, tinchoId, luId];
 
-    // 2. Definición de las 29 publicaciones con contenido 100% de opinión, consejos y debate (SIN mención de apuntes ni archivos)
+    // 1. Definición de los 24 materiales de estudio reales (IDs 1..24)
+    const materialesDef = [
+        {
+            id: 1,
+            file: 'Resumen COM.pdf',
+            id_materia: 21, // Comunicación de Datos
+            titulo: 'Resumen Completo - Comunicación de Datos (Medios, Modulación y Protocolos)',
+            etiquetas: '["comunicacion de datos","cda","resumen","parcial"]',
+            id_usuario: franId,
+            likes: 18,
+            descargas: 42
+        },
+        {
+            id: 2,
+            file: 'RESUMEN FINAL -ISW- ALEX.pdf',
+            id_materia: 25, // Ingeniería y Calidad de Software
+            titulo: 'Resumen Final Completo - Ingeniería y Calidad de Software (ISW)',
+            etiquetas: '["isw","calidad de software","final","resumen","testing"]',
+            id_usuario: luId,
+            likes: 27,
+            descargas: 64
+        },
+        {
+            id: 3,
+            file: 'Resumen 1 Parcial Analisis Matematico Teorico.pdf',
+            id_materia: 1, // Análisis Matemático I
+            titulo: 'Resumen Teórico 1er Parcial - Análisis Matemático I (Límites, Continuidad y Derivadas)',
+            etiquetas: '["analisis 1","matematica","primer parcial","teorico"]',
+            id_usuario: francoId,
+            likes: 22,
+            descargas: 58
+        },
+        {
+            id: 4,
+            file: 'Resumen analisis matematico 1.pdf',
+            id_materia: 1, // Análisis Matemático I
+            titulo: 'Apunte Integral Análisis Matemático I - Práctico con Ejercicios Tipo Parcial',
+            etiquetas: '["analisis 1","integrales","derivadas","ejercicios"]',
+            id_usuario: tinchoId,
+            likes: 31,
+            descargas: 79
+        },
+        {
+            id: 5,
+            file: 'ACO_-_Resumen-1-1.pdf',
+            id_materia: 7, // Arquitectura de Computadoras
+            titulo: 'Resumen Arquitectura de Computadoras - Módulo 1 (Microarquitectura y Registros)',
+            etiquetas: '["arquitectura","aco","cpu","registros"]',
+            id_usuario: titoId,
+            likes: 16,
+            descargas: 41
+        },
+        {
+            id: 6,
+            file: 'resumen aco.pdf',
+            id_materia: 7, // Arquitectura de Computadoras
+            titulo: 'Guía Rápida de Arquitectura de Computadoras (Assembler Intel 8086)',
+            etiquetas: '["arquitectura","aco","assembler","resumen"]',
+            id_usuario: franId,
+            likes: 14,
+            descargas: 35
+        },
+        {
+            id: 7,
+            file: 'Apunte teo-pract ALUMNO IA.pdf',
+            id_materia: 31, // Inteligencia Artificial
+            titulo: 'Apunte Teórico-Práctico Completo - Inteligencia Artificial (Búsquedas, Heurísticas y Redes)',
+            etiquetas: '["inteligencia artificial","ia","machine learning","heuristica"]',
+            id_usuario: francoId,
+            likes: 34,
+            descargas: 85
+        },
+        {
+            id: 8,
+            file: 'ASI_resumen_completo.pdf',
+            id_materia: 16, // Análisis de Sistemas de Información
+            titulo: 'Resumen Integral ASI - Análisis de Sistemas (Diagramas UML y Casos de Uso)',
+            etiquetas: '["asi","analisis","casos de uso","uml","diagramas"]',
+            id_usuario: luId,
+            likes: 25,
+            descargas: 59
+        },
+        {
+            id: 9,
+            file: 'RESUMEN ASI TEORICO 1.pdf',
+            id_materia: 16, // Análisis de Sistemas de Información
+            titulo: 'Teórico ASI Parte 1 - Metodologías de Desarrollo y Ciclos de Vida',
+            etiquetas: '["asi","teorico","parcial 1","metodologias"]',
+            id_usuario: tinchoId,
+            likes: 19,
+            descargas: 47
+        },
+        {
+            id: 10,
+            file: 'RESUMEN ASI TEORICO 2.pdf',
+            id_materia: 16, // Análisis de Sistemas de Información
+            titulo: 'Teórico ASI Parte 2 - Requerimientos Funcionales y No Funcionales',
+            etiquetas: '["asi","teorico","parcial 2","requerimientos"]',
+            id_usuario: titoId,
+            likes: 18,
+            descargas: 43
+        },
+        {
+            id: 11,
+            file: 'Economia.pdf',
+            id_materia: 18, // Economía
+            titulo: 'Resumen General de Economía - Microeconomía y Macroeconomía',
+            etiquetas: '["economia","microeconomia","macroeconomia","resumen"]',
+            id_usuario: franId,
+            likes: 20,
+            descargas: 49
+        },
+        {
+            id: 12,
+            file: 'Fisica II Teorico.pdf',
+            id_materia: 10, // Física II
+            titulo: 'Compendio Teórico Física II (Electromagnetismo, Óptica y Ondas)',
+            etiquetas: '["fisica 2","electromagnetismo","optica","formulas"]',
+            id_usuario: francoId,
+            likes: 24,
+            descargas: 62
+        },
+        {
+            id: 13,
+            file: 'Resumen - SIM.pdf',
+            id_materia: 28, // Simulación
+            titulo: 'Resumen Clave Simulación - Modelos Matemáticos y Variables Aleatorias',
+            etiquetas: '["simulacion","montecarlo","variables aleatorias","modelos"]',
+            id_usuario: tinchoId,
+            likes: 15,
+            descargas: 38
+        },
+        {
+            id: 14,
+            file: 'Resumen - SSL.pdf',
+            id_materia: 13, // Sintaxis y Semántica de los Lenguajes
+            titulo: 'Resumen Sintaxis y Semántica (Gramáticas, Autómatas Finitos y Parsing LR/LL)',
+            etiquetas: '["ssl","gramaticas","automatas","compiladores"]',
+            id_usuario: luId,
+            likes: 29,
+            descargas: 72
+        },
+        {
+            id: 15,
+            file: 'Resumen 1 KND Redes.pdf',
+            id_materia: 26, // Redes de Datos
+            titulo: 'Redes de Datos - Resumen KND Parte 1 (Modelo OSI y Arquitectura TCP/IP)',
+            etiquetas: '["redes","knd","modelo osi","tcp ip"]',
+            id_usuario: titoId,
+            likes: 23,
+            descargas: 54
+        },
+        {
+            id: 16,
+            file: 'Resumen 2 KND Redes.pdf',
+            id_materia: 26, // Redes de Datos
+            titulo: 'Redes de Datos - Resumen KND Parte 2 (Subnetting IPv4/IPv6 y Enrutamiento RIP/OSPF)',
+            etiquetas: '["redes","knd","subnetting","enrutamiento"]',
+            id_usuario: franId,
+            likes: 28,
+            descargas: 68
+        },
+        {
+            id: 17,
+            file: 'Resumen 3 KND Redes.pdf',
+            id_materia: 26, // Redes de Datos
+            titulo: 'Redes de Datos - Resumen KND Parte 3 (Capas de Transporte y Aplicación: TCP, UDP, DNS, HTTP)',
+            etiquetas: '["redes","knd","transporte","dns","http"]',
+            id_usuario: francoId,
+            likes: 21,
+            descargas: 46
+        },
+        {
+            id: 18,
+            file: 'RESUMEN BASE DE DATOS1.pdf',
+            id_materia: 19, // Base de Datos
+            titulo: 'Resumen SQL, Álgebra Relacional y Normalización 1FN a BCNF',
+            etiquetas: '["base de datos","sql","algebra relacional","normalizacion"]',
+            id_usuario: tinchoId,
+            likes: 35,
+            descargas: 88
+        },
+        {
+            id: 19,
+            file: 'RESUMEN DISEÑO DE SISTEMAS.pdf',
+            id_materia: 23, // Diseño de Sistemas de Información
+            titulo: 'Diseño de Sistemas - Patrones de Diseño GoF y Arquitecturas Limpias',
+            etiquetas: '["diseno de sistemas","patrones gof","arquitectura","solid"]',
+            id_usuario: luId,
+            likes: 38,
+            descargas: 95
+        },
+        {
+            id: 20,
+            file: 'Resumen PyE final.pdf',
+            id_materia: 17, // Probabilidad y Estadística
+            titulo: 'Resumen Final Completo - Probabilidad y Estadística (Variables Discretas, Continuas e Inferencia)',
+            etiquetas: '["probabilidad","estadistica","distribuciones","inferencia"]',
+            id_usuario: titoId,
+            likes: 26,
+            descargas: 60
+        },
+        {
+            id: 21,
+            file: 'Resumen-Final-Inv.-Op-V3.pdf',
+            id_materia: 27, // Investigación Operativa
+            titulo: 'Investigación Operativa - Resumen Final V3 (Método Simplex, Transporte y PERT/CPM)',
+            etiquetas: '["investigacion operativa","simplex","transporte","pert cpm"]',
+            id_usuario: francoId,
+            likes: 23,
+            descargas: 51
+        },
+        {
+            id: 22,
+            file: 'SOP - Resumen 1er parcial.pdf',
+            id_materia: 15, // Sistemas Operativos
+            titulo: 'Sistemas Operativos - Resumen 1er Parcial (Procesos, Hilos y Concurrencia)',
+            etiquetas: '["sistemas operativos","sop","procesos","concurrencia"]',
+            id_usuario: franId,
+            likes: 32,
+            descargas: 76
+        },
+        {
+            id: 23,
+            file: 'SOP - Resumen 2do parcial.pdf',
+            id_materia: 15, // Sistemas Operativos
+            titulo: 'Sistemas Operativos - Resumen 2do Parcial (Memoria Virtual, Paginación y Segmentación)',
+            etiquetas: '["sistemas operativos","sop","memoria virtual","paginacion"]',
+            id_usuario: tinchoId,
+            likes: 29,
+            descargas: 70
+        },
+        {
+            id: 24,
+            file: 'SOP - Resúmen 3er Parcial.pdf',
+            id_materia: 15, // Sistemas Operativos
+            titulo: 'Sistemas Operativos - Resumen 3er Parcial (Sistemas de Archivos y Planificación de Disco)',
+            etiquetas: '["sistemas operativos","sop","file systems","i/o"]',
+            id_usuario: luId,
+            likes: 30,
+            descargas: 74
+        }
+    ];
+
+    // Calificaciones para los 24 materiales (por los demás miembros del equipo)
+    const calificacionesSQL = [];
+    let califId = 1;
+    for (const m of materialesDef) {
+        // Los otros 4 miembros califican el material con 4 o 5 estrellas
+        const votantes = teamIds.filter(id => id !== m.id_usuario);
+        for (const vId of votantes) {
+            calificacionesSQL.push({
+                id: califId++,
+                id_material: m.id,
+                id_usuario: vId,
+                puntuacion: (m.id + vId) % 2 === 0 ? 5 : 4
+            });
+        }
+    }
+
+    // 2. Definición de las 29 publicaciones con contenido 100% de opinión y debate (sin mención de archivos ni apuntes)
     const publicacionesForo = [
         {
             id_materia: 1, // Análisis Matemático I
@@ -550,13 +792,6 @@ async function main() {
         }
     ];
 
-    // Limpiar todas las publicaciones, comentarios y reacciones de foro en la base de datos
-    await baseDeDatos.query('DELETE FROM foro_reacciones');
-    await baseDeDatos.query('DELETE FROM foro_comentarios');
-    await baseDeDatos.query('DELETE FROM foro_publicaciones');
-    console.log('Tablas del foro vaciadas para carga limpia.');
-
-    // Cargar las publicaciones, comentarios y reacciones
     let pubId = 1;
     let comId = 1;
     let reaccId = 1;
@@ -569,7 +804,6 @@ async function main() {
         const thisPubId = pubId++;
         const createdAt = '2026-09-26 10:00:00';
         
-        // Calcular reacciones para esta publicación (los otros 4 miembros dan positivo)
         const reaccsPub = [];
         for (const uid of teamIds) {
             if (uid !== pub.id_usuario) {
@@ -603,7 +837,6 @@ async function main() {
             const thisComId = comId++;
             const comCreatedAt = '2026-09-26 11:00:00';
 
-            // Reacciones al comentario
             const reaccsCom = [];
             for (const uid of teamIds.slice(0, 3)) {
                 if (uid !== com.id_usuario) {
@@ -668,52 +901,27 @@ async function main() {
         }
     }
 
-    // Insertar en la base de datos
-    console.log(`Insertando ${publicacionesSQL.length} publicaciones...`);
-    for (const p of publicacionesSQL) {
-        await baseDeDatos.query(`INSERT INTO foro_publicaciones (id, id_materia, id_usuario, titulo, contenido, categoria, votos, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, {
-            replacements: [p.id, p.id_materia, p.id_usuario, p.titulo, p.contenido, p.categoria, p.votos, p.createdAt, p.updatedAt]
-        });
-    }
-
-    console.log(`Insertando ${comentariosSQL.length} comentarios...`);
-    for (const c of comentariosSQL) {
-        await baseDeDatos.query(`INSERT INTO foro_comentarios (id, id_publicacion, id_usuario, contenido, votos, id_comentario_padre, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, {
-            replacements: [c.id, c.id_publicacion, c.id_usuario, c.contenido, c.votos, c.id_comentario_padre, c.createdAt, c.updatedAt]
-        });
-    }
-
-    console.log(`Insertando ${reaccionesSQL.length} reacciones...`);
-    for (const r of reaccionesSQL) {
-        await baseDeDatos.query(`INSERT INTO foro_reacciones (id, id_publicacion, id_comentario, id_usuario, tipo, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)`, {
-            replacements: [r.id, r.id_publicacion, r.id_comentario, r.id_usuario, r.tipo, r.createdAt, r.updatedAt]
-        });
-    }
-
-    // Reconstruir seed.sql limpio
+    // Lectura de seed.sql base
     const seedPath = path.join(__dirname, '../database/seed.sql');
     let seedContent = fs.readFileSync(seedPath, 'utf8');
 
-    // 1. Eliminar sección vieja de DATOS DE SIMULACIÓN si existía
+    // Cortar cualquier sección de simulación previa
     const simMarker = '-- ===============================================================\n-- DATOS DE SIMULACIÓN';
     if (seedContent.includes(simMarker)) {
         seedContent = seedContent.split(simMarker)[0];
     }
 
-    // 2. Eliminar las publicaciones viejas de Admin y Juan Perez en seed.sql
-    // Buscamos: INSERT INTO foro_publicaciones ... hasta antes de UPDATE materias
+    // Eliminar completamente la sección vieja de FORO PUBLICACIONES Y COMENTARIOS
     const regexForoViejo = /-- FORO PUBLICACIONES Y COMENTARIOS SEED[\s\S]*?UPDATE materias SET id_plan_academico = 2;/;
-    const reemplazoForo = `-- ===============================================================
--- FORO PUBLICACIONES Y COMENTARIOS SEED (Gestionado en sección de simulación)
--- ===============================================================
-UPDATE materias SET id_plan_academico = 2;`;
+    seedContent = seedContent.replace(regexForoViejo, `UPDATE materias SET id_plan_academico = 2;`);
 
-    seedContent = seedContent.replace(regexForoViejo, reemplazoForo);
+    // Eliminar completamente la sección vieja de MATERIALES DE ESTUDIO y CALIFICACIONES
+    const regexMaterialesViejos = /-- ===============================================================\s*-- MATERIALES DE ESTUDIO SEED[\s\S]*?INSERT INTO material_calificaciones[\s\S]*?\);/;
+    seedContent = seedContent.replace(regexMaterialesViejos, '');
 
-    // 3. Obtener usuarios y perfiles y materiales para append
+    // Construir la nueva sección de datos de simulación
     const [usuarios] = await baseDeDatos.query('SELECT * FROM usuarios WHERE id >= 5 ORDER BY id');
     const [perfiles] = await baseDeDatos.query('SELECT * FROM perfiles WHERE id_usuario >= 3 ORDER BY id_usuario');
-    const [materiales] = await baseDeDatos.query('SELECT * FROM materiales_estudio WHERE id >= 4 ORDER BY id');
 
     let appendSQL = '\n\n-- ===============================================================\n';
     appendSQL += '-- DATOS DE SIMULACIÓN (EQUIPO, VISITANTES, MATERIALES Y FORO)\n';
@@ -733,36 +941,43 @@ UPDATE materias SET id_plan_academico = 2;`;
         `(${p.id_usuario}, '${p.apodo || ''}', ${p.anio_cursado || 1}, '${(p.biografia || '').replace(/'/g, "''")}', '${p.foto_perfil || '🎓'}', '${p.rol_equipo || 'Alumno'}', 1, 1)`
     ).join(',\n') + ';\n\n';
 
-    // 3. MATERIALES DE ESTUDIO
-    appendSQL += '-- 3. MATERIALES DE ESTUDIO REALES (24 ARCHIVOS)\n';
+    // 3. MATERIALES DE ESTUDIO (24 REALES)
+    appendSQL += '-- 3. MATERIALES DE ESTUDIO REALES (24 ARCHIVOS ASIGNADOS AL EQUIPO)\n';
     appendSQL += 'INSERT INTO materiales_estudio (id, ubicacion, id_materia, id_usuario, titulo, etiquetas, fecha_de_publicacion, likes, descargas)\nVALUES\n';
-    appendSQL += materiales.map(m => 
-        `(${m.id}, '${m.ubicacion.replace(/'/g, "''")}', ${m.id_materia}, ${m.id_usuario}, '${m.titulo.replace(/'/g, "''")}', '${m.etiquetas.replace(/'/g, "''")}', '${m.fecha_de_publicacion || '2026-09-25 14:30:00'}', ${m.likes}, ${m.descargas})`
+    appendSQL += materialesDef.map(m => 
+        `(${m.id}, 'materiales/2026/10/${m.file.replace(/'/g, "''")}', ${m.id_materia}, ${m.id_usuario}, '${m.titulo.replace(/'/g, "''")}', '${m.etiquetas.replace(/'/g, "''")}', '2026-09-25 14:30:00', ${m.likes}, ${m.descargas})`
     ).join(',\n') + ';\n\n';
 
-    // 4. FORO PUBLICACIONES
-    appendSQL += '-- 4. PUBLICACIONES DEL FORO (EXCLUSIVAS DE LOS 5 INTEGRANTES DEL EQUIPO)\n';
+    // 4. CALIFICACIONES DE MATERIALES
+    appendSQL += '-- 4. CALIFICACIONES DE MATERIALES (ESTRELLAS DE EVALUACIÓN)\n';
+    appendSQL += 'INSERT INTO material_calificaciones (id, id_material, id_usuario, puntuacion)\nVALUES\n';
+    appendSQL += calificacionesSQL.map(cal => 
+        `(${cal.id}, ${cal.id_material}, ${cal.id_usuario}, ${cal.puntuacion})`
+    ).join(',\n') + ';\n\n';
+
+    // 5. FORO PUBLICACIONES
+    appendSQL += '-- 5. PUBLICACIONES DEL FORO (EXCLUSIVAS DE LOS 5 INTEGRANTES DEL EQUIPO)\n';
     appendSQL += 'INSERT INTO foro_publicaciones (id, id_materia, id_usuario, titulo, contenido, categoria, votos, createdAt, updatedAt)\nVALUES\n';
     appendSQL += publicacionesSQL.map(pub => 
         `(${pub.id}, ${pub.id_materia}, ${pub.id_usuario}, '${pub.titulo.replace(/'/g, "''")}', '${pub.contenido.replace(/'/g, "''")}', '${pub.categoria}', ${pub.votos}, '${pub.createdAt}', '${pub.updatedAt}')`
     ).join(',\n') + ';\n\n';
 
-    // 5. FORO COMENTARIOS
-    appendSQL += '-- 5. COMENTARIOS Y DEBATES ANIDADOS (EXCLUSIVOS DEL EQUIPO)\n';
+    // 6. FORO COMENTARIOS
+    appendSQL += '-- 6. COMENTARIOS Y DEBATES ANIDADOS (EXCLUSIVOS DEL EQUIPO)\n';
     appendSQL += 'INSERT INTO foro_comentarios (id, id_publicacion, id_usuario, contenido, votos, id_comentario_padre, createdAt, updatedAt)\nVALUES\n';
     appendSQL += comentariosSQL.map(c => 
         `(${c.id}, ${c.id_publicacion}, ${c.id_usuario}, '${c.contenido.replace(/'/g, "''")}', ${c.votos}, ${c.id_comentario_padre !== null ? c.id_comentario_padre : 'NULL'}, '${c.createdAt}', '${c.updatedAt}')`
     ).join(',\n') + ';\n\n';
 
-    // 6. FORO REACCIONES
-    appendSQL += '-- 6. REACCIONES (LIKES) REGISTRADAS (EXCLUSIVAS DEL EQUIPO)\n';
+    // 7. FORO REACCIONES
+    appendSQL += '-- 7. REACCIONES (LIKES) REGISTRADAS (EXCLUSIVAS DEL EQUIPO)\n';
     appendSQL += 'INSERT INTO foro_reacciones (id, id_publicacion, id_comentario, id_usuario, tipo, createdAt, updatedAt)\nVALUES\n';
     appendSQL += reaccionesSQL.map(r => 
         `(${r.id}, ${r.id_publicacion !== null ? r.id_publicacion : 'NULL'}, ${r.id_comentario !== null ? r.id_comentario : 'NULL'}, ${r.id_usuario}, '${r.tipo}', '${r.createdAt}', '${r.updatedAt}')`
     ).join(',\n') + ';\n\n';
 
     fs.writeFileSync(seedPath, seedContent.trimEnd() + appendSQL);
-    console.log('seed.sql reescrito y guardado limpiamente!');
+    console.log('seed.sql actualizado limpiamente sin materiales antiguos.');
 
     process.exit(0);
 }
