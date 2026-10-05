@@ -4,7 +4,8 @@ node_modules/
 
 # Ignorar todo dentro de 2026
 repositorio/materiales/2026/*
-# No ignorar la carpeta 06
+# No ignorar la carpeta 06 y 10
 !repositorio/materiales/2026/06/
-# No ignorar su contenido
 !repositorio/materiales/2026/06/**
+!repositorio/materiales/2026/10/
+!repositorio/materiales/2026/10/**
