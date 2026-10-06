@@ -27,25 +27,40 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const CATEGORIAS_GUIA = [
   {
-    id: 'aprobacion',
-    titulo: 'Aprobación Directa y Notas',
+    id: 'materias_iniciales',
+    titulo: '1° y 2° Año (Cátedras)',
     icono: <FiAward className="text-amber-500" />,
-    badge: '45 Cátedras',
+    badge: '9 Cátedras',
     preguntas: [
-      '¿Cuáles son las condiciones de aprobación directa en Paradigmas de Programación?',
-      '¿Cómo es la promoción directa en Diseño de Sistemas de Información?',
-      '¿Qué nota mínima en parciales y TPI pide Bases de Datos?',
-      '¿Cómo se aprueba de forma directa en Sistemas Operativos?',
-      '¿Cuáles son los requisitos de promoción en Redes de Datos?',
-      '¿Cómo funciona la aprobación directa en Backend de Aplicaciones?',
-      '¿Cuáles son las pautas de evaluación y aprobación en Proyecto Final?'
+      '¿Cuáles son las condiciones de aprobación directa en Algoritmos y Estructuras de Datos?',
+      '¿Cómo es la evaluación y regularidad en Arquitectura de Computadoras?',
+      '¿Qué contenidos mínimos y temas evalúa Lógica y Estructuras Discretas?',
+      '¿Cómo se aprueba de forma directa Paradigmas de Programación?',
+      '¿Cuáles son los requisitos de regularidad en Sistemas Operativos?',
+      '¿Qué escala de notas y condiciones de promoción pide Probabilidades y Estadísticas?',
+      '¿Cómo se evalúa la parte práctica en Sintaxis y Semántica de los Lenguajes?'
+    ]
+  },
+  {
+    id: 'materias_avanzadas',
+    titulo: '3°, 4° y 5° Año (Cátedras)',
+    icono: <FiCpu className="text-purple-500" />,
+    badge: '36 Cátedras',
+    preguntas: [
+      '¿Qué nota mínima en parciales y TPI exige Bases de Datos?',
+      '¿Cómo funciona la promoción directa en Diseño de Sistemas de Información?',
+      '¿Cuáles son las condiciones de aprobación directa en Backend de Aplicaciones?',
+      '¿Cuáles son los requisitos de aprobación en Redes de Datos?',
+      '¿Qué temas y tecnologías se evalúan en Desarrollo y Operaciones DevOps?',
+      '¿Qué exige Inteligencia Artificial para la regularidad y aprobación directa?',
+      '¿Cuáles son las pautas de evaluación y entrega en Proyecto Final?'
     ]
   },
   {
     id: 'correlatividades',
     titulo: 'Planes y Correlatividades',
     icono: <FiLayers className="text-indigo-500" />,
-    badge: 'Ord. 1877/1878',
+    badge: 'Ord. 1877/1878/1910',
     preguntas: [
       '¿Cuáles son las materias de 1° año del Plan 2023 (Ord. 1877)?',
       '¿Cuáles son las materias de 2° año del Plan 2023?',
@@ -54,6 +69,20 @@ const CATEGORIAS_GUIA = [
       '¿Qué correlativas necesito tener aprobadas para cursar Inteligencia Artificial?',
       '¿Qué correlativas necesito para rendir el examen final de Redes de Datos?',
       '¿Qué materias y requisitos debo cumplir para el título de Analista Desarrollador (Ord. 1910)?'
+    ]
+  },
+  {
+    id: 'tramites',
+    titulo: 'PPS, Labsis y Trámites',
+    icono: <FiCheckCircle className="text-cyan-500" />,
+    badge: 'Normas y Reglamentos',
+    preguntas: [
+      '¿Cuáles son los requisitos para iniciar la Práctica Profesional Supervisada (PPS - ALU01-02)?',
+      '¿Cuántas horas mínimas exige la Práctica Profesional Supervisada (PPS)?',
+      '¿Cómo tramito el cambio de comisión por motivos laborales (Formulario F0035-P y ALU02-02)?',
+      '¿Cuáles son las normas de seguridad y conducta en los laboratorios de informática (LabSis)?',
+      '¿Cómo funciona el trámite de Pase entre Facultades Regionales de la UTN?',
+      '¿En qué consiste el Programa de Tutorías de Inicio y Finalización de Carrera?'
     ]
   },
   {
@@ -71,51 +100,16 @@ const CATEGORIAS_GUIA = [
   },
   {
     id: 'becas',
-    titulo: 'Becas y Boleto (BEG)',
+    titulo: 'Becas, Pasantías y SAE',
     icono: <FiBookOpen className="text-emerald-500" />,
-    badge: 'SAE',
+    badge: 'Leyes y SAE',
     preguntas: [
       '¿Cómo solicito el Boleto Educativo Gratuito (BEG) con Ciudadano Digital (CiDi)?',
       '¿Quiénes se pueden postular a las Becas Estratégicas Manuel Belgrano en Sistemas?',
-      '¿Cuáles son las Becas Universitarias de Grado de la UTN (Rendimiento y Ayuda)?',
-      '¿Cómo postularse a las Becas de Investigación BINID y EVC-CIN de la SECyT?',
-      '¿Cuáles son los requisitos socioeconómicos y límites de ingresos para las becas?'
-    ]
-  },
-  {
-    id: 'pasantias',
-    titulo: 'Pasantías y Empleo',
-    icono: <FiFileText className="text-purple-500" />,
-    badge: 'SEU',
-    preguntas: [
       '¿Qué requisitos académicos exige la facultad para acceder a pasantías laborales (Ley 26.427)?',
       '¿Cuántas horas semanales como máximo puede durar una pasantía universitaria?',
-      '¿Cuánto dura el contrato de pasantía y cómo se renueva?',
-      '¿Cómo autorizo a un tercero a retirar mi título universitario en colación (modelo de poder)?'
-    ]
-  },
-  {
-    id: 'tramites',
-    titulo: 'Trámites, Bedelía y PPS',
-    icono: <FiCheckCircle className="text-cyan-500" />,
-    badge: 'Alumnos',
-    preguntas: [
-      '¿Cómo tramito el cambio de comisión por motivos laborales (Formulario F0035-P)?',
-      '¿Cuáles son los requisitos para iniciar la Práctica Profesional Supervisada (PPS - ALU01-02)?',
-      '¿Cómo funciona el trámite de Pase entre Facultades Regionales de la UTN?',
-      '¿Cómo descargo mi Certificado de Alumno Regular con código QR en Autogestión 4?',
-      '¿Qué ocurre si pierdo la regularidad y cómo se pide la readmisión curricular?'
-    ]
-  },
-  {
-    id: 'campus',
-    titulo: 'Comedor y Campus',
-    icono: <FiHardDrive className="text-rose-500" />,
-    badge: 'Servicios',
-    preguntas: [
       '¿En qué horario funciona el Comedor Universitario y cómo se accede al menú subsidiado?',
-      '¿Qué disciplinas deportivas gratuitas ofrece la Secretaría de Asuntos Estudiantiles (SAE)?',
-      '¿Cuáles son las normas de seguridad y conducta en los laboratorios de informática (LabSis)?'
+      '¿Cómo autorizo a un tercero a retirar mi título universitario en colación (modelo de poder)?'
     ]
   }
 ];
@@ -130,11 +124,11 @@ export default function ChatbotModalidadAcademica() {
 Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (Ciclo 2026)**. Toda respuesta incluye la cita y enlace al documento institucional.
 
 #### 💡 ¿En qué puedo ayudarte?
-* **Aprobación directa y regularidad** de las 45 materias del Plan 2023.
+* **Aprobación directa y regularidad** (Cátedras de 1° a 5° año del Plan 2023).
 * **Correlatividades y planes** (Ordenanzas 1877, 1878 y Título de Analista 1910).
-* **Calendario Académico 2026** (Mesas de examen, inscripciones y feriados).
-* **Boleto Educativo (BEG), Becas y Pasantías** (Ley 26.427, Manuel Belgrano, SAE y SEU).
-* **Trámites de Bedelía** (Formulario F0035-P de cambio de turno, PPS, pases y certificados con QR).
+* **Reglamentos y trámites** (Norma ALU01-02 de PPS 200 hs, Formulario F0035-P de cursado, Labsis).
+* **Calendario Académico 2026** (Mesas de examen, receso invernal, turnos especiales e inscripciones).
+* **Boleto Educativo (BEG), Becas y Pasantías** (Ley 26.427, Becas Manuel Belgrano, SAE y SEU).
 
 *Podés elegir cualquier pregunta sugerida de la **Guía Lateral** o escribir tu consulta abajo.*`,
       fuentes: [],
@@ -144,7 +138,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
 
   const [inputPrompt, setInputPrompt] = useState('');
   const [cargando, setCargando] = useState(false);
-  const [categoriaActiva, setCategoriaActiva] = useState('aprobacion');
+  const [categoriaActiva, setCategoriaActiva] = useState('materias_iniciales');
   const [busquedaGuia, setBusquedaGuia] = useState('');
   const [copiadoId, setCopiadoId] = useState(null);
   const [mostrarGuia, setMostrarGuia] = useState(() => {
@@ -833,11 +827,12 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {[
+                    '¿Cuáles son las condiciones de aprobación directa en Algoritmos y Estructuras de Datos?',
                     '¿Cómo promociono Paradigmas de Programación?',
                     '¿Cuáles son las condiciones de aprobación en Sistemas Operativos?',
-                    '¿Cómo apruebo directo Redes de Datos?',
                     '¿Cómo funciona la promoción en Bases de Datos?',
-                    '¿Cuáles son los requisitos del Boleto Educativo Gratuito (BEG)?'
+                    '¿Cuáles son los requisitos de la Práctica Profesional Supervisada (PPS)?',
+                    '¿Cuáles son las fechas de exámenes finales en el Calendario 2026?'
                   ].map((sug, sIdx) => (
                     <button
                       key={sIdx}
