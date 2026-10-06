@@ -6,7 +6,7 @@ const TooltipInfo = () => {
   return (
     <span
       onClick={(e) => e.stopPropagation()}
-      className="relative inline-flex items-center group cursor-pointer ml-1.5 align-middle select-none"
+      className="relative inline-flex items-center group cursor-pointer ml-1.5 align-middle select-none shrink-0"
     >
       <span
         aria-label="Información sobre privacidad"
@@ -14,7 +14,7 @@ const TooltipInfo = () => {
       >
         !
       </span>
-      <span className="pointer-events-none absolute bottom-full right-0 sm:left-1/2 sm:-translate-x-1/2 mb-2 w-80 p-3 bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-100 text-[11px] leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 border border-zinc-700 font-normal normal-case text-left">
+      <span className="pointer-events-none absolute bottom-full right-0 sm:left-1/2 sm:-translate-x-1/2 mb-2 w-72 sm:w-80 max-w-[calc(100vw-3rem)] p-3 bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-100 text-[11px] leading-relaxed rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 border border-zinc-700 font-normal normal-case text-left">
         <span className="font-bold text-amber-300 dark:text-amber-400 block mb-1.5">
           🔒 Privacidad y destino de tu reseña
         </span>
@@ -89,17 +89,17 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
             onChange(0);
           }
         }}
-        className="space-y-1 bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700/60 select-none cursor-pointer"
+        className="space-y-1 bg-zinc-50 dark:bg-zinc-800/50 p-2.5 sm:p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700/60 select-none cursor-pointer"
         title="Hacé clic fuera de las estrellas para desmarcar"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 pointer-events-none">{label}</label>
-          <span className={`text-xs font-extrabold font-mono pointer-events-none ${valorActual > 0 ? 'text-amber-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
+          <span className={`text-xs font-extrabold font-mono pointer-events-none shrink-0 ${valorActual > 0 ? 'text-amber-500' : 'text-zinc-400 dark:text-zinc-500'}`}>
             {valorActual > 0 ? `${valorActual}/5` : '-/5'}
           </span>
         </div>
-        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 pointer-events-none">{descripcion}</p>
-        <div className="flex items-center justify-center gap-3 pt-2 pb-1">
+        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 pointer-events-none leading-tight">{descripcion}</p>
+        <div className="flex items-center justify-center gap-1.5 sm:gap-3 pt-2 pb-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -109,11 +109,11 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
                 // Si hace clic en la misma estrella, la desmarca (0); si hace clic en otra, selecciona esa estrella
                 onChange(valorActual === star ? 0 : star);
               }}
-              className="p-1.5 text-lg transition-transform hover:scale-125 border-none bg-transparent cursor-pointer focus:outline-none"
+              className="p-1 sm:p-1.5 text-lg transition-transform hover:scale-125 border-none bg-transparent cursor-pointer focus:outline-none"
               title={`Calificar con ${star} estrella${star > 1 ? 's' : ''} (o clic para desmarcar)`}
             >
               <FiStar
-                className={`w-7 h-7 transition-colors pointer-events-none ${
+                className={`w-6 h-6 sm:w-7 sm:h-7 transition-colors pointer-events-none ${
                   valorActual > 0 && star <= valorActual
                     ? 'text-amber-400 fill-amber-400 drop-shadow-xs'
                     : 'text-zinc-300 dark:text-zinc-600 hover:text-amber-300'
@@ -127,20 +127,20 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans">
-      <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col gap-4">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col gap-3 sm:gap-4 my-auto max-h-[92vh] overflow-y-auto">
         
         {/* Cabecera */}
-        <div className="flex items-start justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center font-black text-lg">
+        <div className="flex items-start justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3 gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center font-black text-base sm:text-lg shrink-0">
               📝
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-50">
+              <h3 className="text-sm sm:text-base font-extrabold text-zinc-900 dark:text-zinc-50 leading-tight">
                 Encuesta de Cátedra al Finalizar Cursada
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+              <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                 Materia: <strong className="text-zinc-700 dark:text-zinc-200">{materia?.nombre}</strong> ({nuevoEstado})
               </p>
             </div>
@@ -149,7 +149,7 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
             <button
               type="button"
               onClick={onCancelar}
-              className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-base p-1.5 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition border-none cursor-pointer"
+              className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 text-base p-1.5 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition border-none cursor-pointer shrink-0"
               title="Cerrar sin guardar"
             >
               ✕
@@ -158,7 +158,7 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
         </div>
 
         {/* Mensaje */}
-        <div className="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100/80 dark:border-amber-900/40 rounded-2xl text-xs text-amber-900 dark:text-amber-300 leading-relaxed flex items-start gap-2.5">
+        <div className="p-2.5 sm:p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100/80 dark:border-amber-900/40 rounded-2xl text-[11px] sm:text-xs text-amber-900 dark:text-amber-300 leading-relaxed flex items-start gap-2 sm:gap-2.5">
           <FiAward className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <span>
             ¡Felicitaciones por completar la cursada! Tu opinión sincera ayuda a los próximos alumnos a conocer la dinámica docente y metodología de evaluación de la cátedra.
@@ -166,12 +166,12 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl text-xs font-semibold">
+          <div className="p-2.5 sm:p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 rounded-xl text-xs font-semibold">
             ⚠️ {error}
           </div>
         )}
 
-        <form onSubmit={handleEnviar} className="space-y-3.5">
+        <form onSubmit={handleEnviar} className="space-y-3 sm:space-y-3.5">
           {/* Criterios de Evaluación */}
           {renderEstrellas(
             dificultad,
@@ -204,22 +204,22 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
               value={comentario}
               onChange={(e) => setComentario(e.target.value)}
               placeholder="¿Qué tips le darías a alguien que está por cursar esta materia?..."
-              className="w-full p-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs outline-none focus:bg-white dark:focus:bg-zinc-900 focus:border-amber-500 transition text-zinc-800 dark:text-zinc-200 resize-none"
+              className="w-full p-2.5 sm:p-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs outline-none focus:bg-white dark:focus:bg-zinc-900 focus:border-amber-500 transition text-zinc-800 dark:text-zinc-200 resize-none"
             />
           </div>
 
           {/* Checkbox Anónimo con Tooltip Informativo */}
-          <label className="flex items-center justify-between p-2.5 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 cursor-pointer select-none">
-            <div className="flex items-center gap-2.5">
+          <label className="flex items-center justify-between p-2.5 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 cursor-pointer select-none gap-2">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <input
                 type="checkbox"
                 checked={esAnonima}
                 onChange={(e) => setEsAnonima(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer"
+                className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0"
               />
-              <div className="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-                <FiShield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                <span>Publicar mi reseña de forma <strong>100% anónima</strong></span>
+              <div className="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300 font-medium truncate">
+                <FiShield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span className="truncate">Publicar reseña de forma <strong>100% anónima</strong></span>
               </div>
             </div>
             <TooltipInfo />
@@ -230,7 +230,7 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
             <button
               type="submit"
               disabled={enviando || dificultad === 0 || claridadDocente === 0 || disponibilidad === 0}
-              className={`w-full sm:w-auto px-8 py-3 rounded-xl text-xs font-bold shadow-sm transition border-none flex items-center justify-center gap-2 ${
+              className={`w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl text-xs font-bold shadow-sm transition border-none flex items-center justify-center gap-2 ${
                 dificultad === 0 || claridadDocente === 0 || disponibilidad === 0
                   ? 'bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
                   : 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer hover:shadow'

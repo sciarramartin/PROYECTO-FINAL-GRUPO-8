@@ -88,27 +88,27 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans">
+      <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-100 flex flex-col gap-3 sm:gap-4 my-auto max-h-[92vh] overflow-y-auto">
         
         {/* Cabecera */}
-        <div className="flex items-start justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-lg">
+        <div className="flex items-start justify-between border-b border-slate-100 pb-3 gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center font-black text-base sm:text-lg shrink-0">
               📚
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-slate-800">
+              <h3 className="text-sm sm:text-base font-extrabold text-slate-800 leading-tight">
                 Seleccionar Comisión de Cursado
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
                 {materia?.nombre} {materia?.codigo ? `(${materia?.codigo})` : ''}
               </p>
             </div>
           </div>
           <button
             onClick={onCancelar}
-            className="text-slate-400 hover:text-slate-700 text-lg p-1 bg-transparent border-none cursor-pointer"
+            className="text-slate-400 hover:text-slate-700 text-lg p-1 bg-transparent border-none cursor-pointer shrink-0"
           >
             ✕
           </button>
