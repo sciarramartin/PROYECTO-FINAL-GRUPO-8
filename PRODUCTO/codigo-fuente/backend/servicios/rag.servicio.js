@@ -106,6 +106,75 @@ const MATERIAS_DISAMBIGUATION = [
   { nombre: 'Emprendimientos Tecnológicos', patterns: [/emprendimientos?\s+tecnol[oó]gicos?/i, /\bet\b/i], targetDocs: ['emprendimientos', 'et'] }
 ];
 
+const TOPICOS_INSTITUCIONALES_DISAMBIGUATION = [
+  {
+    tema: 'Boleto Educativo Gratuito (BEG)',
+    patterns: [/\b(beg|boleto|cidi|ciudadano\s+digital|transporte)\b/i],
+    targetDocs: ['boleto_educativo', 'beg']
+  },
+  {
+    tema: 'Becas Universitarias y Estratégicas',
+    patterns: [/\b(becas?|manuel\s+belgrano|progresar|binid|evc-cin|smvm|l[ií]mites?\s+de\s+ingresos?|ingresos?\s+familiares|rendimiento\s+acad[eé]mico|ayuda\s+econ[oó]mica|beca\s+de\s+servicio)\b/i],
+    targetDocs: ['becas_universitarias', 'manuel_belgrano']
+  },
+  {
+    tema: 'Pasantías Laborales Educativas',
+    patterns: [/\b(pasant[ií]as?|pasant[ií]a|ley\s*26\.?427|seu|20\s+horas|pr[oó]rroga|contrato\s+de\s+pasant)\b/i],
+    targetDocs: ['pasantias_laborales', 'pasantias', 'ley_26427']
+  },
+  {
+    tema: 'Comedor, Deportes y Salud SAE',
+    patterns: [/\b(comedor|men[uú]\s+subsidiado|viandas?|deport(es?|iv[ao]s?)|f[uú]tbol|v[oó]ley|b[aá]squet|gimnasio|seguro\s+escolar|ficha\s+m[eé]dica)\b/i],
+    targetDocs: ['comedor_universitario', 'deportes_y_salud']
+  },
+  {
+    tema: 'Trámites de Bedelía, Certificados y Readmisión',
+    patterns: [/\b(certificado|c[oó]digo\s+qr|autogesti[oó]n|tr[aá]mite\s+de\s+pase|pases?(\s+entre)?|readmisi[oó]n|p[eé]rdida\s+de\s+regularidad|anal[ií]tico\s+parcial|inscribirme(\s+para)?\s+rendir|plazo\s+de\s+inscripci[oó]n|48\s+horas\s+h[aá]biles|horarios?\s+de\s+cursado)\b/i],
+    targetDocs: ['tramites_autogestion_pases', 'bedelia']
+  },
+  {
+    tema: 'Cambio de Comisión y Horario por Trabajo',
+    patterns: [/\b(cambio\s+de\s+(curso|comisi[oó]n|horario|turno)|f0035|alu02)\b/i],
+    targetDocs: ['cambio_de_curso', 'f0035']
+  },
+  {
+    tema: 'Práctica Profesional Supervisada (PPS)',
+    patterns: [/\b(pps|pr[aá]ctica\s+profesional\s+supervisada|alu01|f0007|f0009|f0010|f0013|f0014)\b/i],
+    targetDocs: ['alu01-02', 'practica_profesional_supervisada', 'pps']
+  },
+  {
+    tema: 'Calendario Académico, Turnos de Exámenes y Recesos',
+    patterns: [/calendario/i, /turnos?.*ex[aá]m/i, /fechas?.*ex[aá]m/i, /receso/i, /inician?\s+las\s+clases/i, /inicio\s+de\s+clases/i, /segundo\s+cuatrimestre/i, /circular\s*04/i, /asuetos?/i, /feriados?/i, /turnos?\s+especiales?/i],
+    targetDocs: ['calendario_academico', 'calendario-2026', 'feriados', 'circular-04']
+  },
+  {
+    tema: 'Diseño Curricular y Materias por Año (Plan 2023)',
+    patterns: [/ordenanza\s*1877/i, /dise[nñ]o\s+curricular\s+plan\s*2023/i, /materias?.*(1|1[oº°]|primer)\s*a[nñ]o/i, /materias?.*(2|2[oº°]|segundo)\s*a[nñ]o/i, /materias?.*(3|3[oº°]|tercer)\s*a[nñ]o/i, /materias?.*(4|4[oº°]|cuarto)\s*a[nñ]o/i, /materias?.*(5|5[oº°]|quinto)\s*a[nñ]o/i, /materias?\s+electivas/i],
+    targetDocs: ['ordenanza_1877', 'diseno_curricular_plan_2023']
+  },
+  {
+    tema: 'Régimen de Correlatividades Plan 2023',
+    patterns: [/ordenanza\s*1878/i, /r[eé]gimen\s+de\s+correlatividades/i],
+    targetDocs: ['ordenanza_1878', 'regimen_de_correlatividades']
+  },
+  {
+    tema: 'Analista Desarrollador Universitario (Título Intermedio)',
+    patterns: [/analista\s+desarrollador/i, /t[ií]tulo\s+intermedio/i, /ordenanza\s*1910/i, /ordenanza\s*1911/i],
+    targetDocs: ['ordenanza_1910', 'ordenanza_1911', 'analista_desarrollador']
+  },
+  {
+    tema: 'Laboratorios Labsis y Normas de Seguridad',
+    patterns: [/labsis/i, /manual\s+de\s+seguridad/i, /seguridad\s+com[uú]n\s+laboratorios/i, /f0002/i, /f0003/i],
+    targetDocs: ['labsis', 'manual_de_seguridad']
+  },
+  {
+    tema: 'Modelo de Poder para Retiro de Títulos',
+    patterns: [/modelo\s+de\s+poder/i, /retirar\s+(mi\s+)?t[ií]tulo/i, /colaci[oó]n/i],
+    targetDocs: ['poder_para_retirar_titulos', 'modelo_de_poder']
+  }
+];
+
+
 class RagService {
   constructor() {
     this.docsDir = this.obtenerDirectorioDocumentos();
@@ -383,11 +452,6 @@ class RagService {
       t.includes('lista de modalidades') ||
       t.includes('cuantas planificaciones') ||
       t.includes('que planificaciones') ||
-      t.includes('primer ano') ||
-      t.includes('segundo ano') ||
-      t.includes('tercer ano') ||
-      t.includes('cuarto ano') ||
-      t.includes('quinto ano') ||
       t.includes('que documentos tenes') ||
       t.includes('cuantos documentos') ||
       t.includes('que temas conoces')
@@ -455,7 +519,8 @@ class RagService {
       this.construirIndiceVectorial();
     }
 
-    // 1. Detectar si la consulta apunta a una materia específica
+    // 1. Detectar si la consulta apunta a un tema institucional o a una materia
+    const temaInstitucional = TOPICOS_INSTITUCIONALES_DISAMBIGUATION.find(t => t.patterns.some(p => p.test(query)));
     const materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(query)));
 
     // 2. Vectorizar la consulta
@@ -478,18 +543,19 @@ class RagService {
 
     const queryNorm = Math.sqrt(querySumaCuadrados) || 1.0;
     const querySet = new Set(queryTokens);
-    // 3. Extraer tokens de intención pura (excluyendo el nombre de la materia para no diluir el ranking)
+
+    // 3. Extraer tokens de intención pura
     let intentTokens = queryTokens;
     if (materiaDetectada) {
       const subjectTokens = new Set(this.extraerTokens(materiaDetectada.nombre));
       intentTokens = queryTokens.filter(t => !subjectTokens.has(t));
     }
 
-    const esConsultaEvaluacion = /aprob|promoc|regular|nota|parcial|recuperator|evalua|calificac|tpi|libre|condici/i.test(query);
+    const esConsultaEvaluacion = !temaInstitucional && /aprob|promoc|regular|nota|parcial|recuperator|evalua|calificac|tpi|libre|condici/i.test(query);
     const esConsultaCorrelativas = /correlat|cursar|rendir|requisito|plan/i.test(query);
     const esConsultaDocentes = /docente|profesor|c[aá]tedra|jtp|titular|adjunto/i.test(query);
 
-    // 4. Calcular similitud coseno entre vector de consulta y cada chunk con boosting de intención
+    // 4. Calcular similitud coseno entre vector de consulta y cada chunk
     const scoredChunks = this.chunks.map(chunk => {
       let chunkVector = chunk.vector;
       let chunkNorm = chunk.norm;
@@ -527,7 +593,7 @@ class RagService {
         intentBoost = intentMatches * 0.45;
       }
 
-      // Boosting por cabeceras y secciones canónicas del documento
+      // Boosting por cabeceras solo si es consulta sobre evaluación de materia
       let headerBoost = 0;
       if (esConsultaEvaluacion) {
         if (/condiciones?\s+de\s+aprobaci|r[eé]gimen\s+de\s+aprobaci/i.test(chunkTextLower)) headerBoost += 3.5;
@@ -548,23 +614,43 @@ class RagService {
 
       similitudCoseno += intentBoost + headerBoost;
 
-      // Subject-Specific Disambiguation Boosting
-      if (materiaDetectada) {
-        const esDelDocObjetivo = materiaDetectada.targetDocs.some(td => docLower.includes(td));
+      // A. Disambiguación Institucional (Becas, BEG, Pasantías, Calendario, Bedelía, Plan 1877, etc.)
+      if (temaInstitucional) {
+        const esDelDocObjetivo = temaInstitucional.targetDocs.some(td => docLower.includes(td.toLowerCase()));
         if (esDelDocObjetivo) {
-          // Boost masivo al documento exacto de la materia consultada
-          similitudCoseno = (similitudCoseno * 5.0) + 1.5;
+          similitudCoseno = (similitudCoseno * 5.0) + 3.5;
+
+          // Si pregunta por un año específico del Plan 2023 en Ordenanza 1877:
+          if (temaInstitucional.tema.includes('Diseño Curricular') || docLower.includes('1877')) {
+            if (/1[oº°]|primer/i.test(query) && /primer\s+nivel/i.test(chunkTextLower)) similitudCoseno += 35.0;
+            if (/2[oº°]|segundo/i.test(query) && /segundo\s+nivel/i.test(chunkTextLower)) similitudCoseno += 35.0;
+            if (/3[oº°]|tercer/i.test(query) && /tercer\s+nivel/i.test(chunkTextLower)) similitudCoseno += 35.0;
+            if (/4[oº°]|cuarto/i.test(query) && /cuarto\s+nivel/i.test(chunkTextLower)) similitudCoseno += 35.0;
+            if (/5[oº°]|quinto/i.test(query) && /quinto\s+nivel/i.test(chunkTextLower)) similitudCoseno += 35.0;
+            if (/electiv/i.test(query) && /electiv/i.test(chunkTextLower)) similitudCoseno += 25.0;
+          }
         } else {
-          // Verificar si pertenece a OTRA materia para penalizarlo y evitar citas cruzadas
-          const otraMateria = MATERIAS_DISAMBIGUATION.find(om => 
-            om.nombre !== materiaDetectada.nombre && om.targetDocs.some(td => docLower.includes(td))
-          );
-          if (otraMateria) {
+          // Penalizar fuertemente las 45 planificaciones de materias para que no contaminen la consulta institucional
+          const esPlanificacionMateria = docLower.startsWith('[1') || docLower.startsWith('[2') || docLower.startsWith('[3') || docLower.startsWith('[4') || docLower.startsWith('[5');
+          if (esPlanificacionMateria) {
+            similitudCoseno = similitudCoseno * 0.01;
+          }
+        }
+      }
+      // B. Disambiguación por Cátedra / Materia Específica
+      else if (materiaDetectada) {
+        const esDelDocObjetivo = materiaDetectada.targetDocs.some(td => docLower.includes(td.toLowerCase()));
+        if (esDelDocObjetivo) {
+          similitudCoseno = (similitudCoseno * 5.0) + 2.5;
+        } else {
+          const esOrdenanzaCorrelativas = esConsultaCorrelativas && docLower.includes('1878');
+          if (!esOrdenanzaCorrelativas) {
             similitudCoseno = similitudCoseno * 0.02; // Fuerte penalización a materias ajenas
           }
         }
-      } else {
-        // Metadata boosting estándar por coincidencia de tokens en el nombre del archivo
+      }
+      // C. Búsqueda libre estándar con matching de metadata en el nombre de archivo
+      else {
         const docTokens = this.extraerTokens(chunk.documento);
         let docMatches = 0;
         docTokens.forEach(dt => {
@@ -572,9 +658,9 @@ class RagService {
         });
 
         if (docMatches >= 2) {
-          similitudCoseno = (similitudCoseno * 2.5) + (docMatches * 0.15);
+          similitudCoseno = (similitudCoseno * 2.5) + (docMatches * 0.2);
         } else if (docMatches === 1) {
-          similitudCoseno = (similitudCoseno * 1.5) + 0.05;
+          similitudCoseno = (similitudCoseno * 1.5) + 0.1;
         }
       }
 
@@ -586,20 +672,31 @@ class RagService {
 
     scoredChunks.sort((a, b) => b.score - a.score);
 
-    // Si se detectó una materia específica, filtrar exclusivamente los fragmentos de esa materia
-    if (materiaDetectada) {
-      const deLaMateria = scoredChunks.filter(c => 
-        materiaDetectada.targetDocs.some(td => (c.documento || '').toLowerCase().includes(td))
+    // Si se detectó tema institucional, devolver los mejores del tema objetivo
+    if (temaInstitucional) {
+      const delTema = scoredChunks.filter(c => 
+        temaInstitucional.targetDocs.some(td => (c.documento || '').toLowerCase().includes(td.toLowerCase()))
       );
-      if (deLaMateria.length > 0) {
-        return deLaMateria.slice(0, Math.min(topK, 3));
+      if (delTema.length > 0) {
+        return delTema.slice(0, Math.min(topK, 5));
       }
     }
 
-    // Filtro dinámico de calidad general: si el primer resultado tiene alta confianza, limitamos a los 3 mejores
+    // Si se detectó materia específica, filtrar exclusivamente fragmentos de la materia
+    if (materiaDetectada) {
+      const deLaMateria = scoredChunks.filter(c => 
+        materiaDetectada.targetDocs.some(td => (c.documento || '').toLowerCase().includes(td.toLowerCase())) ||
+        (esConsultaCorrelativas && (c.documento || '').toLowerCase().includes('1878'))
+      );
+      if (deLaMateria.length > 0) {
+        return deLaMateria.slice(0, Math.min(topK, 4));
+      }
+    }
+
+    // Filtro dinámico de calidad general
     const filtrados = scoredChunks.filter(c => c.score > 0.05);
     if (filtrados.length > 0 && filtrados[0].score >= 0.35) {
-      return filtrados.slice(0, Math.min(topK, 4));
+      return filtrados.slice(0, Math.min(topK, 5));
     }
     return filtrados.slice(0, Math.min(topK, 5));
   }
@@ -609,83 +706,40 @@ class RagService {
   }
 
   /**
-   * Expansión Inteligente de Consultas con Groq (Query Expansion / HyDE):
-   * Traduce la jerga estudiantil o preguntas informales a los términos formales,
-   * nombres de cátedra y conceptos normativos que figuran de forma literal en los PDFs.
+   * Normalización inteligente de siglas y jerga estudiantil (sin inyecciones ruidosas que desvíen el RAG)
    */
-  async expandirConsultaConLLM(prompt, apiKey) {
-    if (!prompt || prompt.trim().length < 4) return prompt;
+  normalizarConsultaParaBusqueda(prompt) {
+    if (!prompt || prompt.trim().length < 3) return prompt || '';
 
-    // Normalizador local inmediato de modismos y siglas universitarias
     const normalizacionesLocales = [
-      { pattern: /\b(zafo|zafar|zafe)\b/gi, terms: 'aprobación directa promoción regularidad' },
+      { pattern: /\b(zafo|zafar|zafe|promociono|promocionar)\b/gi, terms: 'aprobación directa promoción' },
       { pattern: /\b(recu|recus)\b/gi, terms: 'evaluaciones recuperatorias recuperatorio' },
-      { pattern: /\b(profe|profes|profesor)\b/gi, terms: 'cuerpo docente profesor titular adjunto' },
-      { pattern: /\b(final|finales)\b/gi, terms: 'examen final mesa de examen regularidad' },
-      { pattern: /\b(correlativas?)\b/gi, terms: 'ordenanza 1878 régimen de correlatividades requisitos' },
+      { pattern: /\b(profe|profes|profesor|profesora)\b/gi, terms: 'cuerpo docente profesor titular adjunto' },
       { pattern: /\b(cambio\s+de\s+(curso|turno|comision))\b/gi, terms: 'formulario F0035-P cambio de curso comision motivos laborales' },
-      { pattern: /\b(pps)\b/gi, terms: 'practica profesional supervisada ALU01-02 reglamento' },
+      { pattern: /\b(pps)\b/gi, terms: 'practica profesional supervisada ALU01-02' },
+      { pattern: /\b(beg)\b/gi, terms: 'boleto educativo gratuito cidi transporte' },
       { pattern: /\b(am1|ami)\b/gi, terms: 'Análisis Matemático I' },
       { pattern: /\b(am2|amii)\b/gi, terms: 'Análisis Matemático II' },
       { pattern: /\b(aga|algebra)\b/gi, terms: 'Álgebra y Geometría Analítica' },
-      { pattern: /\b(sop|sistemas\s+operativos)\b/gi, terms: 'Sistemas Operativos' },
-      { pattern: /\b(ssl|sintaxis)\b/gi, terms: 'Sintaxis y Semántica de los Lenguajes' },
+      { pattern: /\b(sop)\b/gi, terms: 'Sistemas Operativos' },
+      { pattern: /\b(ssl)\b/gi, terms: 'Sintaxis y Semántica de los Lenguajes' },
       { pattern: /\b(asi)\b/gi, terms: 'Análisis de Sistemas de Información' },
-      { pattern: /\b(ppr|pdp|paradigmas?)\b/gi, terms: 'Paradigmas de Programación' },
+      { pattern: /\b(ppr|pdp)\b/gi, terms: 'Paradigmas de Programación' },
       { pattern: /\b(pye)\b/gi, terms: 'Probabilidad y Estadística' },
-      { pattern: /\b(bda?|bases?\s+de\s+datos)\b/gi, terms: 'Bases de Datos' },
-      { pattern: /\b(redes|redes\s+de\s+datos)\b/gi, terms: 'Redes de Datos' },
+      { pattern: /\b(bda)\b/gi, terms: 'Bases de Datos' },
       { pattern: /\b(sds)\b/gi, terms: 'Seguridad en el Desarrollo de Software' },
       { pattern: /\b(dsi)\b/gi, terms: 'Diseño de Sistemas de Información' },
       { pattern: /\b(dds)\b/gi, terms: 'Desarrollo de Software' }
     ];
 
-    let queryConSinonimos = prompt;
+    let queryNormalizada = prompt;
     normalizacionesLocales.forEach(({ pattern, terms }) => {
-      if (pattern.test(queryConSinonimos)) {
-        queryConSinonimos += ` ${terms}`;
+      if (pattern.test(queryNormalizada)) {
+        queryNormalizada += ` ${terms}`;
       }
     });
 
-    if (!apiKey) return queryConSinonimos;
-
-    try {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'openai/gpt-oss-120b',
-          messages: [
-            {
-              role: 'system',
-              content: 'Sos un asistente de búsqueda para la carrera Ingeniería en Sistemas de Información UTN FRC. El alumno escribe en lenguaje coloquial o estudiantil. Traducí su consulta a términos técnicos y formales que aparezcan literalmente en las planificaciones de cátedra y normativas oficiales (nombre formal de la asignatura, contenidos mínimos, unidades temáticas, criterios de evaluación, aprobación directa, regularidad, ordenanza 1877). Respondé SOLO los términos clave en una sola línea, sin viñetas ni explicaciones.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.1,
-          max_tokens: 500
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const content = data.choices?.[0]?.message?.content?.trim();
-        if (content && content.length > 5) {
-          const limpio = content.replace(/[\n\r]+/g, ' ').replace(/[#*"-]/g, ' ').trim();
-          return `${queryConSinonimos} ${limpio}`;
-        }
-      }
-    } catch (err) {
-      console.warn('⚠️ [RAG Query Expansion] Continuando con sinónimos locales:', err.message);
-    }
-
-    return queryConSinonimos;
+    return queryNormalizada;
   }
 
   /**
@@ -739,12 +793,12 @@ class RagService {
       }
     }
 
-    // Expansión Inteligente de Consultas con Groq (Alternativa 1)
+    // Normalización inteligente de la consulta para el motor RAG
     if (!esMeta) {
-      queryParaBusqueda = await this.expandirConsultaConLLM(queryParaBusqueda, apiKey);
+      queryParaBusqueda = this.normalizarConsultaParaBusqueda(queryParaBusqueda);
     }
 
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 5);
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6);
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       return {
@@ -776,8 +830,11 @@ class RagService {
         * 5° Año: 16 materias y electivas (Inteligencia Artificial, Ciencia de Datos, Proyecto Final, Blockchain, etc.).
      c) Que además contás con las normativas oficiales completas (Ordenanzas 1877, 1878, 1910) y reglamentos de bedelía.
    - NUNCA digas que solo tenés 3 modalidades o 3 materias.`
-      : `1. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
-   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)*).`;
+      : `1. CONSULTAS ACADÉMICAS Y NORMATIVAS (GROUNDING RAG ESTRICTO):
+   - Respondé basándote fielmente y con total detalle en los fragmentos del CONTEXTO RECUPERADO.
+   - Brindá información concreta y estructurada (fechas exactas, notas mínimas, requisitos específicos, plazos de horas hábiles, porcentajes de asistencia, asignaturas correlativas o normativas aplicables).
+   - Citá siempre la fuente oficial consultada (ejemplo: *Fuente: [Guia_Oficial_Calendario]_Calendario_Academico_2026_Turnos_Examenes_y_Recesos.md* o *Fuente: Modalidad Académica - Paradigmas de Programación*).
+   - NUNCA respondas que la consulta no se encuentra contemplada si el contexto recuperado contiene información relevante sobre el tema consultado.`;
 
     const systemPrompt = `Sos el Asistente Virtual Oficial de Modalidad Académica y Normativas de Campus UTN (Facultad Regional Córdoba - Ingeniería en Sistemas de Información).
 
@@ -820,6 +877,7 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
       { documento: '[Ordenanza_1877]_Diseno_Curricular_Plan_2023_ISI.pdf', pagina: 1, fragmento: 'Plan 2023 ISI: 45 asignaturas y modalidades académicas oficiales (1° a 5° año).' },
       { documento: '[Ordenanza_1878]_Regimen_de_Correlatividades_y_Equivalencias_Plan_2023.pdf', pagina: 1, fragmento: 'Régimen oficial de correlatividades y equivalencias para las 45 asignaturas.' },
       { documento: '[Ordenanza_1910]_Diseno_Curricular_Analista_Desarrollador_Universitario.pdf', pagina: 1, fragmento: 'Diseño curricular del título intermedio de Analista Desarrollador Universitario.' },
+      { documento: '[Guia_Oficial_Calendario]_Calendario_Academico_2026_Turnos_Examenes_y_Recesos.md', pagina: 1, fragmento: 'Resolución N° 2126/25: Turnos de examen 2026, receso de invierno y fechas de cursado.' },
       { documento: 'Modalidades de Cátedra de 1° a 5° Año (45 materias)', pagina: 1, fragmento: 'Planificaciones oficiales de cátedra de todas las materias de 1°, 2°, 3°, 4° y 5° año.' },
       { documento: '[Guia_Oficial_Bedelia]_Tramites_Autogestion_Pases_Equivalencias_Certificados.md', pagina: 1, fragmento: 'Procedimientos de alumnos, cambios de curso y reglamentaciones institucionales.' }
     ];
@@ -935,12 +993,12 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
       }
     }
 
-    // Expansión Inteligente de Consultas con Groq (Alternativa 1)
+    // Normalización inteligente de la consulta para el motor RAG
     if (!esMeta) {
-      queryParaBusqueda = await this.expandirConsultaConLLM(queryParaBusqueda, apiKey);
+      queryParaBusqueda = this.normalizarConsultaParaBusqueda(queryParaBusqueda);
     }
 
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 5);
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6);
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       if (onContext) onContext({ fuentes: [] });
@@ -952,6 +1010,7 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
       { documento: '[Ordenanza_1877]_Diseno_Curricular_Plan_2023_ISI.pdf', pagina: 1, fragmento: 'Plan 2023 ISI: 45 asignaturas y modalidades académicas oficiales (1° a 5° año).' },
       { documento: '[Ordenanza_1878]_Regimen_de_Correlatividades_y_Equivalencias_Plan_2023.pdf', pagina: 1, fragmento: 'Régimen oficial de correlatividades y equivalencias para las 45 asignaturas.' },
       { documento: '[Ordenanza_1910]_Diseno_Curricular_Analista_Desarrollador_Universitario.pdf', pagina: 1, fragmento: 'Diseño curricular del título intermedio de Analista Desarrollador Universitario.' },
+      { documento: '[Guia_Oficial_Calendario]_Calendario_Academico_2026_Turnos_Examenes_y_Recesos.md', pagina: 1, fragmento: 'Resolución N° 2126/25: Turnos de examen 2026, receso de invierno y fechas de cursado.' },
       { documento: 'Modalidades de Cátedra de 1° a 5° Año (45 materias)', pagina: 1, fragmento: 'Planificaciones oficiales de cátedra de todas las materias de 1°, 2°, 3°, 4° y 5° año.' },
       { documento: '[Guia_Oficial_Bedelia]_Tramites_Autogestion_Pases_Equivalencias_Certificados.md', pagina: 1, fragmento: 'Procedimientos de alumnos, cambios de curso y reglamentaciones institucionales.' }
     ];
@@ -990,8 +1049,11 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
         * 5° Año: 16 materias y electivas (Inteligencia Artificial, Ciencia de Datos, Proyecto Final, Blockchain, etc.).
      c) Que además contás con las normativas oficiales completas (Ordenanzas 1877, 1878, 1910) y reglamentos de bedelía.
    - NUNCA digas que solo tenés 3 modalidades o 3 materias.`
-      : `1. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
-   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)*).`;
+      : `1. CONSULTAS ACADÉMICAS Y NORMATIVAS (GROUNDING RAG ESTRICTO):
+   - Respondé basándote fielmente y con total detalle en los fragmentos del CONTEXTO RECUPERADO.
+   - Brindá información concreta y estructurada (fechas exactas, notas mínimas, requisitos específicos, plazos de horas hábiles, porcentajes de asistencia, asignaturas correlativas o normativas aplicables).
+   - Citá siempre la fuente oficial consultada (ejemplo: *Fuente: [Guia_Oficial_Calendario]_Calendario_Academico_2026_Turnos_Examenes_y_Recesos.md* o *Fuente: Modalidad Académica - Paradigmas de Programación*).
+   - NUNCA respondas que la consulta no se encuentra contemplada si el contexto recuperado contiene información relevante sobre el tema consultado.`;
 
     const systemPrompt = `Sos el Asistente Virtual Oficial de Modalidad Académica y Normativas de Campus UTN (Facultad Regional Córdoba - Ingeniería en Sistemas de Información).
 
