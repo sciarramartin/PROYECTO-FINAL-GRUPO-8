@@ -147,6 +147,12 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
   const [categoriaActiva, setCategoriaActiva] = useState('aprobacion');
   const [busquedaGuia, setBusquedaGuia] = useState('');
   const [copiadoId, setCopiadoId] = useState(null);
+  const [mostrarGuia, setMostrarGuia] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1400;
+    }
+    return false;
+  });
 
   const mensajesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -506,23 +512,145 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
         icono: CATEGORIAS_GUIA.find((c) => c.id === categoriaActiva)?.icono
       })) || [];
 
-  return (
-    <div className="max-w-[1650px] w-full mx-auto h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] p-2 sm:p-4 font-sans flex flex-col gap-3">
-      {/* Encabezado Superior Compacto e Integrado */}
-      <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
-            <FiCpu className="text-xl" />
+  const renderContenidoGuia = (esDrawer = false) => (
+    <div className="flex flex-col h-full min-h-0">
+      {/* Encabezado del Panel Lateral */}
+      <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-gray-800 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/60 shadow-xs">
+            <FiHelpCircle className="text-base" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
+            <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+              Guía de Preguntas Sugeridas
+            </h2>
+            <p className="text-[11px] text-slate-500 dark:text-gray-400">
+              {todasLasPreguntas.length} consultas frecuentes oficiales
+            </p>
+          </div>
+        </div>
+        {esDrawer && (
+          <button
+            onClick={() => setMostrarGuia(false)}
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-gray-800 cursor-pointer"
+            title="Cerrar guía"
+          >
+            <FiX className="text-base" />
+          </button>
+        )}
+      </div>
+
+      {/* Buscador Rápido de Preguntas */}
+      <div className="my-2.5 shrink-0 relative">
+        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+        <input
+          type="text"
+          value={busquedaGuia}
+          onChange={(e) => setBusquedaGuia(e.target.value)}
+          placeholder="Buscar pregunta (ej. 'IA', 'PPS', 'Promoción')..."
+          className="w-full bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl text-xs pl-8 pr-8 py-2 text-slate-800 dark:text-gray-200 placeholder-slate-400 dark:placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+        />
+        {busquedaGuia && (
+          <button
+            onClick={() => setBusquedaGuia('')}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+          >
+            <FiX className="text-xs" />
+          </button>
+        )}
+      </div>
+
+      {/* Selector de Categorías (Visible solo si no hay búsqueda activa) */}
+      {!busquedaGuia && (
+        <div className="flex flex-wrap gap-1.5 mb-2.5 shrink-0 max-h-28 overflow-y-auto pr-1">
+          {CATEGORIAS_GUIA.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setCategoriaActiva(cat.id)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
+                categoriaActiva === cat.id
+                  ? 'bg-blue-600 text-white shadow-xs shadow-blue-600/20'
+                  : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-750 border border-slate-200 dark:border-gray-700'
+              }`}
+            >
+              {cat.icono}
+              <span>{cat.titulo}</span>
+              <span className={`text-[10px] px-1 py-0.2 rounded-full ${categoriaActiva === cat.id ? 'bg-blue-700 text-blue-100' : 'bg-slate-200/80 dark:bg-gray-700 text-slate-600 dark:text-gray-300'}`}>
+                {cat.preguntas.length}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Indicador de Búsqueda Activa */}
+      {busquedaGuia && (
+        <div className="mb-2 text-[11px] font-bold text-slate-500 dark:text-gray-400 flex items-center justify-between px-1">
+          <span>Resultados encontrados:</span>
+          <span className="bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full text-[10px]">
+            {preguntasFiltradas.length} preguntas
+          </span>
+        </div>
+      )}
+
+      {/* Lista de Preguntas con Scroll Vertical */}
+      <div className="flex-1 overflow-y-auto pr-1 space-y-2 min-h-0">
+        {preguntasFiltradas.length > 0 ? (
+          preguntasFiltradas.map((item, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                enviarMensaje(item.pregunta);
+                if (esDrawer || (typeof window !== 'undefined' && window.innerWidth < 1280)) {
+                  setMostrarGuia(false);
+                }
+              }}
+              className="w-full text-left text-xs bg-slate-50/90 dark:bg-gray-850 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-gray-700/80 hover:border-blue-400 dark:hover:border-blue-500 p-2.5 rounded-xl text-slate-800 dark:text-gray-200 transition-all hover:shadow-xs group flex items-start justify-between gap-2 active:scale-98 cursor-pointer"
+            >
+              <div className="flex-1">
+                {busquedaGuia && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 mb-0.5 uppercase tracking-wider">
+                    {item.categoria}
+                  </span>
+                )}
+                <p className="group-hover:text-blue-700 dark:group-hover:text-blue-300 font-medium leading-relaxed">
+                  {item.pregunta}
+                </p>
+              </div>
+              <FiChevronRight className="text-slate-400 group-hover:text-blue-600 shrink-0 mt-1 transition-transform group-hover:translate-x-0.5" />
+            </button>
+          ))
+        ) : (
+          <div className="text-center py-8 text-slate-400 dark:text-gray-500 text-xs">
+            No se encontraron preguntas que coincidan con "<strong>{busquedaGuia}</strong>".
+          </div>
+        )}
+      </div>
+
+      {/* Pie Informativo */}
+      <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-gray-800 text-[11px] text-slate-500 dark:text-gray-400 text-center shrink-0">
+        📚 Hacé clic en cualquier tarjeta para consultar automáticamente.
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full h-full flex flex-col gap-2 sm:gap-3 min-h-0 font-sans">
+      {/* Encabezado Superior Compacto e Integrado */}
+      <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-2.5 sm:p-3.5 shadow-sm flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+            <FiCpu className="text-lg sm:text-xl" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
                 Asistente Académico IA
               </h1>
 
               {/* Badge Beta con Globito Informativo al pasar el mouse */}
               <div className="relative inline-flex items-center group">
-                <span className="cursor-help inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-600/70 shadow-xs transition-all hover:scale-105 hover:border-amber-400 hover:shadow-amber-500/10 active:scale-95 select-none">
+                <span className="cursor-help inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-600/70 shadow-xs transition-all hover:scale-105 select-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                   Beta
                 </span>
@@ -582,32 +710,48 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                 </div>
               </div>
 
-              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
+              <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
                 UTN FRC • Sistemas
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 mt-0.5 truncate">
               Consultá sobre aprobación directa, regularidad, correlatividades, exámenes y trámites oficiales.
             </p>
           </div>
         </div>
 
-        <button
-          onClick={limpiarChat}
-          title="Reiniciar chat"
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-gray-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl border border-slate-200 dark:border-gray-700 transition-all active:scale-95 shadow-xs cursor-pointer"
-        >
-          <FiTrash2 className="text-sm text-slate-500 hover:text-rose-600" />
-          <span className="hidden sm:inline">Reiniciar</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setMostrarGuia((prev) => !prev)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+              mostrarGuia
+                ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+                : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-750 border border-slate-200 dark:border-gray-700'
+            }`}
+            title={mostrarGuia ? 'Ocultar guía lateral' : 'Ver preguntas sugeridas'}
+          >
+            <FiHelpCircle className="text-sm" />
+            <span className="hidden sm:inline">{mostrarGuia ? 'Ocultar Guía' : 'Preguntas Sugeridas'}</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+              {todasLasPreguntas.length}
+            </span>
+          </button>
+
+          <button
+            onClick={limpiarChat}
+            title="Reiniciar chat"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-semibold text-slate-600 dark:text-gray-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl border border-slate-200 dark:border-gray-700 transition-all active:scale-95 shadow-xs cursor-pointer"
+          >
+            <FiTrash2 className="text-sm text-slate-500 hover:text-rose-600" />
+            <span className="hidden sm:inline">Reiniciar</span>
+          </button>
+        </div>
       </div>
 
-      {/* Grid Principal de 12 Columnas: Chat Ampliado (8 o 9 cols en xl) + Guía de Preguntas (4 o 3 cols en xl) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
-        
-        {/* Columna Izquierda (8 cols en lg, 9 cols en xl): Feed Conversacional Ampliado + Dock de Entrada */}
-        <div className="lg:col-span-8 xl:col-span-9 flex flex-col h-full gap-3 min-h-0">
-          
+      {/* Contenedor Principal de la Conversación */}
+      <div className="flex-1 flex gap-3 sm:gap-4 min-h-0 relative overflow-hidden">
+        {/* Columna Principal del Chat: 100% de alto y ancho adaptable */}
+        <div className="flex-1 flex flex-col h-full gap-2.5 sm:gap-3 min-h-0 w-full">
           {/* Canvas de Conversación con Fondo Diferenciado y Borde Marcado */}
           <div className="flex-1 bg-slate-100/75 dark:bg-gray-950/70 border border-slate-300/80 dark:border-gray-800 rounded-2xl p-3 sm:p-5 overflow-y-auto flex flex-col gap-3.5 shadow-inner min-h-0">
             {mensajes.map((m) => (
@@ -616,7 +760,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                 className={`flex flex-col ${m.rol === 'usuario' ? 'items-end' : 'items-start'} max-w-full`}
               >
                 <div
-                  className={`flex gap-3 max-w-[98%] sm:max-w-[94%] xl:max-w-[92%] rounded-2xl p-4 sm:p-5 transition-all shadow-sm ${
+                  className={`flex gap-3 max-w-[98%] sm:max-w-[95%] xl:max-w-[92%] rounded-2xl p-4 sm:p-5 transition-all shadow-sm ${
                     m.rol === 'usuario'
                       ? 'bg-blue-600 text-white rounded-br-xs shadow-md shadow-blue-600/20'
                       : 'bg-white dark:bg-gray-850 text-slate-900 dark:text-gray-100 border border-slate-200 dark:border-gray-700 rounded-bl-xs'
@@ -647,7 +791,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                       </div>
                     </div>
 
-                    <div className={m.rol === 'usuario' ? 'text-white' : 'prose dark:prose-invert max-w-none text-sm'}>
+                    <div className={m.rol === 'usuario' ? 'text-white' : 'prose dark:prose-invert max-w-none text-sm leading-relaxed space-y-2'}>
                       {renderizarMarkdown(m.contenido, m.rol === 'usuario')}
                     </div>
 
@@ -680,6 +824,33 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
               </div>
             ))}
 
+            {/* Sugerencias Rápidas al inicio cuando hay solo el mensaje de bienvenida */}
+            {mensajes.length === 1 && (
+              <div className="mt-1 pt-3 border-t border-slate-200/70 dark:border-gray-800">
+                <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-500 dark:text-gray-400">
+                  <FiHelpCircle className="text-blue-500 text-sm" />
+                  <span>Consultas frecuentes directas (hacé clic para probar):</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    '¿Cómo promociono Paradigmas de Programación?',
+                    '¿Cuáles son las condiciones de aprobación en Sistemas Operativos?',
+                    '¿Cómo apruebo directo Redes de Datos?',
+                    '¿Cómo funciona la promoción en Bases de Datos?',
+                    '¿Cuáles son los requisitos del Boleto Educativo Gratuito (BEG)?'
+                  ].map((sug, sIdx) => (
+                    <button
+                      key={sIdx}
+                      onClick={() => enviarMensaje(sug)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-gray-850 border border-slate-200 dark:border-gray-700 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 shadow-2xs hover:shadow-xs transition-all text-left text-slate-700 dark:text-gray-200 cursor-pointer active:scale-95"
+                    >
+                      {sug}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Estado de Carga / Inferencia */}
             {cargando && (
               <div className="flex items-center gap-3 text-slate-600 dark:text-gray-300 text-xs py-2 animate-pulse bg-white dark:bg-gray-850 p-3 rounded-2xl border border-slate-200 dark:border-gray-700 max-w-md shadow-xs">
@@ -705,9 +876,9 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                 onChange={(e) => setInputPrompt(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Escribí tu consulta académica acá (ej. '¿Cómo promocionar Paradigmas?' o '¿Cuáles son las correlativas de IA?')..."
-                rows={2}
+                rows={1}
                 disabled={cargando}
-                className="flex-1 bg-transparent border-0 focus:ring-0 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 resize-none py-1.5 px-2 outline-none font-medium leading-relaxed"
+                className="flex-1 bg-transparent border-0 focus:ring-0 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 resize-none py-1.5 px-2 outline-none font-medium leading-relaxed max-h-32"
               />
               <button
                 onClick={() => enviarMensaje()}
@@ -729,115 +900,26 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
           </div>
         </div>
 
-        {/* Columna Derecha: Guía de Preguntas Sugeridas con Buscador (4 cols en lg, 3 cols en xl) */}
-        <div className="lg:col-span-4 xl:col-span-3 flex flex-col h-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-3.5 sm:p-4 shadow-sm min-h-0 overflow-hidden">
-          
-          {/* Encabezado del Panel Lateral */}
-          <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-gray-800 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/60 shadow-xs">
-                <FiHelpCircle className="text-base" />
-              </div>
-              <div>
-                <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
-                  Guía de Preguntas Sugeridas
-                </h2>
-                <p className="text-[11px] text-slate-500 dark:text-gray-400">
-                  {todasLasPreguntas.length} consultas frecuentes oficiales
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Buscador Rápido de Preguntas */}
-          <div className="my-2.5 shrink-0 relative">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-            <input
-              type="text"
-              value={busquedaGuia}
-              onChange={(e) => setBusquedaGuia(e.target.value)}
-              placeholder="Buscar pregunta (ej. 'IA', 'PPS', 'Promoción')..."
-              className="w-full bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl text-xs pl-8 pr-8 py-2 text-slate-800 dark:text-gray-200 placeholder-slate-400 dark:placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
-            />
-            {busquedaGuia && (
-              <button
-                onClick={() => setBusquedaGuia('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
-              >
-                <FiX className="text-xs" />
-              </button>
-            )}
-          </div>
-
-          {/* Selector de Categorías (Visible solo si no hay búsqueda activa) */}
-          {!busquedaGuia && (
-            <div className="flex flex-wrap gap-1.5 mb-2.5 shrink-0 max-h-28 overflow-y-auto pr-1">
-              {CATEGORIAS_GUIA.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategoriaActiva(cat.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
-                    categoriaActiva === cat.id
-                      ? 'bg-blue-600 text-white shadow-xs shadow-blue-600/20'
-                      : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-750 border border-slate-200 dark:border-gray-700'
-                  }`}
-                >
-                  {cat.icono}
-                  <span>{cat.titulo}</span>
-                  <span className={`text-[10px] px-1 py-0.2 rounded-full ${categoriaActiva === cat.id ? 'bg-blue-700 text-blue-100' : 'bg-slate-200/80 dark:bg-gray-700 text-slate-600 dark:text-gray-300'}`}>
-                    {cat.preguntas.length}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Indicador de Búsqueda Activa */}
-          {busquedaGuia && (
-            <div className="mb-2 text-[11px] font-bold text-slate-500 dark:text-gray-400 flex items-center justify-between px-1">
-              <span>Resultados encontrados:</span>
-              <span className="bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full text-[10px]">
-                {preguntasFiltradas.length} preguntas
-              </span>
-            </div>
-          )}
-
-          {/* Lista de Preguntas con Scroll Vertical */}
-          <div className="flex-1 overflow-y-auto pr-1 space-y-2 min-h-0">
-            {preguntasFiltradas.length > 0 ? (
-              preguntasFiltradas.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => enviarMensaje(item.pregunta)}
-                  className="w-full text-left text-xs bg-slate-50/90 dark:bg-gray-850 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-gray-700/80 hover:border-blue-400 dark:hover:border-blue-500 p-2.5 rounded-xl text-slate-800 dark:text-gray-200 transition-all hover:shadow-xs group flex items-start justify-between gap-2 active:scale-98 cursor-pointer"
-                >
-                  <div className="flex-1">
-                    {busquedaGuia && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 mb-0.5 uppercase tracking-wider">
-                        {item.categoria}
-                      </span>
-                    )}
-                    <p className="group-hover:text-blue-700 dark:group-hover:text-blue-300 font-medium leading-relaxed">
-                      {item.pregunta}
-                    </p>
-                  </div>
-                  <FiChevronRight className="text-slate-400 group-hover:text-blue-600 shrink-0 mt-1 transition-transform group-hover:translate-x-0.5" />
-                </button>
-              ))
-            ) : (
-              <div className="text-center py-8 text-slate-400 dark:text-gray-500 text-xs">
-                No se encontraron preguntas que coincidan con "<strong>{busquedaGuia}</strong>".
-              </div>
-            )}
-          </div>
-
-          {/* Pie Informativo */}
-          <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-gray-800 text-[11px] text-slate-500 dark:text-gray-400 text-center shrink-0">
-            📚 Hacé clic en cualquier tarjeta para consultar automáticamente.
-          </div>
-        </div>
-
+        {/* Panel Lateral de Preguntas Sugeridas (Visible en Desktop xl+ cuando mostrarGuia es true) */}
+        {mostrarGuia && (
+          <aside className="hidden xl:flex w-84 2xl:w-96 flex-col h-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-3.5 sm:p-4 shadow-sm min-h-0 overflow-hidden shrink-0">
+            {renderContenidoGuia(false)}
+          </aside>
+        )}
       </div>
+
+      {/* Drawer Móvil/Tablet/Laptop de Preguntas Sugeridas (Visible en < xl cuando mostrarGuia es true) */}
+      {mostrarGuia && (
+        <div className="xl:hidden fixed inset-0 z-50 flex justify-end animate-in fade-in duration-200">
+          <div
+            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs"
+            onClick={() => setMostrarGuia(false)}
+          />
+          <aside className="relative z-50 w-full sm:w-[420px] max-w-full h-full bg-white dark:bg-gray-900 border-l border-slate-200 dark:border-gray-800 shadow-2xl p-4 flex flex-col min-h-0">
+            {renderContenidoGuia(true)}
+          </aside>
+        </div>
+      )}
     </div>
   );
 }
