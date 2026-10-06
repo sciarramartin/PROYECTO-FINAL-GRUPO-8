@@ -920,8 +920,16 @@ const Layout = ({ children }) => {
         </aside>
 
         {/* CONTENEDOR DE CONTENIDO PRINCIPAL */}
-        <main className="flex-1 md:ml-60 p-4 md:p-8 min-h-full bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300">
-          <div className="max-w-7xl mx-auto">
+        <main className={`flex-1 md:ml-60 ${
+          location.pathname === "/asistente-ia"
+            ? "p-2 sm:p-3 md:p-4 h-[calc(100vh-4rem)] overflow-hidden flex flex-col"
+            : "p-4 md:p-8 min-h-full"
+        } bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300`}>
+          <div className={
+            location.pathname === "/asistente-ia"
+              ? "w-full h-full flex flex-col min-h-0 max-w-[1850px] mx-auto"
+              : "max-w-7xl mx-auto"
+          }>
             {children}
           </div>
         </main>
