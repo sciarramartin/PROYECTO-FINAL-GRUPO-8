@@ -108,7 +108,7 @@ const MATERIAS_DISAMBIGUATION = [
 
 class RagService {
   constructor() {
-    this.docsDir = path.join(__dirname, '..', 'documentos_academicos');
+    this.docsDir = this.obtenerDirectorioDocumentos();
     this.chunks = [];
     this.chunkHashes = new Set(); // Deduplicación de contenido por hash MD5
     this.duplicatesRemoved = 0;
@@ -117,6 +117,66 @@ class RagService {
     this.CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas de vigencia para ahorro de tokens
     this.estaInicializado = false;
     this.rejectionMessage = 'Esta consulta no se encuentra contemplada dentro de los reglamentos, normativas y planificaciones académicas oficiales de la carrera. Por favor, realizá una consulta sobre condiciones de cursado, regularidad, aprobación directa, correlatividades, fechas de examen o trámites de Ingeniería en Sistemas de Información.';
+  }
+
+  /**
+   * Resuelve dinámicamente la ruta física a documentos_academicos buscando en múltiples ubicaciones candidatas.
+   */
+  obtenerDirectorioDocumentos() {
+    const candidatos = [
+      process.env.DOCS_DIR,
+      path.resolve(__dirname, '..', 'documentos_academicos'),
+      path.resolve(process.cwd(), 'PRODUCTO', 'codigo-fuente', 'backend', 'documentos_academicos'),
+      path.resolve(process.cwd(), 'codigo-fuente', 'backend', 'documentos_academicos'),
+      path.resolve(process.cwd(), 'backend', 'documentos_academicos'),
+      path.resolve(process.cwd(), 'documentos_academicos'),
+      path.resolve(__dirname, '..', '..', 'documentos_academicos'),
+      path.resolve(process.cwd(), 'PROYECTO-FINAL-GRUPO-8', 'PRODUCTO', 'codigo-fuente', 'backend', 'documentos_academicos')
+    ].filter(Boolean);
+
+    for (const ruta of candidatos) {
+      if (fs.existsSync(ruta)) {
+        try {
+          const archivos = fs.readdirSync(ruta);
+          if (archivos.some(a => a.toLowerCase().endsWith('.pdf') || a.toLowerCase().endsWith('.md'))) {
+            return ruta;
+          }
+        } catch (_) {}
+      }
+    }
+
+    return path.resolve(__dirname, '..', 'documentos_academicos');
+  }
+
+  /**
+   * Obtiene la ruta física absoluta de un archivo del corpus, insensible a normalización Unicode (NFC/NFD) y URL encoding.
+   */
+  obtenerRutaDocumento(nombre) {
+    if (!nombre) return null;
+    const dir = this.obtenerDirectorioDocumentos();
+    const nombreLimpio = path.basename(nombre);
+    const rutaDirecta = path.join(dir, nombreLimpio);
+    if (fs.existsSync(rutaDirecta)) {
+      return rutaDirecta;
+    }
+
+    // Búsqueda flexible insensible a diferencias de encoding UTF-8 (NFC vs NFD)
+    try {
+      const archivos = fs.readdirSync(dir);
+      const normalizar = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+      const buscadoNorm = normalizar(decodeURIComponent(nombreLimpio));
+
+      const encontrado = archivos.find(archivo => {
+        const archNorm = normalizar(archivo);
+        return archNorm === buscadoNorm || archNorm.includes(buscadoNorm) || buscadoNorm.includes(archNorm);
+      });
+
+      if (encontrado) {
+        return path.join(dir, encontrado);
+      }
+    } catch (_) {}
+
+    return null;
   }
 
   _normalizeCacheKey(texto) {
@@ -133,6 +193,8 @@ class RagService {
    */
   async inicializar() {
     try {
+      this.docsDir = this.obtenerDirectorioDocumentos();
+
       if (!fs.existsSync(this.docsDir)) {
         fs.mkdirSync(this.docsDir, { recursive: true });
       }
@@ -151,8 +213,35 @@ class RagService {
         try {
           if (ext === '.pdf') {
             const buffer = fs.readFileSync(rutaCompleta);
-            const pdfData = await pdfParse(buffer);
-            this.procesarTextoEnChunks(archivo, pdfData.text, pdfData.numpages || 1);
+            // Suprimir advertencias internas de fuentes TrueType en pdf.js para mantener la consola limpia
+            const originalLog = console.log;
+            const originalWarn = console.warn;
+            const filterWarning = (...args) => {
+              if (args[0] && typeof args[0] === 'string' && (args[0].startsWith('Warning:') || args[0].startsWith('Warning: TT:'))) return true;
+              return false;
+            };
+            console.log = (...args) => {
+              if (filterWarning(...args)) return;
+              originalLog.apply(console, args);
+            };
+            console.warn = (...args) => {
+              if (filterWarning(...args)) return;
+              originalWarn.apply(console, args);
+            };
+            try {
+              const pdfData = (await pdfParse(buffer)) || {};
+              if (pdfData.text && pdfData.text.trim().length > 0) {
+                this.procesarTextoEnChunks(archivo, pdfData.text, pdfData.numpages || 1);
+              } else {
+                // PDF escaneado o sin texto directo: agregar bloque semántico descriptivo con el nombre del documento
+                const nombreLimpio = archivo.replace(/_/g, ' ').replace(/\.pdf$/i, '');
+                const metaTexto = `DOCUMENTO OFICIAL: ${nombreLimpio}\nEste documento institucional oficial está disponible en el campus para consulta y descarga.`;
+                this.procesarTextoEnChunks(archivo, metaTexto, pdfData.numpages || 1);
+              }
+            } finally {
+              console.log = originalLog;
+              console.warn = originalWarn;
+            }
           } else if (ext === '.txt' || ext === '.md') {
             const texto = fs.readFileSync(rutaCompleta, 'utf8');
             this.procesarTextoEnChunks(archivo, texto, 1);

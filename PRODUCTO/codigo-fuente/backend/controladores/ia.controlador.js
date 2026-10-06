@@ -114,16 +114,18 @@ router.get('/documentos/descargar/:nombre', (req, res) => {
     const fs = require('fs');
     // Sanitizar nombre de archivo para prevenir path traversal (../../etc/passwd)
     const nombreArchivo = path.basename(req.params.nombre);
-    const rutaArchivo = path.join(__dirname, '..', 'documentos_academicos', nombreArchivo);
+    const rutaArchivo = (typeof ragService.obtenerRutaDocumento === 'function')
+      ? ragService.obtenerRutaDocumento(nombreArchivo)
+      : path.join(__dirname, '..', 'documentos_academicos', nombreArchivo);
 
-    if (!fs.existsSync(rutaArchivo)) {
+    if (!rutaArchivo || !fs.existsSync(rutaArchivo)) {
       return res.status(404).json({
         success: false,
         error: 'El documento solicitado no se encuentra en el repositorio.'
       });
     }
 
-    return res.download(rutaArchivo, nombreArchivo);
+    return res.download(rutaArchivo, path.basename(rutaArchivo));
   } catch (error) {
     console.error('❌ Error al descargar documento:', error);
     return res.status(500).json({

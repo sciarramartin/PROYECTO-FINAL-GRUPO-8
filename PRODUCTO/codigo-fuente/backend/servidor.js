@@ -147,8 +147,10 @@ const iniciarServidor = async () => {
         await inicializarDB();
         console.log('Base de datos conectada correctamente.');
 
-        // Inicializar corpus RAG de documentos y reglamentos académicos
-        await ragService.inicializar();
+        // Inicializar corpus RAG de documentos y reglamentos académicos de forma segura
+        await ragService.inicializar().catch(err => {
+            console.warn('⚠️ [RAG Service] Advertencia al indexar corpus inicial:', err.message);
+        });
         const servidor = servidorHttp.listen(PUERTO, () => {
             console.log(`Servidor corriendo en el puerto ${PUERTO} con soporte de WebSockets`);
         });
