@@ -433,7 +433,7 @@ const MapaCorrelatividades = () => {
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[85vh] md:h-[75vh] flex flex-col relative">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[88vh] md:h-[82vh] min-h-[520px] flex flex-col relative">
             <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white z-10 relative shadow-sm">
                 <div>
                     <h3 className="text-lg font-semibold text-slate-800">Mi Progreso</h3>
@@ -493,86 +493,146 @@ const MapaCorrelatividades = () => {
 
             {/* Panel Flotante de Edición */}
             {nodoSeleccionado && (
-                <div className="absolute bottom-0 md:top-24 md:bottom-auto left-0 md:left-auto right-0 md:right-6 w-full md:w-80 bg-white border border-slate-200 p-6 rounded-t-2xl md:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-xl z-20 max-h-[60vh] md:max-h-none overflow-y-auto">
-                    <div className="flex justify-between items-start mb-4">
-                        <h2 className="text-xl font-bold text-slate-800">{nodoSeleccionado.nombre}</h2>
-                        <button onClick={() => {
-                            setNodoSeleccionado(null);
-                            if (networkRef.current) {
-                                // Forzar click en el fondo para limpiar
-                                networkRef.current.unselectAll();
-                                networkRef.current.emit('click', { nodes: [] });
-                            }
-                        }} className="text-slate-400 hover:text-slate-700 text-lg">✕</button>
-                    </div>
-                    
-                    <p className="text-xs text-slate-500 font-mono mb-4 border border-slate-100 bg-slate-50 inline-block px-2 py-1 rounded">
-                        Código: {nodoSeleccionado.codigo}
-                    </p>
-                    
-                    <div className="mb-4">
-                        {nodoSeleccionado.correlativas?.length > 0 ? (
-                            <div className="space-y-4">
-                                {/* Lista de Regulares */}
-                                {nodoSeleccionado.correlativas.filter(c => (c.correlativas_x_materia?.tipo_requisito || 'regular') === 'regular').length > 0 && (
-                                    <div>
-                                        <h4 className="text-xs font-semibold text-slate-500 uppercase mb-2">Para cursar (Regular):</h4>
-                                        <ul className="text-sm text-slate-700 space-y-1">
-                                            {nodoSeleccionado.correlativas.filter(c => (c.correlativas_x_materia?.tipo_requisito || 'regular') === 'regular').map(c => {
-                                                const estadoCorrelativa = progreso.find(p => p.id_materia === c.id)?.estado || 'No Cursada';
-                                                const cumplido = estadoCorrelativa === 'Aprobada' || estadoCorrelativa === 'Regular';
-                                                return (
-                                                    <li key={c.id} className="flex justify-between items-center bg-slate-50 px-2 py-1 rounded">
-                                                        <span className="truncate pr-2">{c.nombre}</span>
-                                                        <span>{cumplido ? '✅' : '❌'}</span>
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    </div>
-                                )}
-                                {/* Lista de Aprobadas */}
-                                {nodoSeleccionado.correlativas.filter(c => c.correlativas_x_materia?.tipo_requisito === 'aprobada').length > 0 && (
-                                    <div>
-                                        <h4 className="text-xs font-semibold text-indigo-500 uppercase mb-2">Para rendir final (Aprobada):</h4>
-                                        <ul className="text-sm text-slate-700 space-y-1">
-                                            {nodoSeleccionado.correlativas.filter(c => c.correlativas_x_materia?.tipo_requisito === 'aprobada').map(c => {
-                                                const estadoCorrelativa = progreso.find(p => p.id_materia === c.id)?.estado || 'No Cursada';
-                                                const cumplido = estadoCorrelativa === 'Aprobada';
-                                                return (
-                                                    <li key={c.id} className="flex justify-between items-center bg-indigo-50 px-2 py-1 rounded">
-                                                        <span className="truncate pr-2 text-indigo-900">{c.nombre}</span>
-                                                        <span>{cumplido ? '✅' : '❌'}</span>
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div>
-                                <h4 className="text-xs font-semibold text-slate-500 uppercase mb-2">Requisitos:</h4>
-                                <p className="text-sm text-slate-400 italic">Sin correlativas</p>
-                            </div>
-                        )}
+                <div 
+                    className="absolute bottom-0 md:top-20 md:bottom-auto left-0 md:left-auto right-0 md:right-5 w-full md:w-88 lg:w-96 bg-white border border-slate-200 rounded-t-2xl md:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.18)] md:shadow-2xl z-30 max-h-[80vh] md:max-h-[calc(100%-6rem)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 md:slide-in-from-right-4 duration-200"
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                >
+                    {/* Header fijo */}
+                    <div className="flex justify-between items-start p-4 sm:p-5 pb-3 border-b border-slate-100 bg-white shrink-0">
+                        <div className="pr-2 min-w-0">
+                            <h2 className="text-base sm:text-lg font-bold text-slate-800 leading-tight truncate">
+                                {nodoSeleccionado.nombre}
+                            </h2>
+                            <span className="text-[11px] text-slate-500 font-mono mt-1 border border-slate-200 bg-slate-50 inline-block px-2 py-0.5 rounded">
+                                Código: {nodoSeleccionado.codigo}
+                            </span>
+                        </div>
+                        <button 
+                            onClick={() => {
+                                setNodoSeleccionado(null);
+                                if (networkRef.current) {
+                                    networkRef.current.unselectAll();
+                                    networkRef.current.emit('click', { nodes: [] });
+                                }
+                            }} 
+                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg text-base transition-colors cursor-pointer shrink-0"
+                            title="Cerrar panel"
+                        >
+                            ✕
+                        </button>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-100">
-                        <h4 className="text-xs font-semibold text-slate-500 uppercase mb-3">Actualizar:</h4>
-                        <div className="flex flex-col gap-2">
-                            <button disabled={guardando} onClick={() => handleCambiarEstado('Aprobada')} className={`py-2 px-3 text-sm rounded-lg border font-medium transition-colors ${nodoSeleccionado.estadoActual === 'Aprobada' ? 'bg-[#d1fae5] text-emerald-800 border-emerald-400 shadow-sm' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}`}>
-                                Aprobada
-                            </button>
-                            <button disabled={guardando} onClick={() => handleCambiarEstado('Regular')} className={`py-2 px-3 text-sm rounded-lg border font-medium transition-colors ${nodoSeleccionado.estadoActual === 'Regular' ? 'bg-[#fef3c7] text-amber-800 border-amber-400 shadow-sm' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}`}>
-                                Regular
-                            </button>
-                            <button disabled={guardando} onClick={() => handleCambiarEstado('Cursando')} className={`py-2 px-3 text-sm rounded-lg border font-medium transition-colors ${nodoSeleccionado.estadoActual === 'Cursando' ? 'bg-[#f3e8ff] text-purple-800 border-purple-400 shadow-sm' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}`}>
-                                Cursando
-                            </button>
-                            <button disabled={guardando} onClick={() => handleCambiarEstado('No Cursada')} className={`py-2 px-3 text-sm rounded-lg border font-medium transition-colors ${nodoSeleccionado.estadoActual === 'No Cursada' ? 'bg-slate-100 text-slate-800 border-slate-400 shadow-sm' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}`}>
-                                No Cursada
-                            </button>
+                    {/* Cuerpo scrolleable con overscroll aislado */}
+                    <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 min-h-0 overscroll-contain">
+                        {/* Correlativas */}
+                        <div>
+                            {nodoSeleccionado.correlativas?.length > 0 ? (
+                                <div className="space-y-3">
+                                    {/* Lista de Regulares */}
+                                    {nodoSeleccionado.correlativas.filter(c => (c.correlativas_x_materia?.tipo_requisito || 'regular') === 'regular').length > 0 && (
+                                        <div>
+                                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                                                Para cursar (Regular):
+                                            </h4>
+                                            <ul className="text-xs sm:text-sm text-slate-700 space-y-1">
+                                                {nodoSeleccionado.correlativas.filter(c => (c.correlativas_x_materia?.tipo_requisito || 'regular') === 'regular').map(c => {
+                                                    const estadoCorrelativa = progreso.find(p => p.id_materia === c.id)?.estado || 'No Cursada';
+                                                    const cumplido = estadoCorrelativa === 'Aprobada' || estadoCorrelativa === 'Regular';
+                                                    return (
+                                                        <li key={c.id} className="flex justify-between items-center bg-slate-50 border border-slate-100 px-2.5 py-1.5 rounded-lg">
+                                                            <span className="truncate pr-2">{c.nombre}</span>
+                                                            <span className="shrink-0">{cumplido ? '✅' : '❌'}</span>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {/* Lista de Aprobadas */}
+                                    {nodoSeleccionado.correlativas.filter(c => c.correlativas_x_materia?.tipo_requisito === 'aprobada').length > 0 && (
+                                        <div>
+                                            <h4 className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-1.5">
+                                                Para rendir final (Aprobada):
+                                            </h4>
+                                            <ul className="text-xs sm:text-sm text-slate-700 space-y-1">
+                                                {nodoSeleccionado.correlativas.filter(c => c.correlativas_x_materia?.tipo_requisito === 'aprobada').map(c => {
+                                                    const estadoCorrelativa = progreso.find(p => p.id_materia === c.id)?.estado || 'No Cursada';
+                                                    const cumplido = estadoCorrelativa === 'Aprobada';
+                                                    return (
+                                                        <li key={c.id} className="flex justify-between items-center bg-indigo-50/70 border border-indigo-100 px-2.5 py-1.5 rounded-lg">
+                                                            <span className="truncate pr-2 text-indigo-950">{c.nombre}</span>
+                                                            <span className="shrink-0">{cumplido ? '✅' : '❌'}</span>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div>
+                                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                        Requisitos:
+                                    </h4>
+                                    <p className="text-xs text-slate-400 italic bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                        Sin correlativas previas
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Botones de Actualización de Estado (2x2 Grid para acceso instantáneo a No Cursada) */}
+                        <div className="pt-3 border-t border-slate-100 pb-3">
+                            <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2.5">
+                                Cambiar Estado Académico:
+                            </h4>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button 
+                                    disabled={guardando} 
+                                    onClick={() => handleCambiarEstado('Aprobada')} 
+                                    className={`py-2 px-3 text-xs sm:text-sm rounded-xl border font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
+                                        nodoSeleccionado.estadoActual === 'Aprobada' 
+                                            ? 'bg-[#d1fae5] text-emerald-800 border-emerald-500 shadow-xs ring-2 ring-emerald-500/20' 
+                                            : 'bg-white hover:bg-emerald-50/50 border-slate-200 text-slate-700 hover:border-emerald-300'
+                                    }`}
+                                >
+                                    <span>🟢</span> Aprobada
+                                </button>
+                                <button 
+                                    disabled={guardando} 
+                                    onClick={() => handleCambiarEstado('Regular')} 
+                                    className={`py-2 px-3 text-xs sm:text-sm rounded-xl border font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
+                                        nodoSeleccionado.estadoActual === 'Regular' 
+                                            ? 'bg-[#fef3c7] text-amber-800 border-amber-500 shadow-xs ring-2 ring-amber-500/20' 
+                                            : 'bg-white hover:bg-amber-50/50 border-slate-200 text-slate-700 hover:border-amber-300'
+                                    }`}
+                                >
+                                    <span>🟡</span> Regular
+                                </button>
+                                <button 
+                                    disabled={guardando} 
+                                    onClick={() => handleCambiarEstado('Cursando')} 
+                                    className={`py-2 px-3 text-xs sm:text-sm rounded-xl border font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
+                                        nodoSeleccionado.estadoActual === 'Cursando' 
+                                            ? 'bg-[#f3e8ff] text-purple-800 border-purple-500 shadow-xs ring-2 ring-purple-500/20' 
+                                            : 'bg-white hover:bg-purple-50/50 border-slate-200 text-slate-700 hover:border-purple-300'
+                                    }`}
+                                >
+                                    <span>🟣</span> Cursando
+                                </button>
+                                <button 
+                                    disabled={guardando} 
+                                    onClick={() => handleCambiarEstado('No Cursada')} 
+                                    className={`py-2 px-3 text-xs sm:text-sm rounded-xl border font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
+                                        nodoSeleccionado.estadoActual === 'No Cursada' 
+                                            ? 'bg-slate-200 text-slate-900 border-slate-500 shadow-xs ring-2 ring-slate-400/20 font-bold' 
+                                            : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 hover:border-slate-300'
+                                    }`}
+                                >
+                                    <span>⚪</span> No Cursada
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
