@@ -47,8 +47,8 @@ const CATEGORIAS_GUIA = [
     icono: <FiLayers className="text-indigo-500" />,
     badge: 'Ord. 1877/1878',
     preguntas: [
-      '¿Cuáles son las 4 materias de 1° año del Plan 2023 (Ord. 1877)?',
-      '¿Cuáles son las 5 materias de 2° año del Plan 2023?',
+      '¿Cuáles son las materias de 1° año del Plan 2023 (Ord. 1877)?',
+      '¿Cuáles son las materias de 2° año del Plan 2023?',
       '¿Qué materias componen el 3° año de Ingeniería en Sistemas?',
       '¿Qué materias electivas oficiales están disponibles en 4° y 5° año?',
       '¿Qué correlativas necesito tener aprobadas para cursar Inteligencia Artificial?',
@@ -62,7 +62,7 @@ const CATEGORIAS_GUIA = [
     icono: <FiCalendar className="text-blue-500" />,
     badge: 'Res. 2126/25',
     preguntas: [
-      '¿Cuáles son los 5 turnos oficiales de exámenes finales en 2026?',
+      '¿Cuáles son los turnos oficiales de exámenes finales en 2026?',
       '¿Hasta cuándo puedo inscribirme para rendir un examen final en Autogestión?',
       '¿Quiénes pueden rendir en los turnos especiales de Mayo y Septiembre?',
       '¿Cuándo inician las clases del segundo cuatrimestre y el receso invernal 2026?',
