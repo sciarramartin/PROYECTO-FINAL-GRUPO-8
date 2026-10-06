@@ -507,7 +507,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
       })) || [];
 
   return (
-    <div className="max-w-7xl mx-auto h-[calc(100vh-4rem)] p-2 sm:p-4 font-sans flex flex-col gap-3">
+    <div className="max-w-[1650px] w-full mx-auto h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] p-2 sm:p-4 font-sans flex flex-col gap-3">
       {/* Encabezado Superior Compacto e Integrado */}
       <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-3.5 sm:p-4 shadow-sm flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
@@ -602,21 +602,21 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
         </button>
       </div>
 
-      {/* Grid Principal de 12 Columnas: Chat (8 cols) + Guía de Preguntas (4 cols) */}
+      {/* Grid Principal de 12 Columnas: Chat Ampliado (8 o 9 cols en xl) + Guía de Preguntas (4 o 3 cols en xl) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
         
-        {/* Columna Izquierda (8 Columnas): Feed Conversacional + Dock de Entrada */}
-        <div className="lg:col-span-8 flex flex-col h-full gap-3 min-h-0">
+        {/* Columna Izquierda (8 cols en lg, 9 cols en xl): Feed Conversacional Ampliado + Dock de Entrada */}
+        <div className="lg:col-span-8 xl:col-span-9 flex flex-col h-full gap-3 min-h-0">
           
           {/* Canvas de Conversación con Fondo Diferenciado y Borde Marcado */}
-          <div className="flex-1 bg-slate-100/75 dark:bg-gray-950/70 border border-slate-300/80 dark:border-gray-800 rounded-2xl p-3 sm:p-4 overflow-y-auto flex flex-col gap-3.5 shadow-inner min-h-0">
+          <div className="flex-1 bg-slate-100/75 dark:bg-gray-950/70 border border-slate-300/80 dark:border-gray-800 rounded-2xl p-3 sm:p-5 overflow-y-auto flex flex-col gap-3.5 shadow-inner min-h-0">
             {mensajes.map((m) => (
               <div
                 key={m.id}
                 className={`flex flex-col ${m.rol === 'usuario' ? 'items-end' : 'items-start'} max-w-full`}
               >
                 <div
-                  className={`flex gap-3 max-w-[95%] sm:max-w-[88%] rounded-2xl p-4 transition-all shadow-sm ${
+                  className={`flex gap-3 max-w-[98%] sm:max-w-[94%] xl:max-w-[92%] rounded-2xl p-4 sm:p-5 transition-all shadow-sm ${
                     m.rol === 'usuario'
                       ? 'bg-blue-600 text-white rounded-br-xs shadow-md shadow-blue-600/20'
                       : 'bg-white dark:bg-gray-850 text-slate-900 dark:text-gray-100 border border-slate-200 dark:border-gray-700 rounded-bl-xs'
@@ -729,8 +729,8 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
           </div>
         </div>
 
-        {/* Columna Derecha (4 Columnas): Guía de Preguntas Sugeridas con Buscador */}
-        <div className="lg:col-span-4 flex flex-col h-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-3.5 sm:p-4 shadow-sm min-h-0 overflow-hidden">
+        {/* Columna Derecha: Guía de Preguntas Sugeridas con Buscador (4 cols en lg, 3 cols en xl) */}
+        <div className="lg:col-span-4 xl:col-span-3 flex flex-col h-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-3.5 sm:p-4 shadow-sm min-h-0 overflow-hidden">
           
           {/* Encabezado del Panel Lateral */}
           <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-gray-800 shrink-0">

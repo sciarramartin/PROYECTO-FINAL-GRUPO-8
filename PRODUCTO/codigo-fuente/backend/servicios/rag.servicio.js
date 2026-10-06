@@ -598,14 +598,94 @@ class RagService {
 
     // Filtro dinámico de calidad general: si el primer resultado tiene alta confianza, limitamos a los 3 mejores
     const filtrados = scoredChunks.filter(c => c.score > 0.05);
-    if (filtrados.length > 0 && filtrados[0].score >= 0.22) {
-      return filtrados.slice(0, Math.min(topK, 3));
+    if (filtrados.length > 0 && filtrados[0].score >= 0.35) {
+      return filtrados.slice(0, Math.min(topK, 4));
     }
-    return filtrados.slice(0, Math.min(topK, 4));
+    return filtrados.slice(0, Math.min(topK, 5));
   }
 
   _getApiKey() {
     return process.env.GROQ_API_KEY || null;
+  }
+
+  /**
+   * Expansión Inteligente de Consultas con Groq (Query Expansion / HyDE):
+   * Traduce la jerga estudiantil o preguntas informales a los términos formales,
+   * nombres de cátedra y conceptos normativos que figuran de forma literal en los PDFs.
+   */
+  async expandirConsultaConLLM(prompt, apiKey) {
+    if (!prompt || prompt.trim().length < 4) return prompt;
+
+    // Normalizador local inmediato de modismos y siglas universitarias
+    const normalizacionesLocales = [
+      { pattern: /\b(zafo|zafar|zafe)\b/gi, terms: 'aprobación directa promoción regularidad' },
+      { pattern: /\b(recu|recus)\b/gi, terms: 'evaluaciones recuperatorias recuperatorio' },
+      { pattern: /\b(profe|profes|profesor)\b/gi, terms: 'cuerpo docente profesor titular adjunto' },
+      { pattern: /\b(final|finales)\b/gi, terms: 'examen final mesa de examen regularidad' },
+      { pattern: /\b(correlativas?)\b/gi, terms: 'ordenanza 1878 régimen de correlatividades requisitos' },
+      { pattern: /\b(cambio\s+de\s+(curso|turno|comision))\b/gi, terms: 'formulario F0035-P cambio de curso comision motivos laborales' },
+      { pattern: /\b(pps)\b/gi, terms: 'practica profesional supervisada ALU01-02 reglamento' },
+      { pattern: /\b(am1|ami)\b/gi, terms: 'Análisis Matemático I' },
+      { pattern: /\b(am2|amii)\b/gi, terms: 'Análisis Matemático II' },
+      { pattern: /\b(aga|algebra)\b/gi, terms: 'Álgebra y Geometría Analítica' },
+      { pattern: /\b(sop|sistemas\s+operativos)\b/gi, terms: 'Sistemas Operativos' },
+      { pattern: /\b(ssl|sintaxis)\b/gi, terms: 'Sintaxis y Semántica de los Lenguajes' },
+      { pattern: /\b(asi)\b/gi, terms: 'Análisis de Sistemas de Información' },
+      { pattern: /\b(ppr|pdp|paradigmas?)\b/gi, terms: 'Paradigmas de Programación' },
+      { pattern: /\b(pye)\b/gi, terms: 'Probabilidad y Estadística' },
+      { pattern: /\b(bda?|bases?\s+de\s+datos)\b/gi, terms: 'Bases de Datos' },
+      { pattern: /\b(redes|redes\s+de\s+datos)\b/gi, terms: 'Redes de Datos' },
+      { pattern: /\b(sds)\b/gi, terms: 'Seguridad en el Desarrollo de Software' },
+      { pattern: /\b(dsi)\b/gi, terms: 'Diseño de Sistemas de Información' },
+      { pattern: /\b(dds)\b/gi, terms: 'Desarrollo de Software' }
+    ];
+
+    let queryConSinonimos = prompt;
+    normalizacionesLocales.forEach(({ pattern, terms }) => {
+      if (pattern.test(queryConSinonimos)) {
+        queryConSinonimos += ` ${terms}`;
+      }
+    });
+
+    if (!apiKey) return queryConSinonimos;
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'openai/gpt-oss-120b',
+          messages: [
+            {
+              role: 'system',
+              content: 'Sos un asistente de búsqueda para la carrera Ingeniería en Sistemas de Información UTN FRC. El alumno escribe en lenguaje coloquial o estudiantil. Traducí su consulta a términos técnicos y formales que aparezcan literalmente en las planificaciones de cátedra y normativas oficiales (nombre formal de la asignatura, contenidos mínimos, unidades temáticas, criterios de evaluación, aprobación directa, regularidad, ordenanza 1877). Respondé SOLO los términos clave en una sola línea, sin viñetas ni explicaciones.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 500
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content?.trim();
+        if (content && content.length > 5) {
+          const limpio = content.replace(/[\n\r]+/g, ' ').replace(/[#*"-]/g, ' ').trim();
+          return `${queryConSinonimos} ${limpio}`;
+        }
+      }
+    } catch (err) {
+      console.warn('⚠️ [RAG Query Expansion] Continuando con sinónimos locales:', err.message);
+    }
+
+    return queryConSinonimos;
   }
 
   /**
@@ -642,6 +722,7 @@ class RagService {
     }
 
     const esMeta = this.esMetaConsultaCorpus(prompt);
+    const apiKey = this._getApiKey();
 
     // Query expansion para preguntas de seguimiento
     let queryParaBusqueda = prompt;
@@ -658,7 +739,12 @@ class RagService {
       }
     }
 
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 4);
+    // Expansión Inteligente de Consultas con Groq (Alternativa 1)
+    if (!esMeta) {
+      queryParaBusqueda = await this.expandirConsultaConLLM(queryParaBusqueda, apiKey);
+    }
+
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 5);
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       return {
@@ -746,7 +832,6 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
           fragmento: f.texto.substring(0, 180) + '...'
         }));
 
-    const apiKey = this._getApiKey();
     if (!apiKey) {
       return {
         respuesta: fragmentosRelevantes.length > 0 
@@ -834,6 +919,7 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
     }
 
     const esMeta = this.esMetaConsultaCorpus(prompt);
+    const apiKey = this._getApiKey();
 
     let queryParaBusqueda = prompt;
     if (!esMeta && Array.isArray(historial) && historial.length > 0) {
@@ -849,7 +935,12 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
       }
     }
 
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 4);
+    // Expansión Inteligente de Consultas con Groq (Alternativa 1)
+    if (!esMeta) {
+      queryParaBusqueda = await this.expandirConsultaConLLM(queryParaBusqueda, apiKey);
+    }
+
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 5);
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       if (onContext) onContext({ fuentes: [] });
@@ -938,7 +1029,6 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
 
     mensajes.push({ role: 'user', content: prompt });
 
-    const apiKey = this._getApiKey();
     if (!apiKey) {
       const fallbackResp = fragmentosRelevantes.length > 0 
         ? `**Respuesta Asistida (Modo Local):**\n\n${fragmentosRelevantes[0].texto}\n\n*Fuente: ${fragmentosRelevantes[0].documento}*`
