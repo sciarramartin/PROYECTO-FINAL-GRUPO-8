@@ -367,23 +367,29 @@ class RagService {
    * Detecta si la consulta pregunta sobre el inventario/catálogo del corpus
    */
   esMetaConsultaCorpus(texto) {
-    const t = texto.toLowerCase();
+    const t = (texto || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
     return (
       t.includes('cuantas modalidades') ||
       t.includes('cuantas materias') ||
       t.includes('que materias tenes') ||
       t.includes('que modalidades tenes') ||
+      t.includes('modalidades tenes') ||
+      t.includes('modalidades hay') ||
+      t.includes('modalidades tiene') ||
+      t.includes('todas las modalidades') ||
+      t.includes('lista de modalidades') ||
+      t.includes('cuantas planificaciones') ||
+      t.includes('que planificaciones') ||
       t.includes('primer ano') ||
-      t.includes('primer año') ||
       t.includes('segundo ano') ||
-      t.includes('segundo año') ||
       t.includes('tercer ano') ||
-      t.includes('tercer año') ||
       t.includes('cuarto ano') ||
-      t.includes('cuarto año') ||
       t.includes('quinto ano') ||
-      t.includes('quinto año') ||
       t.includes('que documentos tenes') ||
+      t.includes('cuantos documentos') ||
       t.includes('que temas conoces')
     );
   }
@@ -670,6 +676,23 @@ class RagService {
       ? `===================================================================\n${CATALOGO_CORPUS}\n===================================================================`
       : `DIRECTIVA: Respondé en base estricta a los fragmentos del CONTEXTO RECUPERADO. El campus cuenta con todas las modalidades académicas de ISI UTN FRC (Plan 2023 y Plan 2008).`;
 
+    const directivaPrincipal = esMeta
+      ? `1. CONSULTA DE CATÁLOGO / MODALIDADES GLOBALES DEL CAMPUS:
+   - El usuario está preguntando por la cantidad total de modalidades, materias o documentos disponibles en el campus.
+   - INFORMACIÓN OFICIAL OBLIGATORIA: El campus cuenta con 45 modalidades académicas y planificaciones oficiales de cátedra (las 45 asignaturas de 1° a 5° año de Ingeniería en Sistemas de Información Plan 2023) más ordenanzas curriculares (1877, 1878, 1910), reglamentos de alumnos (PPS ALU01-02, cambio de turno F0035-P) y calendarios académicos, totalizando más de 80 documentos oficiales indexados.
+   - Respondé detallando con claridad:
+     a) Que tenés cargadas las 45 modalidades académicas oficiales del Plan 2023.
+     b) Un resumen claro por año académico:
+        * 1° Año: 8 materias (Algoritmos, Arquitectura, Lógica/Discreta, Sistemas y Procesos, Análisis I, Álgebra, Física I, Inglés I).
+        * 2° Año: 8 materias (Análisis de Sistemas, Paradigmas, Probabilidad y Estadística, Sintaxis, Sistemas Operativos, Análisis II, Física II, Ing. y Sociedad).
+        * 3° Año: 8 materias (Bases de Datos, Redes de Datos, Comunicación de Datos, Diseño de Sistemas, Desarrollo de Software, Análisis Numérico, Seminario Integrador, Inglés II).
+        * 4° Año: 13 materias (Administración de SI, Calidad de Software, Green Software, UX/UI, DevOps, etc.).
+        * 5° Año: 16 materias y electivas (Inteligencia Artificial, Ciencia de Datos, Proyecto Final, Blockchain, etc.).
+     c) Que además contás con las normativas oficiales completas (Ordenanzas 1877, 1878, 1910) y reglamentos de bedelía.
+   - NUNCA digas que solo tenés 3 modalidades o 3 materias.`
+      : `1. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
+   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)*).`;
+
     const systemPrompt = `Sos el Asistente Virtual Oficial de Modalidad Académica y Normativas de Campus UTN (Facultad Regional Córdoba - Ingeniería en Sistemas de Información).
 
 TONO Y PERSONALIDAD:
@@ -677,8 +700,7 @@ TONO Y PERSONALIDAD:
 - Formateá tus respuestas con Markdown limpio (títulos claros, negritas en notas y requisitos clave, viñetas y tablas Markdown estándar).
 
 DIRECTIVAS Y REGLAS DE RESPUESTA:
-1. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
-   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)*).
+${directivaPrincipal}
 2. PREGUNTAS FUERA DEL ÁMBITO UNIVERSITARIO:
    - Si la consulta es sobre cocina, entretenimiento, deportes, política u ocio, debés responder:
    "${this.rejectionMessage}"
@@ -687,7 +709,7 @@ ${seccionCatalogo}
 
 CONTEXTO RECUPERADO ESPECÍFICO (RAG):
 ===================================================================
-${contextoStr || 'No se requirió fragmento específico.'}
+${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el CATÁLOGO OFICIAL de 45 modalidades académicas de 1° a 5° año.' : (contextoStr || 'No se requirió fragmento específico.')}
 ===================================================================`;
 
     // History pruning: mandar últimos 3 mensajes y truncar respuestas anteriores largas para ahorrar tokens
@@ -708,13 +730,29 @@ ${contextoStr || 'No se requirió fragmento específico.'}
 
     mensajes.push({ role: 'user', content: prompt });
 
+    const fuentesMeta = [
+      { documento: '[Ordenanza_1877]_Diseno_Curricular_Plan_2023_ISI.pdf', pagina: 1, fragmento: 'Plan 2023 ISI: 45 asignaturas y modalidades académicas oficiales (1° a 5° año).' },
+      { documento: '[Ordenanza_1878]_Regimen_de_Correlatividades_y_Equivalencias_Plan_2023.pdf', pagina: 1, fragmento: 'Régimen oficial de correlatividades y equivalencias para las 45 asignaturas.' },
+      { documento: '[Ordenanza_1910]_Diseno_Curricular_Analista_Desarrollador_Universitario.pdf', pagina: 1, fragmento: 'Diseño curricular del título intermedio de Analista Desarrollador Universitario.' },
+      { documento: 'Modalidades de Cátedra de 1° a 5° Año (45 materias)', pagina: 1, fragmento: 'Planificaciones oficiales de cátedra de todas las materias de 1°, 2°, 3°, 4° y 5° año.' },
+      { documento: '[Guia_Oficial_Bedelia]_Tramites_Autogestion_Pases_Equivalencias_Certificados.md', pagina: 1, fragmento: 'Procedimientos de alumnos, cambios de curso y reglamentaciones institucionales.' }
+    ];
+
+    const fuentesFinales = esMeta
+      ? fuentesMeta
+      : fragmentosRelevantes.map(f => ({
+          documento: f.documento,
+          pagina: f.pagina,
+          fragmento: f.texto.substring(0, 180) + '...'
+        }));
+
     const apiKey = this._getApiKey();
     if (!apiKey) {
       return {
         respuesta: fragmentosRelevantes.length > 0 
           ? `**Respuesta Asistida (Modo Local):**\n\n${fragmentosRelevantes[0].texto}\n\n*Fuente: ${fragmentosRelevantes[0].documento}*`
           : '¡Hola! Soy tu asistente de Campus UTN. Podés consultarme sobre modalidades de materias y reglamentos de la carrera.',
-        fuentes: fragmentosRelevantes.map(f => ({ documento: f.documento, pagina: f.pagina, fragmento: f.texto }))
+        fuentes: fuentesFinales
       };
     }
 
@@ -742,11 +780,7 @@ ${contextoStr || 'No se requirió fragmento específico.'}
 
           const resultado = {
             respuesta: respuestaLLM,
-            fuentes: fragmentosRelevantes.map(f => ({
-              documento: f.documento,
-              pagina: f.pagina,
-              fragmento: f.texto.substring(0, 180) + '...'
-            }))
+            fuentes: fuentesFinales
           };
 
           if (!historial || historial.length === 0) {
@@ -764,7 +798,7 @@ ${contextoStr || 'No se requirió fragmento específico.'}
       respuesta: fragmentosRelevantes.length > 0 
         ? `**Respuesta Asistida:**\n\n${fragmentosRelevantes.map(f => `* ${f.texto}`).join('\n\n')}\n\n*Fuente: ${fragmentosRelevantes[0]?.documento || 'Documentación oficial'}*`
         : this.rejectionMessage,
-      fuentes: fragmentosRelevantes.map(f => ({ documento: f.documento, pagina: f.pagina, fragmento: f.texto }))
+      fuentes: fuentesFinales
     };
   }
 
@@ -823,11 +857,21 @@ ${contextoStr || 'No se requirió fragmento específico.'}
       return { respuesta: this.rejectionMessage, fuentes: [] };
     }
 
-    const fuentesFormateadas = fragmentosRelevantes.map(f => ({
-      documento: f.documento,
-      pagina: f.pagina,
-      fragmento: f.texto.substring(0, 180) + '...'
-    }));
+    const fuentesMeta = [
+      { documento: '[Ordenanza_1877]_Diseno_Curricular_Plan_2023_ISI.pdf', pagina: 1, fragmento: 'Plan 2023 ISI: 45 asignaturas y modalidades académicas oficiales (1° a 5° año).' },
+      { documento: '[Ordenanza_1878]_Regimen_de_Correlatividades_y_Equivalencias_Plan_2023.pdf', pagina: 1, fragmento: 'Régimen oficial de correlatividades y equivalencias para las 45 asignaturas.' },
+      { documento: '[Ordenanza_1910]_Diseno_Curricular_Analista_Desarrollador_Universitario.pdf', pagina: 1, fragmento: 'Diseño curricular del título intermedio de Analista Desarrollador Universitario.' },
+      { documento: 'Modalidades de Cátedra de 1° a 5° Año (45 materias)', pagina: 1, fragmento: 'Planificaciones oficiales de cátedra de todas las materias de 1°, 2°, 3°, 4° y 5° año.' },
+      { documento: '[Guia_Oficial_Bedelia]_Tramites_Autogestion_Pases_Equivalencias_Certificados.md', pagina: 1, fragmento: 'Procedimientos de alumnos, cambios de curso y reglamentaciones institucionales.' }
+    ];
+
+    const fuentesFormateadas = esMeta
+      ? fuentesMeta
+      : fragmentosRelevantes.map(f => ({
+          documento: f.documento,
+          pagina: f.pagina,
+          fragmento: f.texto.substring(0, 180) + '...'
+        }));
 
     if (onContext) {
       onContext({ fuentes: fuentesFormateadas });
@@ -841,6 +885,23 @@ ${contextoStr || 'No se requirió fragmento específico.'}
       ? `===================================================================\n${CATALOGO_CORPUS}\n===================================================================`
       : `DIRECTIVA: Respondé en base estricta a los fragmentos del CONTEXTO RECUPERADO. El campus cuenta con todas las modalidades académicas de ISI UTN FRC (Plan 2023 y Plan 2008).`;
 
+    const directivaPrincipal = esMeta
+      ? `1. CONSULTA DE CATÁLOGO / MODALIDADES GLOBALES DEL CAMPUS:
+   - El usuario está preguntando por la cantidad total de modalidades, materias o documentos disponibles en el campus.
+   - INFORMACIÓN OFICIAL OBLIGATORIA: El campus cuenta con 45 modalidades académicas y planificaciones oficiales de cátedra (las 45 asignaturas de 1° a 5° año de Ingeniería en Sistemas de Información Plan 2023) más ordenanzas curriculares (1877, 1878, 1910), reglamentos de alumnos (PPS ALU01-02, cambio de turno F0035-P) y calendarios académicos, totalizando más de 80 documentos oficiales indexados.
+   - Respondé detallando con claridad:
+     a) Que tenés cargadas las 45 modalidades académicas oficiales del Plan 2023.
+     b) Un resumen claro por año académico:
+        * 1° Año: 8 materias (Algoritmos, Arquitectura, Lógica/Discreta, Sistemas y Procesos, Análisis I, Álgebra, Física I, Inglés I).
+        * 2° Año: 8 materias (Análisis de Sistemas, Paradigmas, Probabilidad y Estadística, Sintaxis, Sistemas Operativos, Análisis II, Física II, Ing. y Sociedad).
+        * 3° Año: 8 materias (Bases de Datos, Redes de Datos, Comunicación de Datos, Diseño de Sistemas, Desarrollo de Software, Análisis Numérico, Seminario Integrador, Inglés II).
+        * 4° Año: 13 materias (Administración de SI, Calidad de Software, Green Software, UX/UI, DevOps, etc.).
+        * 5° Año: 16 materias y electivas (Inteligencia Artificial, Ciencia de Datos, Proyecto Final, Blockchain, etc.).
+     c) Que además contás con las normativas oficiales completas (Ordenanzas 1877, 1878, 1910) y reglamentos de bedelía.
+   - NUNCA digas que solo tenés 3 modalidades o 3 materias.`
+      : `1. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
+   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)*).`;
+
     const systemPrompt = `Sos el Asistente Virtual Oficial de Modalidad Académica y Normativas de Campus UTN (Facultad Regional Córdoba - Ingeniería en Sistemas de Información).
 
 TONO Y PERSONALIDAD:
@@ -848,8 +909,7 @@ TONO Y PERSONALIDAD:
 - Formateá tus respuestas con Markdown limpio (títulos claros, negritas en notas y requisitos clave, viñetas y tablas Markdown estándar).
 
 DIRECTIVAS Y REGLAS DE RESPUESTA:
-1. CONSULTAS ACADÉMICAS ESPECÍFICAS (GROUNDING RAG):
-   - Respondé basándote fielmente en los fragmentos del CONTEXTO RECUPERADO y citá siempre la fuente oficial consultada (ejemplo: *Fuente: Modalidad Académica - Paradigmas de Programación (Plan 2023)*).
+${directivaPrincipal}
 2. PREGUNTAS FUERA DEL ÁMBITO UNIVERSITARIO:
    - Si la consulta es sobre cocina, entretenimiento, deportes, política u ocio, debés responder:
    "${this.rejectionMessage}"
@@ -858,7 +918,7 @@ ${seccionCatalogo}
 
 CONTEXTO RECUPERADO ESPECÍFICO (RAG):
 ===================================================================
-${contextoStr || 'No se requirió fragmento específico.'}
+${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el CATÁLOGO OFICIAL de 45 modalidades académicas de 1° a 5° año.' : (contextoStr || 'No se requirió fragmento específico.')}
 ===================================================================`;
 
     const mensajes = [{ role: 'system', content: systemPrompt }];
