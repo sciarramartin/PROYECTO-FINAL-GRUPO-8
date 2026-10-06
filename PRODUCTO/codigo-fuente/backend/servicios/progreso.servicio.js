@@ -489,71 +489,64 @@ class ProgresoService {
 
     async obtenerMateriasHabilitadas(idUsuario) {
         try {
-            // 1. Obtener progreso del usuario
+            // 1. Obtener el estado actual de las materias del alumno
             const materiasActuales = await this.obtenerProgreso(idUsuario);
+            
+            // Map de materia_id -> estado (ej: 'aprobada', 'regular', 'cursando')
+            const materiasActualesMap = new Map(
+                materiasActuales.map(m => [m.id_materia, m.estado?.toLowerCase()])
+            );
+
+            // 2. Traer TODAS las materias con sus correlativas
             const materias = await Materia.findAll({
-                include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } },
+                include: { 
+                    model: Materia, 
+                    as: 'correlativas', 
+                    through: { attributes: ['tipo_requisito'] } 
+                },
                 order: [
                     ['nivel_anio', 'ASC'],
                     ['cuatrimestre', 'ASC']
                 ]
             });
-            const correlativas = await Promise.all(
-                materiasActuales.map(async (materia) => {
-                    const correlativas = await CorrelativaXMateria.findAll({
-                        where: { materia_correlativa_id: materia.id_materia },
-                        raw: true
-                    });
-                    
-                    const idsHabilitadas = correlativas.map(c => c.materia_base_id);
-                    return materias.filter(m => idsHabilitadas.includes(m.id));
-                })
-            );     
 
-            const materiasUnicas = Array.from(
-                new Map(
-                    correlativas
-                        .flat()
-                        .map(materia => [materia.id, materia])
-                ).values()
-            );
+            // 3. Filtrar las materias que realmente están habilitadas para cursar
+            const materiasHabilitadas = materias.filter(materia => {
+                // A. Si el alumno YA la aprobó o la está cursando/regularizó, NO está disponible para inscribirse de nuevo
+                const estadoActual = materiasActualesMap.get(materia.id);
+                if (estadoActual && ['aprobada', 'regular', 'cursando'].includes(estadoActual)) {
+                    return false;
+                }
 
-            const materiasActualesMap = new Map(
-                materiasActuales.map(m => [m.id_materia, m.estado])
-            );
+                // B. Si la materia no tiene correlativas exigidas, está libre/habilitada
+                if (!materia.correlativas || materia.correlativas.length === 0) {
+                    return true;
+                }
 
-            const materiasAceptadas = materiasUnicas.filter(materia => {
-                if (!materia.correlativas?.length) return true;
-                
+                // C. Si tiene correlativas, verificar que CADA UNA cumpla la condición requerida
                 return materia.correlativas.every(correlativa => {
-                    const estadoAlumno = materiasActualesMap.get(correlativa.id);
-                    const tipoRequisito = correlativa.correlativas_x_materia?.tipo_requisito;
+                    const estadoCorrelativa = materiasActualesMap.get(correlativa.id);
                     
-                    if (!estadoAlumno) return false;
-                    
-                    const estadoNorm = estadoAlumno.toLowerCase();
-                    const requisitoNorm = tipoRequisito?.toLowerCase();
-                    
-                    if (requisitoNorm === "regular") {
-                        return estadoNorm === "regular" || estadoNorm === "aprobada";
+                    // Extraer tipo_requisito de la tabla intermedia (asume el modelo CorrelativaXMateria o la propiedad por defecto)
+                    const pivote = correlativa.CorrelativaXMateria || correlativa.correlativas_x_materia;
+                    const tipoRequisito = pivote?.tipo_requisito?.toLowerCase();
+
+                    if (!estadoCorrelativa) return false;
+
+                    if (tipoRequisito === 'regular') {
+                        return estadoCorrelativa === 'regular' || estadoCorrelativa === 'aprobada';
                     }
-                    
-                    if (requisitoNorm === "aprobada") {
-                        return estadoNorm === "aprobada";
+
+                    if (tipoRequisito === 'aprobada') {
+                        return estadoCorrelativa === 'aprobada';
                     }
-                    
+
                     return false;
                 });
             });
 
-            const materiasSinCorrelativas = materias.filter(materia => 
-                !materia.correlativas?.length && 
-                !materiasActualesMap.has(materia.id)
-            );
-            return [
-                ...materiasAceptadas,
-                ...materiasSinCorrelativas
-            ];
+            return materiasHabilitadas;
+
         } catch (error) {
             console.error('Error en obtenerMateriasHabilitadas:', error);
             throw error;

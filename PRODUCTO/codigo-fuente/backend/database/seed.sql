@@ -420,6 +420,64 @@ INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES
 ('ALG2 - Trasnoche', '23:00', 60, 1, 2);            -- 11:00 PM
 
 
+-- ==============================================
+-- CURSOS PARA MATERIAS FALTANTES (Nivel 2 al 5 + Electivas)
+-- ==============================================
+
+-- Nivel 2
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('MAT2 - Turno Mañana (Lun-Mie)', '08:00', 90, 5, 9),
+('FIS2 - Turno Tarde (Mar-Jue)', '14:00', 90, 10, 10),
+('ISO2 - Noche (Miércoles)', '19:00', 180, 4, 11),
+('ING2 - Sábados', '09:00', 180, 32, 12),
+('SSL2 - Mañana (Lunes)', '08:00', 180, 1, 13),
+('PPR2 - Tarde (Martes)', '14:00', 180, 2, 14),
+('SOP2 - Noche (Lun-Mie)', '19:30', 90, 5, 15),
+('ASI2 - Tarde (Jueves)', '15:00', 180, 8, 16),
+('PRO2 - Mañana (Viernes)', '09:00', 180, 16, 17);
+
+-- Nivel 3
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('ECO3 - Noche (Martes)', '18:30', 180, 2, 18),
+('BDA3 - Mañana (Lun-Jue)', '10:00', 90, 9, 19),
+('DSO3 - Tarde (Mie-Vie)', '15:00', 90, 20, 20),
+('CDA3 - Noche (Lunes)', '20:00', 180, 1, 21),
+('ANU3 - Mañana (Jueves)', '08:30', 180, 8, 22),
+('DSI3 - Tarde (Lun-Mie)', '16:00', 90, 5, 23),
+('SEM3 - Sábados', '08:00', 240, 32, 99);
+
+-- Nivel 4
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('LEG4 - Noche (Jueves)', '19:00', 180, 8, 24),
+('ICS4 - Tarde (Viernes)', '14:00', 180, 16, 25),
+('RDA4 - Mañana (Mar-Jue)', '08:00', 90, 10, 26),
+('IOP4 - Noche (Mie-Vie)', '19:30', 90, 20, 27),
+('SIM4 - Mañana (Lunes)', '09:00', 180, 1, 28),
+('AUT4 - Tarde (Martes)', '15:30', 180, 2, 29),
+('ADM4 - Noche (Lunes)', '18:30', 180, 1, 30);
+
+-- Nivel 5
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('INT5 - Noche (Martes)', '18:00', 180, 2, 31),
+('CDA5 - Noche (Miércoles)', '18:00', 180, 4, 32),
+('SGE5 - Mañana (Viernes)', '08:30', 180, 16, 33),
+('GGE5 - Tarde (Jueves)', '14:00', 180, 8, 34),
+('SSI5 - Noche (Lunes)', '19:00', 180, 1, 35),
+('PFI5 - Sábados Taller', '09:00', 240, 32, 36);
+
+-- Materias Electivas
+INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES 
+('ELEC-OBJ - Tarde (Lunes)', '14:00', 180, 1, 101),
+('ELEC-UX - Noche (Martes)', '18:30', 180, 2, 102),
+('ELEC-SEC - Noche (Miércoles)', '19:00', 180, 4, 103),
+('ELEC-GRN - Mañana (Jueves)', '10:00', 120, 8, 104),
+('ELEC-CLD - Tarde (Viernes)', '15:00', 240, 16, 105),
+('ELEC-DAT - Noche (Lunes)', '18:00', 180, 1, 106),
+('ELEC-PLN - Tarde (Martes)', '14:00', 180, 2, 107),
+('ELEC-VJG - Sábados', '10:00', 180, 32, 108);
+
+
+
 
 INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 1);
 INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 1);
@@ -459,6 +517,64 @@ VALUES
 (17, 'usuario8@gmail.com', '$2b$10$ynJBpfXVhSz9lyc./3tqPeMs5lxafAhdN1ulyYqDcL1DUEAfLkaM6', 'Usuario', '8', 'usuario8', 2024, 1, 1, 2),
 (18, 'usuario9@gmail.com', '$2b$10$ynJBpfXVhSz9lyc./3tqPeMs5lxafAhdN1ulyYqDcL1DUEAfLkaM6', 'Usuario', '9', 'usuario9', 2024, 1, 1, 2),
 (19, 'usuario10@gmail.com', '$2b$10$ynJBpfXVhSz9lyc./3tqPeMs5lxafAhdN1ulyYqDcL1DUEAfLkaM6', 'Usuario', '10', 'usuario10', 2024, 1, 1, 2);
+
+-- ==============================================
+-- INSCRIPCIONES A CURSOS (Usuarios 5 a 19)
+-- ==============================================
+INSERT INTO inscripciones_cursos (id_usuario, id_curso) VALUES 
+-- Usuarios de ingreso 2021 (Avanzados)
+(5, 14), (5, 23), (5, 33), -- Francisco Funes (SOP2, DSO3, INT5)
+(6, 22), (6, 21), (6, 35), -- Tito Montivero (anu, CDA3, CDA5)
+(7, 16), (7, 25), (7, 35), -- Franco Sosa (PRO2, ANU3, SGE5)
+(8, 17), (8, 26), (8, 36), -- Martin Sciarra (ECO3, DSI3, GGE5)
+
+-- Usuario ingreso 2022 (Intermedio)
+(9, 7),  (9, 11), (9, 18), -- Luciana Zahr (MAT2, ING2, BDA3)
+
+-- Usuarios ingreso 2024 (Iniciales)
+(10, 1), (10, 4), (10, 8), -- Usuario 1 (MAT1, ALG1, FIS1)
+(11, 1), (11, 4), (11, 9), -- Usuario 2 (MAT1, ALG1, ING1)
+(12, 2), (12, 5), (12, 8), -- Usuario 3 (MAT1, ALG1, FIS1)
+(13, 2), (13, 5), (13, 10),-- Usuario 4 (MAT1, ALG1, LOG1)
+(14, 3), (14, 6), (14, 8), -- Usuario 5 (MAT1, ALG1, FIS1)
+(15, 3), (15, 6), (15, 10),-- Usuario 6 (MAT1, ALG1, LOG1)
+(16, 1), (16, 4), (16, 11),-- Usuario 7 (MAT1, ALG1, AED1)
+(17, 2), (17, 5), (17, 12),-- Usuario 8 (MAT1, ALG1, ARQ1)
+(18, 3), (18, 6), (18, 13),-- Usuario 9 (MAT1, ALG1, SYS1)
+(19, 1), (19, 5), (19, 8); -- Usuario 10 (MAT1, ALG1, FIS1)
+
+
+-- ==============================================
+-- ESTADOS DE MATERIA (Usuarios 5 a 19)
+-- ==============================================
+INSERT INTO estado_materia_alumno (id_usuario, id_materia, estado) VALUES 
+-- Francisco Funes (id: 5)
+(5, 1, 'Aprobada'), (5, 2, 'Aprobada'), (5, 15, 'Cursando'), (5, 20, 'Cursando'), (5, 31, 'Cursando'),
+
+-- Tito Montivero (id: 6)
+(6, 1, 'Aprobada'), (6, 6, 'Aprobada'), (6, 22, 'Cursando'), (6, 21, 'Cursando'), (6, 32, 'Cursando'),
+
+-- Franco Sosa (id: 7)
+(7, 3, 'Aprobada'), (7, 5, 'Aprobada'), (7, 17, 'Cursando'), (7, 22, 'Cursando'), (7, 33, 'Cursando'),
+
+-- Martin Sciarra (id: 8)
+(8, 2, 'Aprobada'), (8, 8, 'Aprobada'), (8, 18, 'Cursando'), (8, 23, 'Cursando'), (8, 34, 'Cursando'),
+
+-- Luciana Zahr (id: 9)
+(9, 1, 'Aprobada'), (9, 4, 'Aprobada'), (9, 9, 'Cursando'), (9, 12, 'Cursando'), (9, 19, 'Cursando'),
+
+-- Usuarios Iniciales (2024 - Cursando materias de Nivel 1)
+(10, 1, 'Cursando'), (10, 2, 'Cursando'), (10, 3, 'Cursando'),
+(11, 1, 'Cursando'), (11, 2, 'Cursando'), (11, 4, 'Cursando'),
+(12, 1, 'Cursando'), (12, 2, 'Cursando'), (12, 3, 'Cursando'),
+(13, 1, 'Cursando'), (13, 2, 'Cursando'), (13, 5, 'Cursando'),
+(14, 1, 'Cursando'), (14, 2, 'Cursando'), (14, 3, 'Cursando'),
+(15, 1, 'Cursando'), (15, 2, 'Cursando'), (15, 5, 'Cursando'),
+(16, 1, 'Cursando'), (16, 2, 'Cursando'), (16, 6, 'Cursando'),
+(17, 1, 'Cursando'), (17, 2, 'Cursando'), (17, 7, 'Cursando'),
+(18, 1, 'Cursando'), (18, 2, 'Cursando'), (18, 8, 'Cursando'),
+(19, 1, 'Cursando'), (19, 2, 'Cursando'), (19, 3, 'Cursando');
+
 
 -- 2. PERFILES DE USUARIOS
 INSERT INTO perfiles (id_usuario, apodo, anio_cursado, biografia, foto_perfil, rol_equipo, mostrar_anio_cursado, mostrar_contacto)
@@ -941,3 +1057,118 @@ VALUES
 (239, NULL, 52, 5, 'positivo', '2026-09-26 11:00:00', '2026-09-26 11:00:00'),
 (240, NULL, 52, 7, 'positivo', '2026-09-26 11:00:00', '2026-09-26 11:00:00');
 
+-- ==============================================
+-- ACTIVIDADES PERSONALES (Usuarios 5 a 19)
+-- ==============================================
+INSERT INTO actividad (nombre, hora_inicio, duracion, dias, color, id_usuario) VALUES 
+-- Usuario 5 (Francisco Funes)
+('Gimnasio', '07:00', 90, 42, '#FF5733', 5),        -- Mar-Jue-Sáb
+('Trabajo Part-time', '09:00', 240, 31, 'rgb(233, 199, 115)', 5), -- Lun a Vie
+
+-- Usuario 6 (Tito Montivero)
+('Entrenamiento de Fútbol', '19:30', 120, 10, '#28A745', 6), -- Mar-Jue
+('Inglés Particular', '17:00:00', 60, 5, '#FFC107', 6),        -- Lun-Mié
+
+-- Usuario 7 (Franco Sosa)
+('Natación', '08:00', 60, 7, '#17A2B8', 7),           -- Lun-Mié-Vie
+('Estudio Autónomo', '15:00', 120, 31, '#6C757D', 7),    -- Lun a Vie
+
+-- Usuario 8 (Martin Sciarra)
+('Gimnasio Noche', '21:00', 90, 21, '#E83E8C', 8),     -- Lun-Mié-Vie
+('Curso de Backend', '10:00', 180, 32, '#6610F2', 8),   -- Sábados
+
+-- Usuario 9 (Luciana Zahr)
+('Taller de Arte', '16:00', 120, 8, '#FD7E14', 9),      -- Jueves
+('Yoga', '08:30:00', 60, 10, '#20C997', 9),                -- Mar-Jue
+
+-- Usuarios Iniciales (10 a 19)
+('Gimnasio', '07:30', 60, 21, '#FF5733', 10),
+('Trabajo Remoto', '13:00', 240, 31, '#007BFF', 11),
+('Básquet', '20:00', 90, 10, '#DC3545', 12),
+('Clases de Guitarra', '18:00', 60, 4, '#FFC107', 13),
+('Gimnasio', '08:00', 90, 21, '#28A745', 14),
+('Estudio de Algoritmos', '16:00', 120, 31, '#6F42C1', 15),
+('Entrenamiento', '19:00', 90, 42, '#E83E8C', 16),
+('Inglés C1', '11:00', 90, 5, '#17A2B8', 17),
+('Trabajo', '14:00', 300, 31, '#343A40', 18),
+('Gimnasio', '20:00', 60, 21, '#FD7E14', 19);
+
+-- ==============================================
+-- ACTIVIDADES DE CURSOS REGISTRADOS (Usuarios 5 a 19)
+-- ==============================================
+INSERT INTO actividad (nombre, hora_inicio, duracion, dias, color, id_usuario) VALUES 
+-- Francisco Funes (id: 5) -> Cursos 14, 23, 33
+('PPR2 - Tarde (Martes)', '14:00', 180, 2, '#4A90E2', 5),
+('DSI3 - Tarde (Lun-Mie)', '16:00', 90, 5, '#4A90E2', 5),
+('INT5 - Noche (Martes)', '18:00', 180, 2, '#4A90E2', 5),
+
+-- Tito Montivero (id: 6) -> Cursos 15, 24, 34
+('CDA3 - Noche (Lunes)', '20:00', 180, 1, '#4A90E2', 6),
+('ANU3 - Mañana (Jueves)', '08:30', 180, 8, '#4A90E2', 6),
+('CDA5 - Noche (Miércoles)', '18:00', 180, 4, '#4A90E2', 6),
+
+-- Franco Sosa (id: 7) -> Cursos 16, 25, 35
+('ASI2 - Tarde (Jueves)', '15:00', 180, 8, '#4A90E2', 7),
+('ANU3 - Mañana (Jueves)', '08:30', 180, 8, '#4A90E2', 7),
+('SGE5 - Mañana (Viernes)', '08:30', 180, 16, '#4A90E2', 7),
+
+-- Martin Sciarra (id: 8) -> Cursos 17, 26, 36
+('PRO2 - Mañana (Viernes)', '09:00', 180, 16, '#4A90E2', 8),
+('SEM3 - Sábados', '08:00', 240, 32, '#4A90E2', 8),
+('PFI5 - Sábados Taller', '09:00', 240, 32, '#4A90E2', 8),
+
+-- Luciana Zahr (id: 9) -> Cursos 7, 11, 18
+('MAT2 - Turno Mañana (Lun-Mie)', '08:00', 90, 5, '#4A90E2', 9),
+('ISO2 - Noche (Miércoles)', '19:00', 180, 4, '#4A90E2', 9),
+('ECO3 - Noche (Martes)', '18:30', 180, 2, '#4A90E2', 9),
+
+-- Usuarios Ingresantes (10 a 19)
+-- Usuario 10 (Cursos 1, 4, 8)
+('MAT1 - Turno Mañana', '08:00', 90, 1, '#4A90E2', 10),
+('ING - Sabatino', '09:00', 240, 32, '#4A90E2', 10),
+('HIS1 - Noche Lun-Mie', '19:00', 90, 5, '#4A90E2', 10),
+
+-- Usuario 11 (Cursos 1, 4, 9)
+('MAT1 - Turno Mañana', '08:00', 90, 1, '#4A90E2', 11),
+('ING - Sabatino', '09:00', 240, 32, '#4A90E2', 11),
+('MAT2 - Turno Mañana (Lun-Mie)', '08:00', 90, 5, '#4A90E2', 11),
+
+-- Usuario 12 (Cursos 2, 5, 8)
+('MAT1 - Turno Tarde', '14:00', 90, 1, '#4A90E2', 12),
+('LOG1 - Viernes Práctica', '14:00', 180, 16, '#4A90E2', 12),
+('HIS1 - Noche Lun-Mie', '19:00', 90, 5, '#4A90E2', 12),
+
+-- Usuario 13 (Cursos 2, 5, 10)
+('MAT1 - Turno Tarde', '14:00', 90, 1, '#4A90E2', 13),
+('LOG1 - Viernes Práctica', '14:00', 180, 16, '#4A90E2', 13),
+('FIS2 - Turno Tarde (Mar-Jue)', '14:00', 90, 10, '#4A90E2', 13),
+
+-- Usuario 14 (Cursos 3, 6, 8)
+('MAT1 - Turno Noche', '19:30', 90, 4, '#4A90E2', 14),
+('AED1 - Diario Mañana', '07:00', 60, 31, '#4A90E2', 14),
+('HIS1 - Noche Lun-Mie', '19:00', 90, 5, '#4A90E2', 14),
+
+-- Usuario 15 (Cursos 3, 6, 10)
+('MAT1 - Turno Noche', '19:30', 90, 4, '#4A90E2', 15),
+('AED1 - Diario Mañana', '07:00', 60, 31, '#4A90E2', 15),
+('FIS2 - Turno Tarde (Mar-Jue)', '14:00', 90, 10, '#4A90E2', 15),
+
+-- Usuario 16 (Cursos 1, 4, 11)
+('MAT1 - Turno Mañana', '08:00', 90, 1, '#4A90E2', 16),
+('ING - Sabatino', '09:00', 240, 32, '#4A90E2', 16),
+('ISO2 - Noche (Miércoles)', '19:00', 180, 4, '#4A90E2', 16),
+
+-- Usuario 17 (Cursos 2, 5, 12)
+('MAT1 - Turno Tarde', '14:00', 90, 1, '#4A90E2', 17),
+('LOG1 - Viernes Práctica', '14:00', 180, 16, '#4A90E2', 17),
+('ING2 - Sábados', '09:00', 180, 32, '#4A90E2', 17),
+
+-- Usuario 18 (Cursos 3, 6, 13)
+('MAT1 - Turno Noche', '19:30', 90, 4, '#4A90E2', 18),
+('AED1 - Diario Mañana', '07:00', 60, 31, '#4A90E2', 18),
+('SSL2 - Mañana (Lunes)', '08:00', 180, 1, '#4A90E2', 18),
+
+-- Usuario 19 (Cursos 1, 5, 8)
+('MAT1 - Turno Mañana', '08:00', 90, 1, '#4A90E2', 19),
+('LOG1 - Viernes Práctica', '14:00', 180, 16, '#4A90E2', 19),
+('HIS1 - Noche Lun-Mie', '19:00', 90, 5, '#4A90E2', 19);
