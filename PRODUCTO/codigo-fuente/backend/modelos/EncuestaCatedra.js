@@ -68,6 +68,11 @@ const EncuestaCatedra = baseDeDatos.define('EncuestaCatedra', {
     comentario: {
         type: DataTypes.TEXT,
         allowNull: true
+    },
+    estado_academico: {
+        type: DataTypes.ENUM('Aprobada', 'Regular'),
+        allowNull: false,
+        defaultValue: 'Regular'
     }
 }, {
     tableName: 'encuestas_catedra',

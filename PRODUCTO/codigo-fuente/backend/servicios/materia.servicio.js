@@ -71,6 +71,28 @@ const obtenerTodas = async (id_carrera, id_plan_academico) => {
     }
     return await Materia.findAll({
         where,
+        attributes: {
+            include: [
+                // Subconsulta para obtener el promedio de estrellas de la materia
+                [
+                    Materia.sequelize.literal(`(
+                        SELECT ROUND(AVG((dificultad + claridad_docente + disponibilidad) / 3.0), 1)
+                        FROM encuestas_catedra AS ec
+                        WHERE ec.id_materia = Materia.id
+                    )`),
+                    'promedio_general'
+                ],
+                // Subconsulta para contar la cantidad total de encuestas registradas
+                [
+                    Materia.sequelize.literal(`(
+                        SELECT COUNT(*)
+                        FROM encuestas_catedra AS ec
+                        WHERE ec.id_materia = Materia.id
+                    )`),
+                    'total_resenas'
+                ]
+            ]
+        },
         include: { model: Materia, as: 'correlativas', through: { attributes: ['tipo_requisito'] } },
         order: [
             ['nivel_anio', 'ASC'],

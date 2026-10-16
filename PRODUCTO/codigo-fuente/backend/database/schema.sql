@@ -429,6 +429,7 @@ CREATE TABLE IF NOT EXISTS encuestas_catedra (
     disponibilidad INTEGER NOT NULL CHECK (disponibilidad BETWEEN 1 AND 5),
     es_anonima BOOLEAN NOT NULL DEFAULT 0,
     comentario TEXT DEFAULT NULL,
+    estado_academico TEXT NOT NULL DEFAULT 'Regular' CHECK (estado_academico IN ('Aprobada', 'Regular')),
     createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE ON UPDATE CASCADE,

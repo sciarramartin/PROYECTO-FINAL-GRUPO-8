@@ -7,7 +7,7 @@ const { EncuestaCatedra, Materia, Curso, Usuario, Perfil } = require('../modelos
 router.post('/', verificarToken, async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
-        const { id_materia, id_curso, dificultad, claridad_docente, disponibilidad, es_anonima, comentario } = req.body;
+        const { id_materia, id_curso, dificultad, claridad_docente, disponibilidad, es_anonima, comentario, estado_academico } = req.body;
 
         if (!id_materia || !dificultad || !claridad_docente || !disponibilidad) {
             return res.status(400).json({ error: 'Faltan campos obligatorios para la encuesta (materia y calificaciones de 1 a 5).' });
@@ -34,6 +34,7 @@ router.post('/', verificarToken, async (req, res) => {
             encuesta.disponibilidad = dispNum;
             encuesta.es_anonima = !!es_anonima;
             encuesta.comentario = comentario ? comentario.trim() : null;
+            encuesta.estado_academico= estado_academico || 'Regular';
             await encuesta.save();
         } else {
             encuesta = await EncuestaCatedra.create({
@@ -44,7 +45,8 @@ router.post('/', verificarToken, async (req, res) => {
                 claridad_docente: claNum,
                 disponibilidad: dispNum,
                 es_anonima: !!es_anonima,
-                comentario: comentario ? comentario.trim() : null
+                comentario: comentario ? comentario.trim() : null,
+                estado_academico: estado_academico || 'Regular'
             });
         }
 
@@ -113,16 +115,18 @@ router.get('/materia/:materiaId', verificarToken, async (req, res) => {
 
         // Formatear encuestas respetando anonimato
         const encuestasFormateadas = encuestas.map(e => {
-            const anonimo = e.es_anonima;
+            const esAnonima = e.es_anonima;
             return {
                 id: e.id,
                 dificultad: e.dificultad,
                 claridad_docente: e.claridad_docente,
                 disponibilidad: e.disponibilidad,
                 comentario: e.comentario,
+                estado_academico: e.estado_academico,
+                es_anonima: esAnonima,
                 createdAt: e.createdAt,
                 curso: e.Curso ? e.Curso.nombre : 'General',
-                autor: anonimo ? {
+                autor: esAnonima ? {
                     nombre: 'Estudiante Anónimo',
                     foto_perfil: null,
                     nombre_usuario: null

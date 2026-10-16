@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { FiStar, FiCheckCircle, FiShield, FiMessageCircle, FiAward } from 'react-icons/fi';
+import { FiStar, FiCheckCircle, FiShield, FiAward } from 'react-icons/fi';
 
 const TooltipInfo = () => {
   return (
@@ -23,7 +23,7 @@ const TooltipInfo = () => {
             <strong className="text-white">✓ Si es anónima:</strong> Tu reseña se publica protegiendo tu identidad (aparecerá como <em>"Estudiante Anónimo"</em>, ocultando tu nombre, usuario y foto).
           </p>
           <p>
-            <strong className="text-white">✕ Si no es anónima:</strong> Tu reseña, calificaciones y comentarios se publicarán vinculados a tu nombre, usuario y foto de perfil en el módulo de <strong>Métricas y Reseñas de la Materia</strong> (sección de estadísticas e historial de cursada).
+            <strong className="text-white">✕ Si no es anónima:</strong> Tu reseña, calificaciones y comentarios se publicarán vinculados a tu nombre, usuario y foto de perfil en el módulo de <strong>Métricas y Reseñas de la Materia</strong>.
           </p>
         </div>
         <span className="absolute top-full right-4 sm:left-1/2 sm:-translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-800"></span>
@@ -48,7 +48,6 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
     e.preventDefault();
     setError('');
 
-    // Validar que el usuario haya seleccionado un valor para todas las categorías
     if (dificultad === 0 || claridadDocente === 0 || disponibilidad === 0) {
       setError('Por favor califica todos los aspectos requeridos (Dificultad, Claridad docente y Disponibilidad) antes de continuar.');
       return;
@@ -56,25 +55,34 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
 
     setEnviando(true);
 
+    const payload = {
+      id_materia: materia.id,
+      dificultad,
+      claridad_docente: claridadDocente,
+      disponibilidad,
+      es_anonima: esAnonima,
+      comentario: comentario.trim() || null,
+      estado_academico: nuevoEstado // 🟢 'Aprobada' o 'Regular'
+    };
+
+    console.log('Enviando encuesta al backend:', payload);
+
     try {
-      await axios.post(
+      const respuesta = await axios.post(
         `${apiUrl}/encuestas-catedra`,
-        {
-          id_materia: materia.id,
-          dificultad,
-          claridad_docente: claridadDocente,
-          disponibilidad,
-          es_anonima: esAnonima,
-          comentario: comentario.trim() || null
-        },
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Finalizar con éxito
+      console.log('Encuesta guardada con éxito:', respuesta.data);
       onCompletada();
     } catch (err) {
-      console.error('Error al guardar encuesta de cátedra:', err);
-      setError('Hubo un error al registrar tu encuesta. Por favor intentá nuevamente.');
+      console.error('Error al guardar encuesta de cátedra:', err.response?.data || err.message);
+      setError(
+        err.response?.data?.mensaje || 
+        err.response?.data?.error || 
+        'Hubo un error al registrar tu encuesta. Por favor intentá nuevamente.'
+      );
     } finally {
       setEnviando(false);
     }
@@ -84,7 +92,6 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
     return (
       <div
         onClick={(e) => {
-          // Si hace clic en la tarjeta fuera del botón de una estrella, desmarca la calificación
           if (!e.target.closest('button')) {
             onChange(0);
           }
@@ -106,11 +113,10 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                // Si hace clic en la misma estrella, la desmarca (0); si hace clic en otra, selecciona esa estrella
                 onChange(valorActual === star ? 0 : star);
               }}
               className="p-1 sm:p-1.5 text-lg transition-transform hover:scale-125 border-none bg-transparent cursor-pointer focus:outline-none"
-              title={`Calificar con ${star} estrella${star > 1 ? 's' : ''} (o clic para desmarcar)`}
+              title={`Calificar con ${star} estrella${star > 1 ? 's' : ''}`}
             >
               <FiStar
                 className={`w-6 h-6 sm:w-7 sm:h-7 transition-colors pointer-events-none ${
@@ -125,6 +131,8 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
       </div>
     );
   };
+
+  const todoCompletado = dificultad > 0 && claridadDocente > 0 && disponibilidad > 0;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans">
@@ -172,7 +180,6 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
         )}
 
         <form onSubmit={handleEnviar} className="space-y-3 sm:space-y-3.5">
-          {/* Criterios de Evaluación */}
           {renderEstrellas(
             dificultad,
             setDificultad,
@@ -194,7 +201,6 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
             '1 = Poca predisposición, 5 = Muy atentos para resolver dudas'
           )}
 
-          {/* Comentario Opcional */}
           <div>
             <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1">
               Consejo o recomendación para futuros estudiantes (opcional)
@@ -208,7 +214,6 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
             />
           </div>
 
-          {/* Checkbox Anónimo con Tooltip Informativo */}
           <label className="flex items-center justify-between p-2.5 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 cursor-pointer select-none gap-2">
             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <input
@@ -225,13 +230,17 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
             <TooltipInfo />
           </label>
 
-          {/* Botón Centrado */}
-          <div className="flex items-center justify-center pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex flex-col items-center justify-center pt-2 border-t border-zinc-100 dark:border-zinc-800 gap-2">
+            {!todoCompletado && (
+              <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                Puntúa los 3 criterios para habilitar el envío.
+              </span>
+            )}
             <button
               type="submit"
-              disabled={enviando || dificultad === 0 || claridadDocente === 0 || disponibilidad === 0}
+              disabled={enviando || !todoCompletado}
               className={`w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl text-xs font-bold shadow-sm transition border-none flex items-center justify-center gap-2 ${
-                dificultad === 0 || claridadDocente === 0 || disponibilidad === 0
+                !todoCompletado
                   ? 'bg-zinc-300 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
                   : 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer hover:shadow'
               }`}

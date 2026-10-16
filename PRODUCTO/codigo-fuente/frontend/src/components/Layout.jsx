@@ -22,7 +22,9 @@ import {
   FiUsers,
   FiShare2,
   FiMessageSquare,
-  FiCpu
+  FiCpu,
+  FiStar,
+  FiTrello
 } from "react-icons/fi";
 
 const menuItems = [
@@ -30,15 +32,15 @@ const menuItems = [
   { label: "Asistente IA", icon: <FiCpu />, path: "/asistente-ia" },
   { label: "Planificador", icon: <FiCompass />, path: "/planificador" },
   { label: "Materias", icon: <FiBookOpen />, path: "/materias" },
-  { label: "Calendario", icon: <FiCalendar />, path: "/calendario" },
   { label: "Horario", icon: <FiClock />, path: "/Horario" },
   { label: "Conexiones", icon: <FiShare2 />, path: "/conexiones" },
   { label: "Grupos", icon: <FiUsers />, path: "/grupos" },
   { label: "Foros", icon: <FiMessageSquare />, path: "/foros" },
   { label: "Repositorio", icon: <FiGitMerge />, path: "/repositorio" },
   { label: "Reportes", icon: <FiBarChart2 />, path: "/reportes", role: 3 },
-  { label: "Mapa Correlativas", icon: <FiGitMerge />, path: "/mapa-correlatividades", role: 1 },
-  { label: "Registrar Correlativas", icon: <FiPlusCircle />, path: "/correlativas", role: 3 }
+  { label: "Mapa Correlativas", icon: <FiTrello />, path: "/mapa-correlatividades", role: 1 },
+  { label: "Registrar Correlativas", icon: <FiPlusCircle />, path: "/correlativas", role: 3 },
+  { label: "Reseñas", icon: <FiStar />, path: "/resenas" }
 ];
 
 const Layout = ({ children }) => {
