@@ -1172,3 +1172,13 @@ INSERT INTO actividad (nombre, hora_inicio, duracion, dias, color, id_usuario) V
 ('MAT1 - Turno Mañana', '08:00', 90, 1, '#4A90E2', 19),
 ('LOG1 - Viernes Práctica', '14:00', 180, 16, '#4A90E2', 19),
 ('HIS1 - Noche Lun-Mie', '19:00', 90, 5, '#4A90E2', 19);
+
+-- ==========
+-- Reseñas -- 
+-- ==========
+INSERT INTO encuestas_catedra (id_usuario, id_materia, id_curso, dificultad, claridad_docente, disponibilidad, es_anonima, comentario, estado_academico, createdAt, updatedAt)
+VALUES 
+(1, 4, 1, 4, 5, 4, 0, 'Materia bastante exigente pero el profesor explica excelente. Súper recomendable llevar las guías de trabajos prácticos al día.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 4, 1, 3, 4, 5, 1, 'Las clases son muy claras y hay excelente predisposición para resolver dudas en los foros.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 4, 2, 5, 3, 2, 0, 'Los parciales son difíciles, conviene repasar parciales y finales de años anteriores.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 5, 1, 2, 5, 5, 0, 'Clases muy dinámicas. Se aprueba haciendo los TPs a tiempo.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
