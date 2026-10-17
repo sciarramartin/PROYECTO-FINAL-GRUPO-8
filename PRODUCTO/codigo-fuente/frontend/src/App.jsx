@@ -26,7 +26,7 @@ const MuroMaterialEstudio = lazy(() => import('./components/US-16-Consultar-Mate
 const CrearMaterialEstudio = lazy(() => import('./components/US-18-Agregar-Material-estudio/CrearMaterialEstudio'));
 const ListaMaterias = lazy(() => import('./components/US-84-Historial-Inscripciones/ListaMaterias'));
 const Dashboard = lazy(() => import('./components/Dashboard'));
-const SeccionResenas = lazy(() => import('./components/us-21-Reseñas/SeccionResenas'));
+const SeccionResenas = lazy(() => import('./components/us-21-resenas/SeccionResenas'));
 const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublicacion'));
 const MisGuardados = lazy(() => import('./components/us-foro/MisGuardados'));
 const Reportes = lazy(() => import('./components/us-foro/Reportes'));
