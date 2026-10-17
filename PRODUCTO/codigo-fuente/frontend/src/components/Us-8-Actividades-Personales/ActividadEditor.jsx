@@ -19,13 +19,12 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         horaInicio: '08:00',
         horaFin: '09:00',
         duracion: 60,
-        color: '#FFB3BA', // Color por defecto (azul)
+        color: '#FFB3BA', // Color por defecto
         dias: 0,
-        idUsuario: 1 // Esto debería venir del contexto/usuario actual
+        idUsuario: 1
     });
 
     const duracion = useMemo(() => {
-
         const [hInicio, mInicio] =
             formData.horaInicio.split(':').map(Number);
 
@@ -33,7 +32,6 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
             formData.horaFin.split(':').map(Number);
 
         return (hFin - hInicio) * 60 + (mFin - mInicio);
-
     }, [formData.horaInicio, formData.horaFin]);
 
     // Cargar datos de la actividad si estamos editando
@@ -52,7 +50,6 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         }
     }, [actividadActual, editor]);
 
-
     // Manejar selección de días
     const toggleDay = (dayValue) => {
         setFormData(prev => ({
@@ -63,27 +60,22 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         }));
     };
 
-    // previsualizar actividad
+    // Previsualizar actividad
     useEffect(() => {
-
-        // Construir objeto actividad
         const nuevaActividad = {
-            ...(actividadActual?.id && { id: actividadActual.id }), // Solo incluir id si existe
+            ...(actividadActual?.id && { id: actividadActual.id }),
             nombre: formData.nombre,
             horaInicio: formData.horaInicio,
             duracion: duracion,
             horaFin: formData.horaFin,
             dias: formData.dias,
-            color: formData.color, // Mantener color existente o usar default
+            color: formData.color,
             idUsuario: formData.idUsuario
         };
 
-        // Notificar al padre
         if (preview) {
             preview(nuevaActividad);
         }
-        
-        
     }, [formData, editor]);
 
     // Cancelar edición
@@ -95,17 +87,15 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         onCancel();
     };
 
-        const handleDelete = () => {
+    const handleDelete = () => {
         setEditor(false);
         if (setActividadActual) {
             DeleteActividad();
         }
     };
 
-
-    // guardar edición
+    // Guardar edición
     const handleSave = () => {
-        // Validaciones
         if (!formData.nombre.trim()) {
             alert('El nombre de la actividad es requerido');
             return;
@@ -135,8 +125,9 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
     };
 
     const horaOpts = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
-    // Minutos
-    const minOpts = ['00', '30'];
+    
+    // Minutos del 00 al 59 inclusive en formato desplegable idéntico a las horas
+    const minOpts = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
 
     if (!editor) return null;
 
@@ -196,7 +187,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
 
                     <div className="w-px h-5 bg-gray-200 shrink-0" />
 
-                    {/* Horas */}
+                    {/* Horas y Minutos con desplegables idénticos */}
                     <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                         <span className="text-xs text-gray-400">Inicio</span>
                         <TimeSelect
@@ -208,9 +199,6 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                         <TimeSelect
                             value={formData.horaInicio.split(':')[1]}
                             options={minOpts}
-                            freeInput={true}
-                            min={0}
-                            max={59}
                             onChange={(v) => setFormData(prev => ({ ...prev, horaInicio: `${formData.horaInicio.split(':')[0]}:${v}` }))}
                         />
 
@@ -226,14 +214,12 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                         <TimeSelect
                             value={formData.horaFin.split(':')[1]}
                             options={minOpts}
-                            freeInput={true}
-                            min={0}
-                            max={59}
                             onChange={(v) => setFormData(prev => ({ ...prev, horaFin: `${formData.horaFin.split(':')[0]}:${v}` }))}
                         />
                     </div>
 
                 </div>
+
                 {/* Fila 1: Nombre + Botones */}
                 <div className="flex items-center gap-3">
                     <input
@@ -245,7 +231,6 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                         placeholder="Nombre de la actividad"
                     />
                     <div className="flex gap-2 shrink-0">
-                        {/* Eliminar — solo si no es una actividad nueva */}
                         {actividadActual?.id !== 'preview' && (
                             <button
                                 type="button"
