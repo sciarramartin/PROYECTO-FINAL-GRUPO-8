@@ -15,28 +15,91 @@ import {
 } from './horarioUtils';
 
 /**
- * Horario
- *
- * Props:
- *  - refresh           {any}       – cambiar su valor recarga las actividades desde la API
- *  - actividades       {Array}     – (opcional) lista controlada externamente; si se pasa,
- *                                    el componente la usa en lugar de su estado interno
- *  - onActividadesChange {Function} – (opcional) callback (actividades) => void; se llama
- *                                    cada vez que la lista interna cambia, permitiendo al
- *                                    padre leerla o sincronizarla
+ * Procesa los eventos de un día para detectar solapamientos y calcular
+ * columnas paralelas (ancho y posición horizontal) automáticamente.
  */
+const procesarEventosConColisiones = (actividadesDelDia) => {
+    if (!actividadesDelDia || actividadesDelDia.length === 0) return [];
+
+    const parseMinutos = (horaStr) => {
+        if (!horaStr) return 0;
+        const [h, m] = horaStr.split(':').map(Number);
+        return h * 60 + m;
+    };
+
+    const acts = actividadesDelDia.map(act => ({
+        ...act,
+        inicioMin: parseMinutos(act.horaInicio),
+        finMin: parseMinutos(act.horaInicio) + (act.duracion || 60)
+    })).sort((a, b) => a.inicioMin - b.inicioMin || (b.finMin - b.inicioMin) - (a.finMin - a.inicioMin));
+
+    const clusters = [];
+    let currentCluster = [];
+
+    acts.forEach(act => {
+        if (currentCluster.length === 0) {
+            currentCluster.push(act);
+        } else {
+            const seSolapaConCluster = currentCluster.some(item => 
+                Math.max(act.inicioMin, item.inicioMin) < Math.min(act.finMin, item.finMin)
+            );
+            if (seSolapaConCluster) {
+                currentCluster.push(act);
+            } else {
+                clusters.push(currentCluster);
+                currentCluster = [act];
+            }
+        }
+    });
+    if (currentCluster.length > 0) {
+        clusters.push(currentCluster);
+    }
+
+    const resultadoFinal = [];
+
+    clusters.forEach(cluster => {
+        const columns = [];
+        const assigned = [];
+
+        cluster.forEach(act => {
+            let placedCol = -1;
+            for (let c = 0; c < columns.length; c++) {
+                if (columns[c] <= act.inicioMin) {
+                    placedCol = c;
+                    columns[c] = act.finMin;
+                    break;
+                }
+            }
+            if (placedCol === -1) {
+                placedCol = columns.length;
+                columns.push(act.finMin);
+            }
+            assigned.push({ ...act, colIndex: placedCol });
+        });
+
+        const totalCols = columns.length;
+
+        assigned.forEach(act => {
+            resultadoFinal.push({
+                ...act,
+                totalCols,
+                hasConflict: totalCols > 1
+            });
+        });
+    });
+
+    return resultadoFinal;
+};
+
 const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange }) => {
 
-    // ─── Estado ──────────────────────────────────────────────────────────────
     const [showEditor,         setShowEditor]         = useState(false);
     const [actividadEditando,  setActividadEditando]  = useState(null);
     const [actividadesInternas, setActividadesInternas] = useState([]);
     const [selectedDayTab,     setSelectedDayTab]     = useState(1);
 
-    // Si el padre pasa actividades, usamos las suyas; si no, las propias.
     const actividades = actividadesProp ?? actividadesInternas;
  
-    /** Actualiza solo el estado interno; la notificación al padre va por useEffect. */
     const setActividades = (updater) => {
         setActividadesInternas((prev) =>
             typeof updater === 'function' ? updater(prev) : updater
@@ -44,14 +107,11 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
     };
 
     useEffect(() => {
-        // Solo notificamos cuando el componente gestiona su propio estado
-        // (si actividadesProp existe, el padre ya tiene la lista)
         if (!actividadesProp) {
             onActividadesChange?.(actividadesInternas);
         }
     }, [actividadesInternas]);
 
-    // ─── Carga inicial ────────────────────────────────────────────────────────
     const cargarActividades = async () => {
         try {
             const data = await getActividades();
@@ -62,12 +122,10 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
     };
 
     useEffect(() => {
-        // Solo cargamos desde la API cuando el componente gestiona su propio estado
         if (!actividadesProp) cargarActividades();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [refresh]);
 
-    // ─── Derivados (memoizados) ───────────────────────────────────────────────
     const diasActividades = useMemo(() => buildDiasActividades(actividades), [actividades]);
     const columns         = useMemo(() => buildColumns(diasActividades),      [diasActividades]);
     const activeColumns   = useMemo(() => buildActiveColumns(columns, selectedDayTab), [columns, selectedDayTab]);
@@ -79,7 +137,6 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
 
     const horas = useMemo(() => buildHoras(minHora, maxHora), [minHora, maxHora]);
 
-    // ─── Handlers del editor ──────────────────────────────────────────────────
     const handleSaveActividad = async (actividadActualizada) => {
         try {
             if (actividadActualizada.id !== 'preview') {
@@ -152,18 +209,9 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
         setShowEditor(false);
     };
 
-    // ─── Render ───────────────────────────────────────────────────────────────
     return (
         <>
-            {/*
-             * Contenedor principal:
-             *   - w-full + min-w-0 → se adapta al contenedor padre sin desbordarse
-             *   - overflow-hidden en móvil; en escritorio el scroll interno queda
-             *     dentro del componente, no en el layout externo
-             */}
             <div className="w-full min-w-0 bg-white rounded-xl shadow-lg overflow-hidden">
-
-                {/* Selector de día – solo móvil */}
                 <div className="flex md:hidden justify-between gap-1 p-2.5 bg-gray-50 border-b border-gray-200">
                     {DAYS.map(([name, value]) => {
                         const isActive = selectedDayTab === value;
@@ -175,7 +223,7 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer text-center ${
                                     isActive
                                         ? 'bg-indigo-500 text-white shadow-sm scale-105'
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                        : 'text-gray-600 hover:bg-gray-150'
                                 }`}
                             >
                                 {name.slice(0, 3)}
@@ -184,17 +232,8 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                     })}
                 </div>
 
-                {/*
-                 * Grilla:
-                 *  - En móvil: una sola columna de día visible → no hay scroll horizontal
-                 *  - En escritorio: overflow-x-auto acotado a este div, no al layout padre.
-                 *    Las columnas usan flex-1 con min-w-0 para repartir el ancho disponible;
-                 *    si el espacio es muy reducido se activa el scroll interno.
-                 */}
                 <div className="overflow-x-auto">
                     <div className="flex w-full" style={{ minWidth: 'min(600px, 100%)' }}>
-
-                        {/* Columna de horas */}
                         <div className="flex-shrink-0 w-14 md:w-20 bg-gray-50 border-r-2 border-gray-200">
                             <div className="h-16 flex items-center justify-center font-bold bg-gray-100 border-b-2 border-gray-200 text-gray-700 text-sm">
                                 Hora
@@ -209,9 +248,10 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                             ))}
                         </div>
 
-                        {/* Columnas de días */}
                         {activeColumns.map((column) => {
                             const isVisible = column.id === selectedDayTab;
+                            const eventosProcesados = procesarEventosConColisiones(column.data);
+
                             return (
                                 <div
                                     key={column.id}
@@ -219,19 +259,16 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                                         isVisible ? 'flex' : 'hidden md:flex'
                                     } flex-col`}
                                 >
-                                    {/* Encabezado del día */}
                                     <div className="h-16 flex items-center justify-center font-semibold text-sm border-b-2 border-gray-200 px-1 text-center">
                                         {column.title}
                                     </div>
 
-                                    {/* Cuerpo de la columna */}
                                     <div
                                         className="relative"
                                         style={{
                                             minHeight: `${(maxHora - minHora + 1) * PIXELS_POR_HORA}px`,
                                         }}
                                     >
-                                        {/* Franjas de fondo (clickeables para nueva actividad) */}
                                         {horas.map((hora) => (
                                             <div
                                                 key={hora}
@@ -245,27 +282,48 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                                             />
                                         ))}
 
-                                        {/* Actividades */}
-                                        {column.data.map((act, idx) => (
-                                            <div
-                                                key={`${act.horaInicio}-${idx}`}
-                                                className="absolute left-0.5 right-0.5 p-1.5 overflow-hidden shadow-md transition-all duration-200 cursor-pointer hover:scale-[1.02] flex flex-col justify-between rounded-sm"
-                                                onClick={(e) => { e.stopPropagation(); handleEditActividad(act); }}
-                                                style={{
-                                                    backgroundColor: act.color ?? "#B5E3FF",
-                                                    top:    `${calcularPosicionY(act.horaInicio, minHora)}px`,
-                                                    height: `${calcularAltura(act.duracion)}px`,
-                                                }}
-                                                title={`${act.nombre}\n${act.horaInicio} - ${act.horaFin}`}
-                                            >
-                                                <div className="font-bold text-xs text-gray-600 capitalize leading-tight">
-                                                    {act.nombre}
+                                        {/* Actividades con resolución de colisiones y colores personalizados */}
+                                        {eventosProcesados.map((act, idx) => {
+                                        // Si hay conflicto, usamos el color de la actividad con opacidad o un tono claro, manteniendo el borde punteado
+                                            const colorBase = act.color ?? "#B5E3FF";
+    
+                                            return (
+                                                <div
+                                                    key={`${act.horaInicio}-${idx}-${act.id || idx}`}
+                                                    className={`absolute p-1.5 overflow-hidden shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between rounded-sm ${
+                                                        act.hasConflict 
+                                                            ? 'border-2 border-dashed border-amber-500 z-10 hover:z-30 hover:shadow-xl' 
+                                                            : 'hover:z-20 hover:shadow-lg hover:scale-[1.02]'
+                                                    }`}
+                                                    onClick={(e) => { e.stopPropagation(); handleEditActividad(act); }}
+                                                    style={{
+                                                        // Si hay conflicto, bajamos la intensidad del fondo manteniendo el color elegido por el usuario
+                                                        backgroundColor: act.hasConflict ? `${colorBase}33` : colorBase, // 33 añade transparencia en HEX (~20%)
+                                                        top:    `${calcularPosicionY(act.horaInicio, minHora)}px`,
+                                                        height: `${calcularAltura(act.duracion)}px`,
+                                                        width:  `calc(${100 / act.totalCols}% - 4px)`,
+                                                        left:   `calc(${(act.colIndex * 100) / act.totalCols}% + 2px)`,
+                                                    }}
+                                                    title={`${act.nombre}\n${act.horaInicio} - ${act.horaFin}${act.hasConflict ? '\n⚠️ Conflicto de horario detectado con otra actividad.' : ''}`}
+                                                >
+                                                    <div className="flex items-start justify-between gap-1">
+                                                        <div className="font-bold text-xs text-gray-800 capitalize leading-tight truncate">
+                                                            {act.nombre}
+                                                        </div>
+                                                        {act.hasConflict && (
+                                                            <span className="flex-shrink-0 text-amber-600 bg-amber-100/80 rounded-full p-0.5 shadow-xs" title="Horario superpuesto">
+                                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-700 mt-0.5 font-medium">
+                                                        {act.horaInicio} – {act.horaFin}
+                                                    </div>
                                                 </div>
-                                                <div className="text-[10px] text-gray-700 mt-0.5">
-                                                    {act.horaInicio} – {act.horaFin}
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );
@@ -274,7 +332,6 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                 </div>
             </div>
 
-            {/* Editor lateral / modal */}
             {(!actividadesProp) && (
                 <ActividadEditor
                     editor={showEditor}

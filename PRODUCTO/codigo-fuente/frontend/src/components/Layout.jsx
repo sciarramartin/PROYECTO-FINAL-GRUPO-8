@@ -24,19 +24,29 @@ import {
   FiMessageSquare,
   FiCpu,
   FiStar,
-  FiTrello
+  FiTrello,
+  FiChevronLeft,
+  FiChevronRight,
+  FiPieChart,
+  FiFolder
 } from "react-icons/fi";
 
+import { RiRobot2Line } from "react-icons/ri";
+import { 
+  BsCalendarWeek,
+  BsChatRightDots
+ } from "react-icons/bs";
+
 const menuItems = [
-  { label: "Dashboard", icon: <FiGrid />, path: "/dashboard" },
-  { label: "Asistente IA", icon: <FiCpu />, path: "/asistente-ia" },
-  { label: "Planificador", icon: <FiCompass />, path: "/planificador" },
+  { label: "Dashboard", icon: <FiPieChart />, path: "/dashboard" },
+  { label: "Asistente IA", icon: <RiRobot2Line />, path: "/asistente-ia" },
+  { label: "Planificador", icon: <BsCalendarWeek />, path: "/planificador" },
   { label: "Materias", icon: <FiBookOpen />, path: "/materias" },
   { label: "Horario", icon: <FiClock />, path: "/Horario" },
   { label: "Conexiones", icon: <FiShare2 />, path: "/conexiones" },
   { label: "Grupos", icon: <FiUsers />, path: "/grupos" },
-  { label: "Foros", icon: <FiMessageSquare />, path: "/foros" },
-  { label: "Repositorio", icon: <FiGitMerge />, path: "/repositorio" },
+  { label: "Foros", icon: <BsChatRightDots />, path: "/foros" },
+  { label: "Repositorio", icon: <FiFolder />, path: "/repositorio" },
   { label: "Reportes", icon: <FiBarChart2 />, path: "/reportes", role: 3 },
   { label: "Mapa Correlativas", icon: <FiTrello />, path: "/mapa-correlatividades", role: 1 },
   { label: "Registrar Correlativas", icon: <FiPlusCircle />, path: "/correlativas", role: 3 },
@@ -45,11 +55,17 @@ const menuItems = [
 
 const Layout = ({ children }) => {
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
+  
+  // Persistencia del menú colapsado
+  const [sidebarColapsado, setSidebarColapsado] = useState(() => {
+    return localStorage.getItem("sidebarColapsado") === "true";
+  });
+
   const [menuUsuarioAbierto, setMenuUsuarioAbierto] = useState(false);
   const [temaOscuro, setTemaOscuro] = useState(() => {
     const guardado = localStorage.getItem("theme");
     if (guardado) return guardado === "dark";
-    return false; // Modo claro (blanco) por defecto
+    return false;
   });
 
   const location = useLocation();
@@ -61,25 +77,17 @@ const Layout = ({ children }) => {
   const [cargandoBusqueda, setCargandoBusqueda] = useState(false);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
 
-  // Estado del Badge de Notificación de Amistad
+  // Estados de Notificaciones y Badges
   const [cantPendientes, setCantPendientes] = useState(0);
   const [solicitudesAmistadPendientes, setSolicitudesAmistadPendientes] = useState([]);
-
-  // Estados para Invitaciones a Grupos y Dropdown
   const [cantInvitacionesPendientes, setCantInvitacionesPendientes] = useState(0);
   const [invitacionesPendientes, setInvitacionesPendientes] = useState([]);
   const [mostrarCampanitaDropdown, setMostrarCampanitaDropdown] = useState(false);
-
-  // Estados para Mensajes Privados no leídos y Dropdown
   const [cantMensajesPendientes, setCantMensajesPendientes] = useState(0);
   const [mensajesPendientes, setMensajesPendientes] = useState([]);
   const [fotoPerfil, setFotoPerfil] = useState("");
-
-  // Estados para Mensajes de Grupos no leídos
   const [cantGruposMensajesPendientes, setCantGruposMensajesPendientes] = useState(0);
   const [gruposMensajesPendientes, setGruposMensajesPendientes] = useState([]);
-
-
 
   let usuario = {};
   try {
@@ -95,7 +103,6 @@ const Layout = ({ children }) => {
     ? usuario.nombre.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "US";
 
-  // Efecto para sincronizar el tema con la clase del documentElement
   useEffect(() => {
     if (temaOscuro) {
       document.documentElement.classList.add("dark");
@@ -106,9 +113,7 @@ const Layout = ({ children }) => {
     }
   }, [temaOscuro]);
 
-  const toggleTema = () => {
-    setTemaOscuro(!temaOscuro);
-  };
+  const toggleTema = () => setTemaOscuro(!temaOscuro);
 
   const renderAvatarChico = (foto, inicialesStr, sizeClass = "w-8 h-8 text-xs") => {
     if (!foto) {
@@ -141,13 +146,12 @@ const Layout = ({ children }) => {
     );
   };
 
-  // Efecto 1: Búsqueda Global Debounced (300ms)
+  // ── Búsqueda Global ───────────────────────────────────────────────────────
   useEffect(() => {
     if (!busqueda.trim()) {
       setResultados([]);
       return;
     }
-
     const delayDebounceFn = setTimeout(async () => {
       setCargandoBusqueda(true);
       try {
@@ -168,7 +172,7 @@ const Layout = ({ children }) => {
     return () => clearTimeout(delayDebounceFn);
   }, [busqueda]);
 
-  // Efecto 2: Cargar y Polling de Notificaciones Pendientes (Amistad)
+  // ── Carga de Notificaciones ───────────────────────────────────────────────
   const cargarPendientes = async () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -184,7 +188,6 @@ const Layout = ({ children }) => {
     }
   };
 
-  // Cargar Invitaciones a Grupos
   const cargarInvitacionesGrupo = async () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -200,7 +203,6 @@ const Layout = ({ children }) => {
     }
   };
 
-  // Cargar Mensajes Privados no leídos
   const cargarMensajesPendientes = async () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -210,7 +212,6 @@ const Layout = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // FILTRADO LOCAL INSTANTÁNEO SI ESTAMOS EN EL CHAT DE ESTE AMIGO
       const pathParts = window.location.pathname.split("/");
       const esChat = pathParts[1] === "chat-privado";
       const amigoIdChat = esChat ? parseInt(pathParts[2], 10) : null;
@@ -226,7 +227,7 @@ const Layout = ({ children }) => {
       console.error("Error al obtener notificaciones de mensajes privados:", error);
     }
   };
-  // Cargar Mensajes de Grupos no leídos
+
   const cargarGruposMensajesPendientes = async () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -243,28 +244,18 @@ const Layout = ({ children }) => {
       const unreadGroups = response.data.filter(grupo => {
         const ultMsg = grupo.ultimoMensaje;
         if (!ultMsg) return false;
-
-        // Si el último mensaje es mío, no lo considero pendiente
         const esMio = Number(ultMsg.id_usuario) === Number(userId);
         if (esMio) return false;
 
-        // Si estamos viendo el muro de este grupo actualmente, tampoco es pendiente
         const pathParts = window.location.pathname.split("/");
         const esMuroGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && Number(pathParts[2]) === Number(grupo.id);
         if (esMuroGrupo) {
-          // Actualizar localStorage para que ya no aparezca como unread
           ultimosVistos[grupo.id] = ultMsg.id;
           localStorage.setItem(`grupo_ultimo_visto_${userId}`, JSON.stringify(ultimosVistos));
           return false;
         }
 
         let ultimoVistoId = ultimosVistos[grupo.id] || 0;
-        if (Number(ultimoVistoId) > Number(ultMsg.id)) {
-          ultimoVistoId = 0;
-          ultimosVistos[grupo.id] = 0;
-          localStorage.setItem(`grupo_ultimo_visto_${userId}`, JSON.stringify(ultimosVistos));
-        }
-
         return Number(ultMsg.id) > Number(ultimoVistoId);
       });
 
@@ -301,141 +292,83 @@ const Layout = ({ children }) => {
     cargarFotoPerfilPropia();
   }, []);
 
-  // Sincronizar notificaciones de chat al cambiar de ruta
   useEffect(() => {
     cargarMensajesPendientes();
     cargarGruposMensajesPendientes();
     cargarFotoPerfilPropia();
   }, [location.pathname]);
 
-  // Escuchar el evento personalizado de lectura de grupo
+  // Evento leído grupo
   useEffect(() => {
-    const handleGrupoLeido = () => {
-      cargarGruposMensajesPendientes();
-    };
+    const handleGrupoLeido = () => cargarGruposMensajesPendientes();
     window.addEventListener("grupo_leido", handleGrupoLeido);
-    return () => {
-      window.removeEventListener("grupo_leido", handleGrupoLeido);
-    };
+    return () => window.removeEventListener("grupo_leido", handleGrupoLeido);
   }, [usuario?.id]);
 
-  // Handlers para Aceptar / Rechazar Solicitudes de Amistad desde la campana
+  // Handlers Amistad y Grupos
   const aceptarSolicitudAmistad = async (idUsuarioOrigen) => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      await axios.put(`${apiUrl}/amistades/aceptar`, {
-        id_usuario_origen: idUsuarioOrigen
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.put(`${apiUrl}/amistades/aceptar`, { id_usuario_origen: idUsuarioOrigen }, { headers: { Authorization: `Bearer ${token}` } });
       await cargarPendientes();
-    } catch (error) {
-      console.error("Error al aceptar solicitud de amistad:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
   const rechazarSolicitudAmistad = async (idUsuarioOrigen) => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      await axios.delete(`${apiUrl}/amistades/eliminar`, {
-        data: { id_usuario_b: idUsuarioOrigen },
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.delete(`${apiUrl}/amistades/eliminar`, { data: { id_usuario_b: idUsuarioOrigen }, headers: { Authorization: `Bearer ${token}` } });
       await cargarPendientes();
-    } catch (error) {
-      console.error("Error al rechazar solicitud de amistad:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
-  // Handlers para Aceptar / Rechazar Invitaciones de Grupos desde la campana
   const aceptarInvitacionGrupo = async (idGrupo) => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      await axios.post(`${apiUrl}/grupos/invitaciones/${idGrupo}/aceptar`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(`${apiUrl}/grupos/invitaciones/${idGrupo}/aceptar`, {}, { headers: { Authorization: `Bearer ${token}` } });
       await cargarInvitacionesGrupo();
       navigate(`/grupos/${idGrupo}`);
-    } catch (error) {
-      console.error("Error al aceptar invitación de grupo:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
   const rejectInvitacionGrupo = async (idGrupo) => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      await axios.post(`${apiUrl}/grupos/invitaciones/${idGrupo}/rechazar`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(`${apiUrl}/grupos/invitaciones/${idGrupo}/rechazar`, {}, { headers: { Authorization: `Bearer ${token}` } });
       await cargarInvitacionesGrupo();
-    } catch (error) {
-      console.error("Error al rechazar invitación de grupo:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
-  // Inicialización inmediata y temprana del Socket en la fase de renderizado
+  // ── Sockets ───────────────────────────────────────────────────────────────
   const tokenVal = localStorage.getItem("token") || sessionStorage.getItem("token");
   if (tokenVal && usuario?.id && !window.socket) {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
     const socketUrl = apiUrl.replace('/api', '');
-    window.socket = io(socketUrl, {
-      query: { userId: usuario.id }
-    });
-    console.log(`[Socket.io] Conexión establecida de forma temprana para el usuario ${usuario.id}`);
+    window.socket = io(socketUrl, { query: { userId: usuario.id } });
   }
 
-  // Escuchar notificaciones del socket en tiempo real
   useEffect(() => {
     if (window.socket) {
-      window.socket.on("connect", () => {
-        console.log(`[Socket.io] Conectado exitosamente al servidor como usuario ${usuario.id}`);
-      });
-
-      window.socket.on("nueva_solicitud_amistad", () => {
-        console.log("[Socket.io] Recibida notificación de nueva solicitud de amistad en tiempo real");
-        cargarPendientes();
-      });
-
-      window.socket.on("actualizar_amistad", () => {
-        console.log("[Socket.io] Recibida notificación de actualización de amistad");
-        cargarPendientes();
-      });
-
-      window.socket.on("nueva_invitacion_grupo", () => {
-        console.log("[Socket.io] Recibida notificación de nueva invitación de grupo en tiempo real");
-        cargarInvitacionesGrupo();
-      });
-
+      window.socket.on("nueva_solicitud_amistad", () => cargarPendientes());
+      window.socket.on("actualizar_amistad", () => cargarPendientes());
+      window.socket.on("nueva_invitacion_grupo", () => cargarInvitacionesGrupo());
       window.socket.on("mensaje_privado", (mensajeNuevo) => {
-        console.log("[Socket.io] Recibido nuevo mensaje privado en tiempo real");
-        // Solo notificar si no estamos chateando con esa misma persona actualmente
         const pathParts = window.location.pathname.split("/");
         const esChatConRemitente = pathParts[1] === "chat-privado" && parseInt(pathParts[2], 10) === mensajeNuevo.id_remitente;
-
-        if (!esChatConRemitente) {
-          cargarMensajesPendientes();
-        }
+        if (!esChatConRemitente) cargarMensajesPendientes();
       });
-
       window.socket.on("nuevo_mensaje_grupo_notificacion", (data) => {
-        console.log("[Socket.io Debug] Recibida notificación de nuevo mensaje de grupo en tiempo real:", data);
-        // Solo notificar si no estamos viendo este grupo actualmente
         const pathParts = window.location.pathname.split("/");
         const esMuroDeEsteGrupo = pathParts[1] === "grupos" && pathParts[2] !== undefined && Number(pathParts[2]) === Number(data.id_grupo);
-        console.log(`[Socket.io Debug] ¿Es muro de este grupo? ${esMuroDeEsteGrupo}. pathParts[2]: ${pathParts[2]}, data.id_grupo: ${data.id_grupo}`);
-        if (!esMuroDeEsteGrupo) {
-          console.log("[Socket.io Debug] No es el muro del grupo actual, cargando mensajes pendientes de grupos...");
-          cargarGruposMensajesPendientes();
-        }
+        if (!esMuroDeEsteGrupo) cargarGruposMensajesPendientes();
       });
 
       return () => {
         if (window.socket) {
-          window.socket.off("connect");
           window.socket.off("nueva_solicitud_amistad");
           window.socket.off("actualizar_amistad");
           window.socket.off("nueva_invitacion_grupo");
@@ -450,33 +383,31 @@ const Layout = ({ children }) => {
     if (window.socket) {
       window.socket.disconnect();
       window.socket = null;
-      console.log("[Socket.io] Conexión cerrada por logout");
     }
-    localStorage.removeItem("token");
-    localStorage.removeItem("usuario");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("usuario");
+    localStorage.clear();
+    sessionStorage.clear();
     navigate("/login");
   };
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col font-sans transition-colors duration-300">
 
-      {/* HEADER TRANSPARENTE CON BLUR */}
+      {/* HEADER */}
       <header className="h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 flex items-center justify-between px-4 md:px-6 fixed top-0 left-0 right-0 z-30 transition-colors duration-300">
-
-        {/* Izquierda: Hamburguesa + Marca */}
         <div className="flex items-center gap-3">
           <button
             className="md:hidden p-2 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
             onClick={() => setSidebarAbierto(!sidebarAbierto)}
-            aria-label="Abrir menú"
           >
             {sidebarAbierto ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
           </button>
           <div className="flex items-center gap-3 select-none">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-              <span className="text-xl font-bold">🎓</span>
+              <img 
+                src="/CampusUTN-logo.png" 
+                alt="Logo Campus UTN"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <p className="text-base font-bold text-zinc-900 dark:text-zinc-50 leading-none">Campus</p>
@@ -485,92 +416,60 @@ const Layout = ({ children }) => {
           </div>
         </div>
 
-        {/* BUSCADOR GLOBAL (LUPITA) RESPONSIVE */}
+        {/* BUSCADOR GLOBAL */}
         <div className="flex-1 max-w-xs md:max-w-md mx-4 md:mx-12 relative">
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 pointer-events-none">
-              🔍
-            </span>
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 pointer-events-none">🔍</span>
             <input
               type="text"
               value={busqueda}
-              onChange={(e) => {
-                setBusqueda(e.target.value);
-                setMostrarSugerencias(true);
-              }}
+              onChange={(e) => { setBusqueda(e.target.value); setMostrarSugerencias(true); }}
               onFocus={() => setMostrarSugerencias(true)}
               onBlur={() => setTimeout(() => setMostrarSugerencias(false), 200)}
               placeholder="Buscar compañeros..."
-              className="w-full pl-9 pr-8 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full focus:bg-white dark:focus:bg-zinc-900 focus:border-indigo-500 outline-none transition text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500"
+              className="w-full pl-9 pr-8 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full focus:bg-white dark:focus:bg-zinc-900 focus:border-indigo-500 outline-none transition text-zinc-800 dark:text-zinc-200"
             />
             {busqueda && (
-              <button
-                onClick={() => { setBusqueda(""); setResultados([]); }}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-205"
-              >
-                ✕
-              </button>
+              <button onClick={() => { setBusqueda(""); setResultados([]); }} className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400">✕</button>
             )}
           </div>
 
-          {/* Panel Flotante de Sugerencias */}
           {mostrarSugerencias && (busqueda.trim() || cargandoBusqueda) && (
             <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 max-h-60 overflow-y-auto">
               {cargandoBusqueda ? (
-                <div className="p-4 text-center text-xs text-zinc-400 dark:text-zinc-500 flex items-center justify-center gap-2">
-                  <span className="animate-spin text-sm">⌛</span> Buscando compañeros...
-                </div>
+                <div className="p-4 text-center text-xs text-zinc-400">Buscando compañeros...</div>
               ) : resultados.length > 0 ? (
                 <div className="py-1">
                   {resultados.map((user) => (
                     <button
                       key={user.id}
-                      onClick={() => {
-                        setMostrarSugerencias(false);
-                        setBusqueda("");
-                        navigate(`/perfil/${user.id}`);
-                      }}
-                      className="w-full text-left px-4 py-3 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 flex items-center gap-3 border-b border-zinc-50 dark:border-zinc-800/50 last:border-b-0 transition"
+                      onClick={() => { setMostrarSugerencias(false); setBusqueda(""); navigate(`/perfil/${user.id}`); }}
+                      className="w-full text-left px-4 py-3 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 flex items-center gap-3 border-b border-zinc-50 dark:border-zinc-800/50 transition"
                     >
                       {renderAvatarChico(user.Perfil?.foto_perfil || user.perfil?.foto_perfil, `${user.nombre[0]}${user.apellido[0]}`.toUpperCase())}
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 leading-tight truncate">
-                          {user.nombre} {user.apellido}
-                        </p>
-                        <p className="text-xs text-zinc-400 dark:text-zinc-500 leading-none truncate mt-0.5">
-                          @{user.nombre_usuario}
-                        </p>
+                        <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{user.nombre} {user.apellido}</p>
+                        <p className="text-xs text-zinc-400 truncate">@{user.nombre_usuario}</p>
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="p-4 text-center text-xs text-zinc-400 dark:text-zinc-500">
-                  No se encontraron compañeros.
-                </div>
+                <div className="p-4 text-center text-xs text-zinc-400">No se encontraron compañeros.</div>
               )}
             </div>
           )}
         </div>
 
-        {/* Derecha: Acciones de usuario, campana y tema */}
+        {/* DERECHA */}
         <div className="flex items-center gap-2 md:gap-4">
-
-          {/* Botón de Tema (Claro/Oscuro) */}
-          <button
-            onClick={toggleTema}
-            className="p-2.5 rounded-xl text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition duration-200"
-            title={temaOscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-          >
+          <button onClick={toggleTema} className="p-2.5 rounded-xl text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
             {temaOscuro ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
           </button>
 
-          {/* Campana de Notificaciones con Dropdown */}
+          {/* CAMPANA NOTIFICACIONES */}
           <div className="relative">
-            <button
-              onClick={() => setMostrarCampanitaDropdown(!mostrarCampanitaDropdown)}
-              className="relative p-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition duration-200"
-            >
+            <button onClick={() => setMostrarCampanitaDropdown(!mostrarCampanitaDropdown)} className="relative p-2 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition">
               <FiBell className="w-5 h-5" />
               {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px] font-bold">
@@ -579,53 +478,27 @@ const Layout = ({ children }) => {
               )}
             </button>
 
-            {/* Dropdown de la Campana */}
             {mostrarCampanitaDropdown && (
               <>
-                <div
-                  className="fixed inset-0 z-40 cursor-default"
-                  onClick={() => setMostrarCampanitaDropdown(false)}
-                />
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 py-3.5 px-4">
+                <div className="fixed inset-0 z-40" onClick={() => setMostrarCampanitaDropdown(false)} />
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 py-3.5 px-4 max-h-96 overflow-y-auto">
                   <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-100 dark:border-zinc-800 pb-2 flex items-center justify-between">
                     <span>Notificaciones</span>
-                    {(cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes > 0) && (
-                      <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">
-                        {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes} pendientes
-                      </span>
-                    )}
                   </h3>
 
-                  {/* Solicitudes de Amistad */}
+                  {/* Solicitudes Amistad */}
                   {cantPendientes > 0 && (
                     <div className="mt-3">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Solicitudes de amistad ({cantPendientes})</p>
-                      <div className="mt-2 space-y-2 max-h-36 overflow-y-auto">
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase">Amistades ({cantPendientes})</p>
+                      <div className="mt-1 space-y-1">
                         {solicitudesAmistadPendientes.map((sol) => {
-                          const amigo = sol.usuario || sol.UsuarioOrigen || sol.UsuarioDestino || {};
-                          const inicialesAmigo = `${amigo.nombre?.[0] || ""}${amigo.apellido?.[0] || ""}`.toUpperCase();
+                          const amigo = sol.usuario || sol.UsuarioOrigen || {};
                           return (
-                            <div key={sol.id_solicitud || sol.id} className="flex flex-col gap-1.5 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
-                              <div className="flex items-center gap-2 min-w-0">
-                                {renderAvatarChico(amigo.Perfil?.foto_perfil || amigo.perfil?.foto_perfil, inicialesAmigo, "w-8 h-8 text-xs")}
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">{amigo.nombre} {amigo.apellido}</p>
-                                  <p className="text-[10px] text-zinc-400 truncate">@{amigo.nombre_usuario}</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <button
-                                  onClick={() => aceptarSolicitudAmistad(amigo.id)}
-                                  className="flex-1 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
-                                >
-                                  Aceptar
-                                </button>
-                                <button
-                                  onClick={() => rechazarSolicitudAmistad(amigo.id)}
-                                  className="flex-1 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
-                                >
-                                  Rechazar
-                                </button>
+                            <div key={sol.id} className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg flex flex-col gap-1">
+                              <p className="text-xs font-semibold">{amigo.nombre} {amigo.apellido}</p>
+                              <div className="flex gap-1">
+                                <button onClick={() => aceptarSolicitudAmistad(amigo.id)} className="flex-1 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold">Aceptar</button>
+                                <button onClick={() => rechazarSolicitudAmistad(amigo.id)} className="flex-1 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold">Rechazar</button>
                               </div>
                             </div>
                           );
@@ -634,212 +507,49 @@ const Layout = ({ children }) => {
                     </div>
                   )}
 
-                  {/* Invitaciones a Grupos */}
+                  {/* Invitaciones Grupos */}
                   {cantInvitacionesPendientes > 0 && (
                     <div className="mt-3">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Grupos de estudio ({cantInvitacionesPendientes})</p>
-                      <div className="mt-2 space-y-2 max-h-36 overflow-y-auto">
-                        {invitacionesPendientes.map((inv) => {
-                          const grupoInv = inv.Grupo || {};
-                          const inicialesGrupo = grupoInv.nombre?.[0]?.toUpperCase() || "G";
-                          return (
-                            <div key={inv.id} className="flex flex-col gap-1.5 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[8px] font-extrabold px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 rounded uppercase tracking-wider">
-                                  Grupo de Estudio
-                                </span>
-                                <span className="text-[9px] text-zinc-400">
-                                  Por @{grupoInv.Creador?.nombre_usuario || "creador"}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2.5 min-w-0 mt-0.5">
-                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[12px] font-extrabold shrink-0 shadow-sm">
-                                  {inicialesGrupo}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{grupoInv.nombre}</p>
-                                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate leading-none mt-0.5">
-                                    Te invitaron a formar parte de este grupo
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <button
-                                  onClick={() => aceptarInvitacionGrupo(grupoInv.id)}
-                                  className="flex-1 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition shadow-sm"
-                                >
-                                  Aceptar
-                                </button>
-                                <button
-                                  onClick={() => rejectInvitacionGrupo(grupoInv.id)}
-                                  className="flex-1 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition shadow-sm"
-                                >
-                                  Rechazar
-                                </button>
-                              </div>
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase">Grupos ({cantInvitacionesPendientes})</p>
+                      <div className="mt-1 space-y-1">
+                        {invitacionesPendientes.map((inv) => (
+                          <div key={inv.id} className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg flex flex-col gap-1">
+                            <p className="text-xs font-semibold">{inv.Grupo?.nombre}</p>
+                            <div className="flex gap-1">
+                              <button onClick={() => aceptarInvitacionGrupo(inv.Grupo?.id)} className="flex-1 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold">Aceptar</button>
+                              <button onClick={() => rejectInvitacionGrupo(inv.Grupo?.id)} className="flex-1 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold">Rechazar</button>
                             </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Mensajes Privados Agrupados */}
-                  {(() => {
-                    const mensajesAgrupados = [];
-                    const mapaMensajes = new Map();
-                    (mensajesPendientes || []).forEach((msg) => {
-                      const remitenteId = msg.Remitente?.id;
-                      if (!remitenteId) return;
-                      if (!mapaMensajes.has(remitenteId)) {
-                        mapaMensajes.set(remitenteId, {
-                          remitente: msg.Remitente,
-                          cantidad: 0
-                        });
-                      }
-                      mapaMensajes.get(remitenteId).cantidad += 1;
-                    });
-                    mapaMensajes.forEach((val) => mensajesAgrupados.push(val));
-
-                    if (mensajesAgrupados.length === 0) return null;
-
-                    return (
-                      <div className="mt-3">
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Mensajes no leídos ({cantMensajesPendientes})</p>
-                        <div className="mt-2 space-y-2 max-h-36 overflow-y-auto">
-                          {mensajesAgrupados.map((item) => {
-                            const remitente = item.remitente || {};
-                            const inicialesRemi = `${remitente.nombre?.[0] || ""}${remitente.apellido?.[0] || ""}`.toUpperCase();
-                            return (
-                              <div key={remitente.id} className="flex items-center justify-between gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  {renderAvatarChico(remitente.Perfil?.foto_perfil || remitente.perfil?.foto_perfil, inicialesRemi, "w-8 h-8 text-xs")}
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">{remitente.nombre} {remitente.apellido}</p>
-                                    <p className="text-[10px] text-zinc-400 truncate leading-none mt-0.5">
-                                      {item.cantidad} {item.cantidad === 1 ? "mensaje nuevo" : "mensajes nuevos"}
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    navigate(`/chat-privado/${remitente.id}`);
-                                    setMostrarCampanitaDropdown(false);
-                                  }}
-                                  className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[9px] font-bold cursor-pointer border-none transition"
-                                >
-                                  Ver
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Mensajes de Grupos no leídos */}
-                  {cantGruposMensajesPendientes > 0 && (
-                    <div className="mt-3">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Mensajes de grupos ({cantGruposMensajesPendientes})</p>
-                      <div className="mt-2 space-y-2 max-h-36 overflow-y-auto">
-                        {gruposMensajesPendientes.map((grupo) => {
-                          const inicialesGrupo = grupo.nombre?.[0]?.toUpperCase() || "G";
-                          return (
-                            <div key={grupo.id} className="flex flex-col gap-1.5 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-150/50 dark:border-zinc-800/30">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[8px] font-extrabold px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-650 dark:text-zinc-300 rounded uppercase tracking-wider">
-                                  Mensaje de Grupo
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between gap-3 mt-0.5 min-w-0">
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[11px] font-extrabold shrink-0 shadow-sm">
-                                    {inicialesGrupo}
-                                  </div>
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{grupo.nombre}</p>
-                                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate leading-none mt-0.5">
-                                      Nuevo mensaje en el grupo
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => {
-                                    navigate(`/grupos/${grupo.id}`);
-                                    setMostrarCampanitaDropdown(false);
-                                  }}
-                                  className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-bold cursor-pointer border-none transition shrink-0 shadow-sm"
-                                >
-                                  Ver
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
 
                   {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes === 0 && (
-                    <div className="py-6 text-center text-xs text-zinc-400">
-                      No tienes notificaciones pendientes.
-                    </div>
+                    <div className="py-6 text-center text-xs text-zinc-400">Sin notificaciones pendientes.</div>
                   )}
                 </div>
               </>
             )}
           </div>
 
-          {/* Menú de Usuario */}
+          {/* USUARIO */}
           <div className="relative">
-            <button
-              onClick={() => setMenuUsuarioAbierto(!menuUsuarioAbierto)}
-              className="flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl p-1.5 transition duration-200"
-            >
+            <button onClick={() => setMenuUsuarioAbierto(!menuUsuarioAbierto)} className="flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl p-1.5 transition">
               {renderAvatarChico(fotoPerfil, iniciales)}
               <div className="hidden md:block text-left select-none max-w-[120px]">
-                <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 leading-tight truncate">{usuario?.nombre || "Usuario"}</p>
-                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium truncate mt-0.5">{usuario?.id_tipo_usuario === 3 ? "Administrador" : "Estudiante"}</p>
+                <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{usuario?.nombre || "Usuario"}</p>
+                <p className="text-[10px] text-zinc-400">{usuario?.id_tipo_usuario === 3 ? "Administrador" : "Estudiante"}</p>
               </div>
-              <FiChevronDown className={`text-zinc-400 w-3 h-3 transition-transform duration-200 ${menuUsuarioAbierto ? 'rotate-180' : ''}`} />
+              <FiChevronDown className={`text-zinc-400 w-3 h-3 transition-transform ${menuUsuarioAbierto ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Dropdown del Menú de Usuario */}
             {menuUsuarioAbierto && (
               <>
-                {/* Backdrop invisible para cerrar el menú haciendo clic fuera */}
                 <div className="fixed inset-0 z-40" onClick={() => setMenuUsuarioAbierto(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-4 py-2 border-b border-zinc-100 dark:border-zinc-800 md:hidden">
-                    <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{usuario?.nombre || "Usuario"}</p>
-                    <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate">{usuario?.id_tipo_usuario === 3 ? "Administrador" : "Estudiante"}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setMenuUsuarioAbierto(false);
-                      navigate("/mi-perfil");
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 flex items-center gap-2.5 font-medium transition"
-                  >
-                    👤 Mi Perfil
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMenuUsuarioAbierto(false);
-                      navigate("/mis-guardados");
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 flex items-center gap-2.5 font-medium transition"
-                  >
-                    💾 Mis Guardados
-                  </button>
-                  <button
-                    onClick={() => { cerrarSesion(); setMenuUsuarioAbierto(false); }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2.5 font-medium transition"
-                  >
-                    <FiLogOut className="w-4 h-4" />
-                    Cerrar sesión
-                  </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 z-50">
+                  <button onClick={() => { setMenuUsuarioAbierto(false); navigate("/mi-perfil"); }} className="w-full text-left px-4 py-2.5 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2">👤 Mi Perfil</button>
+                  <button onClick={() => { cerrarSesion(); setMenuUsuarioAbierto(false); }} className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2"><FiLogOut /> Cerrar sesión</button>
                 </div>
               </>
             )}
@@ -849,96 +559,86 @@ const Layout = ({ children }) => {
 
       <div className="flex pt-16 min-h-[calc(100vh-4rem)]">
 
-        {/* OVERLAY oscuro en versión móvil */}
-        {sidebarAbierto && (
-          <div
-            className="fixed inset-0 bg-zinc-950/50 backdrop-blur-sm z-20 md:hidden"
-            onClick={() => setSidebarAbierto(false)}
-          />
-        )}
+        {sidebarAbierto && <div className="fixed inset-0 bg-zinc-950/50 z-20 md:hidden" onClick={() => setSidebarAbierto(false)} />}
 
-        {/* SIDEBAR LATERAL */}
+        {/* SIDEBAR COLAPSIBLE */}
         <aside className={`
-          fixed top-16 left-0 h-[calc(100vh-4rem)] w-60 bg-white dark:bg-zinc-900 border-r border-zinc-200/80 dark:border-zinc-800/80
+          fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white dark:bg-zinc-900 border-r border-zinc-200/80 dark:border-zinc-800/80
           flex flex-col justify-between z-20 transition-all duration-300
-          ${sidebarAbierto ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0
+          ${sidebarAbierto ? "translate-x-0 w-60" : "-translate-x-full md:translate-x-0"}
+          ${sidebarColapsado ? "md:w-20" : "md:w-60"}
         `}>
-          <nav className="p-3.5 flex flex-col gap-1.5 mt-2 overflow-y-auto max-h-[calc(100% - 4.5rem)]">
-            {menuItems.filter(item => !item.role || item.role === usuario?.id_tipo_usuario).map((item) => {
-              const activo = location.pathname === item.path;
-              const esConexiones = item.path === "/conexiones";
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => { navigate(item.path); setSidebarAbierto(false); }}
-                  className={`
-                    flex items-center justify-between px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full text-left relative group
-                    ${activo
-                      ? "bg-indigo-50/70 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold"
-                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100"
-                    }
-                  `}
-                >
-                  {/* Borde activo en el extremo izquierdo */}
-                  {activo && (
-                    <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-indigo-500 dark:bg-indigo-400" />
-                  )}
-                  <div className="flex items-center gap-3">
-                    <span className={`text-lg transition-transform duration-200 group-hover:scale-110 ${activo ? "text-indigo-500 dark:text-indigo-400" : "text-zinc-400 dark:text-zinc-500"}`}>
-                      {item.icon}
-                    </span>
-                    {item.label}
-                  </div>
+          <div className="flex flex-col h-full justify-between">
+            <nav className="p-3.5 flex flex-col gap-1.5 mt-2 overflow-y-auto">
+              {menuItems.filter(item => !item.role || item.role === usuario?.id_tipo_usuario).map((item) => {
+                const activo = location.pathname === item.path;
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => { 
+                      navigate(item.path); 
+                      if (window.innerWidth < 768) setSidebarAbierto(false); 
+                    }}
+                    title={sidebarColapsado ? item.label : ""}
+                    className={`
+                      flex items-center ${sidebarColapsado ? "justify-center" : "justify-between"} px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full relative group
+                      ${activo ? "bg-indigo-50/70 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"}
+                    `}
+                  >
+                    {activo && <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-indigo-500" />}
+                    <div className={`flex items-center gap-3 ${sidebarColapsado ? "justify-center" : ""}`}>
+                      <span className={`text-xl transition-transform group-hover:scale-110 ${activo ? "text-indigo-500" : "text-zinc-400"}`}>
+                        {item.icon}
+                      </span>
+                      {!sidebarColapsado && <span className="truncate">{item.label}</span>}
+                    </div>
 
-                  {/* GLOBITO DE SOLICITUDES PENDIENTES */}
-                  {esConexiones && cantPendientes + cantMensajesPendientes > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                      {cantPendientes + cantMensajesPendientes}
-                    </span>
-                  )}
+                    {!sidebarColapsado && item.path === "/conexiones" && cantPendientes + cantMensajesPendientes > 0 && (
+                      <span className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold">
+                        {cantPendientes + cantMensajesPendientes}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
 
-                  {/* GLOBITO DE GRUPOS (MENSAJES E INVITACIONES PENDIENTES) */}
-                  {item.path === "/grupos" && cantGruposMensajesPendientes + cantInvitacionesPendientes > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                      {cantGruposMensajesPendientes + cantInvitacionesPendientes}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+            {/* BOTÓN INFERIOR DE COLAPSO Y LOGOUT */}
+            <div className="p-3.5 border-t border-zinc-200/80 dark:border-zinc-800/80 flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  const nuevo = !sidebarColapsado;
+                  setSidebarColapsado(nuevo);
+                  localStorage.setItem("sidebarColapsado", nuevo);
+                }}
+                className="hidden md:flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition w-full cursor-pointer"
+              >
+                {sidebarColapsado ? <FiChevronRight className="w-4 h-4" /> : <><FiChevronLeft className="w-4 h-4" /><span>Colapsar menú</span></>}
+              </button>
 
-          {/* Botón inferior: Cerrar Sesión */}
-          <div className="p-3.5 border-t border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/50">
-            <button
-              onClick={cerrarSesion}
-              className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200 w-full text-left"
-            >
-              <FiLogOut className="text-lg" />
-              <span>Cerrar sesión</span>
-            </button>
+              <button
+                onClick={cerrarSesion}
+                className={`flex items-center ${sidebarColapsado ? "justify-center" : "gap-3"} px-3.5 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition w-full`}
+                title={sidebarColapsado ? "Cerrar sesión" : ""}
+              >
+                <FiLogOut className="text-lg shrink-0" />
+                {!sidebarColapsado && <span>Cerrar sesión</span>}
+              </button>
+            </div>
           </div>
         </aside>
 
-        {/* CONTENEDOR DE CONTENIDO PRINCIPAL */}
-        <main className={`flex-1 md:ml-60 ${
-          location.pathname === "/asistente-ia"
-            ? "p-2 sm:p-3 md:p-4 h-[calc(100vh-4rem)] overflow-hidden flex flex-col"
-            : "p-4 md:p-8 min-h-full"
-        } bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300`}>
-          <div className={
-            location.pathname === "/asistente-ia"
-              ? "w-full h-full flex flex-col min-h-0 max-w-[1850px] mx-auto"
-              : "max-w-7xl mx-auto"
-          }>
+        {/* CONTENEDOR PRINCIPAL */}
+        <main className={`flex-1 transition-all duration-300 ${
+          sidebarColapsado ? "md:ml-20" : "md:ml-60"
+        } ${
+          location.pathname === "/asistente-ia" ? "p-2 sm:p-3 md:p-4 h-[calc(100vh-4rem)] overflow-hidden flex flex-col" : "p-4 md:p-8 min-h-full"
+        } bg-zinc-50 dark:bg-zinc-950`}>
+          <div className={location.pathname === "/asistente-ia" ? "w-full h-full flex flex-col min-h-0 max-w-[1850px] mx-auto" : "max-w-7xl mx-auto"}>
             {children}
           </div>
         </main>
       </div>
-
-
-
     </div>
   );
 };
