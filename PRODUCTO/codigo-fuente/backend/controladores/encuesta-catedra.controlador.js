@@ -34,7 +34,7 @@ router.post('/', verificarToken, async (req, res) => {
             encuesta.disponibilidad = dispNum;
             encuesta.es_anonima = !!es_anonima;
             encuesta.comentario = comentario ? comentario.trim() : null;
-            encuesta.estado_academico= estado_academico || 'Regular';
+            encuesta.estado_academico = estado_academico || 'Regular';
             await encuesta.save();
         } else {
             encuesta = await EncuestaCatedra.create({
@@ -102,38 +102,58 @@ router.get('/materia/:materiaId', verificarToken, async (req, res) => {
             });
         }
 
-        const sumDif = encuestas.reduce((acc, curr) => acc + curr.dificultad, 0);
-        const sumCla = encuestas.reduce((acc, curr) => acc + curr.claridad_docente, 0);
-        const sumDisp = encuestas.reduce((acc, curr) => acc + curr.disponibilidad, 0);
+        let sumDif = 0;
+        let sumCla = 0;
+        let sumDisp = 0;
+        let sumaPromediosIndividuales = 0;
+
+        encuestas.forEach(enc => {
+            const data = enc.get ? enc.get({ plain: true }) : enc;
+            const dif = Number(data.dificultad) || 0;
+            const cla = Number(data.claridad_docente) || 0;
+            const disp = Number(data.disponibilidad) || 0;
+
+            sumDif += dif;
+            sumCla += cla;
+            sumDisp += disp;
+
+            // Promedio exacto de esta reseña en particular
+            sumaPromediosIndividuales += (dif + cla + disp) / 3;
+        });
 
         const promedios = {
             dificultad: Number((sumDif / total).toFixed(1)),
             claridad_docente: Number((sumCla / total).toFixed(1)),
             disponibilidad: Number((sumDisp / total).toFixed(1)),
-            general: Number(((sumCla + sumDisp + (6 - sumDif)) / (total * 3)).toFixed(1))
+            // 🟢 Promedio general real en escala de 1 a 5 estrellas
+            general: Number((sumaPromediosIndividuales / total).toFixed(1))
         };
 
         // Formatear encuestas respetando anonimato
         const encuestasFormateadas = encuestas.map(e => {
-            const esAnonima = e.es_anonima;
+            const data = e.get ? e.get({ plain: true }) : e;
+            const esAnonima = Boolean(data.es_anonima);
+            const estudiante = data.Estudiante || {};
+            const perfil = estudiante.Perfil || estudiante.perfil || {};
+
             return {
-                id: e.id,
-                dificultad: e.dificultad,
-                claridad_docente: e.claridad_docente,
-                disponibilidad: e.disponibilidad,
-                comentario: e.comentario,
-                estado_academico: e.estado_academico,
+                id: data.id,
+                dificultad: data.dificultad,
+                claridad_docente: data.claridad_docente,
+                disponibilidad: data.disponibilidad,
+                comentario: data.comentario,
+                estado_academico: data.estado_academico,
                 es_anonima: esAnonima,
-                createdAt: e.createdAt,
-                curso: e.Curso ? e.Curso.nombre : 'General',
+                createdAt: data.createdAt,
+                curso: data.Curso ? data.Curso.nombre : 'General',
                 autor: esAnonima ? {
                     nombre: 'Estudiante Anónimo',
                     foto_perfil: null,
                     nombre_usuario: null
                 } : {
-                    nombre: `${e.Estudiante?.nombre || ''} ${e.Estudiante?.apellido || ''}`.trim(),
-                    foto_perfil: e.Estudiante?.Perfil?.foto_perfil || null,
-                    nombre_usuario: e.Estudiante?.nombre_usuario || ''
+                    nombre: `${estudiante.nombre || ''} ${estudiante.apellido || ''}`.trim() || 'Estudiante',
+                    foto_perfil: perfil.foto_perfil || null,
+                    nombre_usuario: estudiante.nombre_usuario || ''
                 }
             };
         });
