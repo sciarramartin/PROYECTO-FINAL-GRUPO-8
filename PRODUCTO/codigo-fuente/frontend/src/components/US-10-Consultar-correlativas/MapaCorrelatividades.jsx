@@ -1,13 +1,70 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
 import axios from 'axios';
 import { obtenerTodas, obtenerProgreso, actualizarEstadoMateria } from './services';
 import ModalSeleccionarComision from './ModalSeleccionarComision';
 import EncuestaCatedraObligatoria from '../common/EncuestaCatedraObligatoria';
+import { FiMaximize, FiMinimize, FiSearch, FiCompass, FiPlus, FiMinus, FiRotateCcw } from 'react-icons/fi';
+
+// Componente vectorial del Hombre de Palo saltando (Stickman sin cara)
+const StickmanSaltando = () => (
+    <svg viewBox="0 0 100 120" className="w-10 h-10 animate-bounce shrink-0 overflow-visible">
+        {/* Cabeza redonda simple */}
+        <circle cx="50" cy="22" r="12" fill="none" stroke="#ffffff" strokeWidth="4" />
+        
+        {/* Cuerpo / Torso */}
+        <line x1="50" y1="34" x2="50" y2="70" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+        
+        {/* Brazo Izquierdo levantado festejando */}
+        <line x1="50" y1="42" x2="22" y2="18" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+        
+        {/* Brazo Derecho levantado festejando */}
+        <line x1="50" y1="42" x2="78" y2="18" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
+        
+        {/* Pierna Izquierda doblada saltando */}
+        <path d="M 50 70 L 32 88 L 22 106" fill="none" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+        
+        {/* Pierna Derecha en ángulo de salto */}
+        <path d="M 50 70 L 68 88 L 82 100" fill="none" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+// Componente para la lluvia de confeti flotante
+const ConfettiRain = () => {
+    const confettiColors = ['#f43f5e', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'];
+    const pieces = Array.from({ length: 24 });
+
+    return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-50">
+            {pieces.map((_, i) => {
+                const bg = confettiColors[i % confettiColors.length];
+                const left = `${(i * 4.2) % 100}%`;
+                const delay = `${(i * 0.12).toFixed(2)}s`;
+                const duration = `${(1.8 + (i % 3) * 0.4).toFixed(2)}s`;
+
+                return (
+                    <div
+                        key={i}
+                        className="absolute w-2 h-2 rounded-xs animate-fall opacity-90"
+                        style={{
+                            backgroundColor: bg,
+                            left,
+                            top: '-10px',
+                            animationDelay: delay,
+                            animationDuration: duration,
+                        }}
+                    />
+                );
+            })}
+        </div>
+    );
+};
 
 const MapaCorrelatividades = () => {
     const containerRef = useRef(null);
+    const wrapperRef = useRef(null);
+    const minimapCanvasRef = useRef(null);
     const networkRef = useRef(null);
     const nodesRef = useRef(null);
     const edgesRef = useRef(null);
@@ -26,12 +83,26 @@ const MapaCorrelatividades = () => {
     const [estadoPendiente, setEstadoPendiente] = useState(null);
     const [misEncuestas, setMisEncuestas] = useState([]);
 
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [busquedaGrafo, setBusquedaGrafo] = useState('');
+
+    const [zoomLevel, setZoomLevel] = useState(100);
+    const initialScaleRef = useRef(1);
+
+    // Estado para la notificación de logro
+    const [notificacionLogro, setNotificacionLogro] = useState(null);
+
+    const materiasRef = useRef([]);
+    const progresoRef = useRef([]);
+    materiasRef.current = materias;
+    progresoRef.current = progreso;
+
     const colores = {
         aprobada: { background: '#d1fae5', border: '#10b981' }, 
         regular: { background: '#fef3c7', border: '#f59e0b' },   
         cursando: { background: '#f3e8ff', border: '#a855f7' },
         habilitada: { background: '#dbeafe', border: '#3b82f6' }, 
-        bloqueada: { background: '#ffffff', border: '#cbd5e1' }, // Igual al nodo base en GrafoCorrelativas
+        bloqueada: { background: '#ffffff', border: '#cbd5e1' },
     };
 
     const cargarDatos = async () => {
@@ -96,48 +167,43 @@ const MapaCorrelatividades = () => {
         if (estadoMateria === 'Aprobada' || estadoMateria === 'Regular' || estadoMateria === 'Cursando') {
             return estadoMateria.toLowerCase();
         }
-
         const materia = materiasLista.find(m => m.id === materiaId);
         if (!materia) return 'bloqueada';
-
         if (!materia.correlativas || materia.correlativas.length === 0) {
             return 'habilitada';
         }
-
         const cumpleRequisitos = materia.correlativas.every(req => {
             const estadoReq = mapEstadosProgreso[req.id];
             const tipo = req.correlativas_x_materia?.tipo_requisito || 'regular';
-            
             if (tipo === 'aprobada') {
-                return estadoReq === 'Aprobada'; // Exigencia fuerte
+                return estadoReq === 'Aprobada';
             } else {
-                return estadoReq === 'Aprobada' || estadoReq === 'Regular'; // Exigencia débil
+                return estadoReq === 'Aprobada' || estadoReq === 'Regular';
             }
         });
-
         return cumpleRequisitos ? 'habilitada' : 'bloqueada';
     };
 
-    const actualizarNodosVisuales = () => {
-        if (!materias.length || !nodesRef.current) return;
-
+    const actualizarNodosVisuales = useCallback(() => {
+        if (!nodesRef.current || materiasRef.current.length === 0) return;
+        
         const mapEstados = {};
-        progreso.forEach(p => { mapEstados[p.id_materia] = p.estado; });
+        progresoRef.current.forEach(p => { mapEstados[p.id_materia] = p.estado; });
 
-        // Sólo actualizamos colores y texto, no borramos el grafo entero
+        const updates = [];
         nodesRef.current.forEach(node => {
             const estadoBase = mapEstados[node.id] || 'No Cursada';
-            const estadoCalculado = getEstadoCalculado(node.id, estadoBase, mapEstados, materias);
-            const palette = colores[estadoCalculado];
-            
-            // Para mantener la propiedad 'materiaNombre' original:
-            const m = materias.find(mat => mat.id === node.id);
+            const estadoCalculado = getEstadoCalculado(node.id, estadoBase, mapEstados, materiasRef.current);
+            const palette = colores[estadoCalculado] || colores.bloqueada;
+            const m = materiasRef.current.find(mat => mat.id === node.id);
             if (!m) return;
 
-            nodesRef.current.update({
+            updates.push({
                 id: node.id,
-                label: `${m.nombre}\n${estadoBase}`, // Solo nombre y estado
+                label: `${m.nombre}\n${estadoBase}`,
                 estadoCalculado,
+                opacity: 1,
+                borderWidth: 2,
                 color: {
                     background: palette.background,
                     border: palette.border,
@@ -145,26 +211,109 @@ const MapaCorrelatividades = () => {
                 }
             });
         });
-    };
 
-    // Inicialización del grafo IDÉNTICA a GrafoCorrelativas
+        if (updates.length > 0) {
+            nodesRef.current.update(updates);
+        }
+    }, []);
+
+    const actualizarMinimapa = useCallback(() => {
+        const minimapCanvas = minimapCanvasRef.current;
+        if (!minimapCanvas || !networkRef.current) return;
+        const ctx = minimapCanvas.getContext('2d');
+        const width = minimapCanvas.width;
+        const height = minimapCanvas.height;
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, width, height);
+
+        const nodePositions = networkRef.current.getPositions();
+        const nodeIds = Object.keys(nodePositions);
+        if (nodeIds.length === 0) return;
+
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        nodeIds.forEach(id => {
+            const pos = nodePositions[id];
+            if (pos.x < minX) minX = pos.x;
+            if (pos.x > maxX) maxX = pos.x;
+            if (pos.y < minY) minY = pos.y;
+            if (pos.y > maxY) maxY = pos.y;
+        });
+
+        const padding = 200;
+        minX -= padding; maxX += padding;
+        minY -= padding; maxY += padding;
+
+        const graphWidth = maxX - minX || 1;
+        const graphHeight = maxY - minY || 1;
+
+        const mapEstados = {};
+        progresoRef.current.forEach(p => { mapEstados[p.id_materia] = p.estado; });
+
+        nodeIds.forEach(id => {
+            const pos = nodePositions[id];
+            const nx = ((pos.x - minX) / graphWidth) * width;
+            const ny = ((pos.y - minY) / graphHeight) * height;
+
+            const estadoBase = mapEstados[id] || 'No Cursada';
+            const estadoCalculado = getEstadoCalculado(Number(id), estadoBase, mapEstados, materiasRef.current);
+            const palette = colores[estadoCalculado] || colores.bloqueada;
+
+            ctx.fillStyle = palette.border;
+            ctx.fillRect(nx - 2.5, ny - 2.5, 5, 5);
+        });
+
+        const viewPosition = networkRef.current.getViewPosition();
+        const scale = networkRef.current.getScale();
+        const containerW = containerRef.current ? containerRef.current.clientWidth : 800;
+        const containerH = containerRef.current ? containerRef.current.clientHeight : 600;
+
+        const vx = viewPosition.x - containerW / (2 * scale);
+        const vy = viewPosition.y - containerH / (2 * scale);
+        const vw = containerW / scale;
+        const vh = containerH / scale;
+
+        const mVx = ((vx - minX) / graphWidth) * width;
+        const mVy = ((vy - minY) / graphHeight) * height;
+        const mVw = (vw / graphWidth) * width;
+        const mVh = (vh / graphHeight) * height;
+
+        ctx.strokeStyle = '#4f46e5';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(mVx, mVy, mVw, mVh);
+        ctx.fillStyle = 'rgba(79, 70, 229, 0.08)';
+        ctx.fillRect(mVx, mVy, mVw, mVh);
+    }, []);
+
     useEffect(() => {
         if (cargando || error || !containerRef.current || materias.length === 0) return;
-        if (networkRef.current) return;
+        
+        if (networkRef.current) {
+            networkRef.current.destroy();
+            networkRef.current = null;
+        }
 
         nodesRef.current = new DataSet();
         edgesRef.current = new DataSet();
 
-        // 1. Crear nodos (con valores por defecto, luego actualizarNodosVisuales pondrá los colores)
+        const mapEstados = {};
+        progreso.forEach(p => { mapEstados[p.id_materia] = p.estado; });
+
         materias.forEach(materia => {
+            const estadoBase = mapEstados[materia.id] || 'No Cursada';
+            const estadoCalculado = getEstadoCalculado(materia.id, estadoBase, mapEstados, materias);
+            const palette = colores[estadoCalculado] || colores.bloqueada;
+
             nodesRef.current.add({
                 id: materia.id,
-                label: `${materia.nombre}\nCargando...`,
+                label: `${materia.nombre}\n${estadoBase}`,
                 level: parseInt(materia.nivel_anio) || 1,
+                estadoCalculado,
                 color: {
-                    background: '#ffffff',
-                    border: '#cbd5e1',
-                    highlight: { background: '#f8fafc', border: '#64748b' }
+                    background: palette.background,
+                    border: palette.border,
+                    highlight: { background: palette.background, border: '#4f46e5' }
                 },
                 font: { face: 'Inter, sans-serif', size: 14, color: '#1e293b' },
                 shape: 'box',
@@ -175,7 +324,6 @@ const MapaCorrelatividades = () => {
                 shadow: { enabled: true, color: 'rgba(0,0,0,0.05)', size: 5, x: 0, y: 4 }
             });
 
-            // 2. Crear Aristas
             if (materia.correlativas) {
                 materia.correlativas.forEach(req => {
                     const tipo = req.correlativas_x_materia?.tipo_requisito || 'regular';
@@ -208,21 +356,28 @@ const MapaCorrelatividades = () => {
             interaction: {
                 hover: true,
                 selectConnectedEdges: true,
-                zoomView: true,
-                dragView: true
+                zoomView: false,
+                dragView: true,
             }
         };
 
         networkRef.current = new Network(containerRef.current, data, options);
 
-        // Dibujar columnas pastel (Idéntico a GrafoCorrelativas)
+        networkRef.current.once('stabilized', () => {
+            const currentScale = networkRef.current.getScale();
+            initialScaleRef.current = currentScale;
+            setZoomLevel(100);
+            actualizarNodosVisuales();
+            actualizarMinimapa();
+        });
+
         networkRef.current.on("beforeDrawing", function (ctx) {
             const colorsBg = ['#f0f9ff', '#faf5ff', '#f0fdf4', '#fff7ed', '#fdf2f8'];
             const yearNames = ['1° Año', '2° Año', '3° Año', '4° Año', '5° Año'];
             const positions = networkRef.current.getPositions();
             const levelX = {};
             
-            materias.forEach(m => {
+            materiasRef.current.forEach(m => {
                 if (positions[m.id]) {
                     levelX[m.nivel_anio] = positions[m.id].x;
                 }
@@ -236,7 +391,6 @@ const MapaCorrelatividades = () => {
                     ctx.fillStyle = colorsBg[year - 1];
                     ctx.fillRect(x - bandWidth/2, -10000, bandWidth, 20000);
 
-                    // Pequeño título del año para orientación visual (Opcional, pero útil)
                     const viewPos = networkRef.current.getViewPosition();
                     const scale = networkRef.current.getScale();
                     const textY = viewPos.y - (containerRef.current.clientHeight / 2) / scale + 40 / scale;
@@ -249,21 +403,19 @@ const MapaCorrelatividades = () => {
             });
         });
 
-        actualizarNodosVisuales();
+        networkRef.current.on('dragEnd', actualizarMinimapa);
+        networkRef.current.on('afterDrawing', actualizarMinimapa);
 
-        // Evento Click idéntico a GrafoCorrelativas
         networkRef.current.on('click', function (params) {
             if (params.nodes.length > 0) {
                 const nodeId = params.nodes[0];
-                const materiaSelect = materias.find(m => m.id === nodeId);
+                const materiaSelect = materiasRef.current.find(m => m.id === nodeId);
                 
-                // Setear panel lateral
-                const mapEstados = {};
-                progreso.forEach(p => { mapEstados[p.id_materia] = p.estado; });
-                const estadoActual = mapEstados[nodeId] || 'No Cursada';
+                const mapEst = {};
+                progresoRef.current.forEach(p => { mapEst[p.id_materia] = p.estado; });
+                const estadoActual = mapEst[nodeId] || 'No Cursada';
                 setNodoSeleccionado({ ...materiaSelect, estadoActual });
 
-                // Lógica de resaltado
                 const ancestros = new Set();
                 const ancestrosEdges = new Set();
                 
@@ -281,73 +433,27 @@ const MapaCorrelatividades = () => {
                 encontrarAncestros(nodeId);
                 ancestros.add(nodeId);
 
-                // Re-colorear Nodos y opacidad
                 nodesRef.current.forEach(node => {
                     if (ancestros.has(node.id)) {
-                        nodesRef.current.update({ 
-                            id: node.id, 
-                            opacity: 1, 
-                            borderWidth: 3, 
-                            color: { border: '#4f46e5' } // Azul remarcado
-                        });
+                        nodesRef.current.update({ id: node.id, opacity: 1, borderWidth: 3, color: { border: '#4f46e5' } });
                     } else {
-                        // Respetar su background original pero atenuarlo
-                        nodesRef.current.update({ 
-                            id: node.id, 
-                            opacity: 0.2, 
-                            borderWidth: 1,
-                            color: { border: '#cbd5e1' }
-                        });
+                        nodesRef.current.update({ id: node.id, opacity: 0.2, borderWidth: 1, color: { border: '#cbd5e1' } });
                     }
                 });
 
-                // Re-colorear Aristas
                 edgesRef.current.forEach(edge => {
                     if (ancestrosEdges.has(edge.id)) {
-                        edgesRef.current.update({
-                            id: edge.id,
-                            color: { color: '#4f46e5' },
-                            width: 3
-                        });
+                        edgesRef.current.update({ id: edge.id, color: { color: '#4f46e5' }, width: 3 });
                     } else {
-                        edgesRef.current.update({
-                            id: edge.id,
-                            color: { color: 'rgba(203, 213, 225, 0.2)' },
-                            width: 1
-                        });
+                        edgesRef.current.update({ id: edge.id, color: { color: 'rgba(203, 213, 225, 0.2)' }, width: 1 });
                     }
                 });
 
             } else {
-                // Click en el fondo: Limpiar todo
                 setNodoSeleccionado(null);
-                
-                // Restaurar la opacidad y los bordes al original definidos en colores
-                const mapEstados = {};
-                progreso.forEach(p => { mapEstados[p.id_materia] = p.estado; });
-
-                nodesRef.current.forEach(node => {
-                    const estadoBase = mapEstados[node.id] || 'No Cursada';
-                    const estadoCalculado = getEstadoCalculado(node.id, estadoBase, mapEstados, materias);
-                    const palette = colores[estadoCalculado];
-
-                    nodesRef.current.update({ 
-                        id: node.id, 
-                        opacity: 1, 
-                        borderWidth: 2,
-                        color: { border: palette.border }
-                    });
-                });
-                
-                // Restaurar las aristas
+                actualizarNodosVisuales();
                 edgesRef.current.forEach(edge => {
-                    // Hay que buscar si era aprobada o regular para restaurarla bien
-                    // Es costoso buscar en cada click, así que podemos leer sus properties si las guardáramos, 
-                    // o simplemente restaurar el color sutil por defecto (que igual respeta dashed)
-                    edgesRef.current.update({
-                        id: edge.id,
-                        color: { color: 'rgba(203, 213, 225, 0.8)' }
-                    });
+                    edgesRef.current.update({ id: edge.id, color: { color: 'rgba(203, 213, 225, 0.8)' } });
                 });
             }
         });
@@ -358,41 +464,104 @@ const MapaCorrelatividades = () => {
                 networkRef.current = null;
             }
         };
-    }, [materias, cargando]); 
+    }, [materias, cargando]);
 
-    // Al cambiar progreso, repintamos colores
     useEffect(() => {
         if (materias.length > 0) {
             actualizarNodosVisuales();
+            actualizarMinimapa();
         }
-    }, [progreso]);
+    }, [progreso, materias, actualizarNodosVisuales, actualizarMinimapa]);
 
-    // Cada vez que cambia el nodo seleccionado o el progreso, nos aseguramos que el panel se refresque
+    const cambiarZoom = (porcentaje) => {
+        if (!networkRef.current) return;
+        const nuevoPorcentaje = Math.min(Math.max(porcentaje, 10), 200);
+        setZoomLevel(nuevoPorcentaje);
+
+        const targetScale = initialScaleRef.current * (nuevoPorcentaje / 100);
+        networkRef.current.moveTo({
+            scale: targetScale,
+            animation: { duration: 150, easingFunction: 'easeInOutQuad' }
+        });
+        setTimeout(actualizarMinimapa, 160);
+    };
+
     useEffect(() => {
-        if (nodoSeleccionado && progreso) {
-            const mapEstados = {};
-            progreso.forEach(p => { mapEstados[p.id_materia] = p.estado; });
-            const estadoActual = mapEstados[nodoSeleccionado.id] || 'No Cursada';
-            
-            if (nodoSeleccionado.estadoActual !== estadoActual) {
-                setNodoSeleccionado(prev => ({ ...prev, estadoActual }));
-            }
+        if (!networkRef.current || !nodesRef.current || !edgesRef.current) return;
+
+        if (!busquedaGrafo.trim()) {
+            actualizarNodosVisuales();
+            edgesRef.current.forEach(edge => {
+                edgesRef.current.update({ id: edge.id, color: { color: 'rgba(203, 213, 225, 0.8)' }, width: 1.5 });
+            });
+            return;
         }
-    }, [progreso]);
+
+        const query = busquedaGrafo.toLowerCase();
+        const materiaEncontrada = materias.find(m => m.nombre.toLowerCase().includes(query) || (m.codigo && m.codigo.toLowerCase().includes(query)));
+
+        if (!materiaEncontrada) return;
+
+        networkRef.current.focus(materiaEncontrada.id, {
+            scale: initialScaleRef.current * (zoomLevel / 100),
+            animation: { duration: 800, easingFunction: 'easeInOutQuad' }
+        });
+
+        const vinculados = new Set([materiaEncontrada.id]);
+        const edgesVinculados = new Set();
+
+        const buscarConexiones = (id) => {
+            const rels = edgesRef.current.get().filter(e => e.from === id || e.to === id);
+            rels.forEach(e => {
+                edgesVinculados.add(e.id);
+                const vecino = e.from === id ? e.to : e.from;
+                if (!vinculados.has(vecino)) {
+                    vinculados.add(vecino);
+                    buscarConexiones(vecino);
+                }
+            });
+        };
+        buscarConexiones(materiaEncontrada.id);
+
+        nodesRef.current.forEach(node => {
+            if (vinculados.has(node.id)) {
+                nodesRef.current.update({ id: node.id, opacity: 1, borderWidth: node.id === materiaEncontrada.id ? 4 : 2.5, color: { border: '#4f46e5' } });
+            } else {
+                nodesRef.current.update({ id: node.id, opacity: 0.2, borderWidth: 1 });
+            }
+        });
+
+        edgesRef.current.forEach(edge => {
+            if (edgesVinculados.has(edge.id)) {
+                edgesRef.current.update({ id: edge.id, color: { color: '#4f46e5' }, width: 2.5 });
+            } else {
+                edgesRef.current.update({ id: edge.id, color: { color: 'rgba(203, 213, 225, 0.1)' }, width: 1 });
+            }
+        });
+
+    }, [busquedaGrafo]);
+
+    const toggleFullscreen = () => {
+        if (!wrapperRef.current) return;
+        if (!document.fullscreenElement) {
+            wrapperRef.current.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+        setTimeout(actualizarMinimapa, 200);
+    };
 
     const handleCambiarEstado = (nuevoEstado) => {
         if (!nodoSeleccionado) return;
-        
         if (nuevoEstado === 'Cursando') {
             setModalComisionAbierto(true);
         } else if (nuevoEstado === 'Regular' || nuevoEstado === 'Aprobada') {
-            // Verificar si el alumno ya respondió la encuesta para esta materia,
-            // o si está pasando de Regular a Aprobada (ya evaluó la cursada al quedar Regular).
             const yaRespondioEncuesta = misEncuestas.some(e => e.id_materia === nodoSeleccionado.id);
             const esTransicionRegularAAprobada = nodoSeleccionado.estadoActual === 'Regular' && nuevoEstado === 'Aprobada';
 
             if (yaRespondioEncuesta || esTransicionRegularAAprobada) {
-                // No pedir encuesta duplicada, guardar estado directamente
                 ejecutarCambioEstado(nuevoEstado);
             } else {
                 setEstadoPendiente(nuevoEstado);
@@ -416,10 +585,25 @@ const MapaCorrelatividades = () => {
                 }
                 return [...prev, { id_materia: nodoSeleccionado.id, estado: nuevoEstado }];
             });
+
+            // GATILLAR NOTIFICACIÓN CON HOMBRE DE PALO Y CONFETI SI ES APROBADA O REGULAR
+            if (nuevoEstado === 'Aprobada' || nuevoEstado === 'Regular') {
+                setNotificacionLogro({
+                    tipo: nuevoEstado,
+                    mensaje: nuevoEstado === 'Aprobada' 
+                        ? '¡Felicitaciones! Una materia menos, segui asi!' 
+                        : '¡Muy bienn! Que buen progreso!'
+                });
+
+                // Cierre automático tras 3 segundos
+                setTimeout(() => {
+                    setNotificacionLogro(null);
+                }, 5000);
+            }
+
             setModalComisionAbierto(false);
             setModalEncuestaAbierto(false);
             setEstadoPendiente(null);
-
         } catch (err) {
             console.error(err);
             alert("Hubo un error al guardar el estado.");
@@ -433,29 +617,92 @@ const MapaCorrelatividades = () => {
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[88vh] md:h-[82vh] min-h-[520px] flex flex-col relative">
-            <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white z-10 relative shadow-sm">
-                <div>
-                    <h3 className="text-lg font-semibold text-slate-800">Mi Progreso</h3>
-                    <p className="text-sm text-slate-500">Haz clic en una materia para actualizar su estado y ver sus correlativas.</p>
+        <div ref={wrapperRef} className={`bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative transition-all duration-300 ${
+            isFullscreen ? 'h-screen w-screen p-0 rounded-none fixed inset-0 z-50' : 'h-[88vh] md:h-[82vh] min-h-[520px]'
+        }`}>
+            {/* Lluvia de confeti cuando se activa la notificación */}
+            {notificacionLogro && <ConfettiRain />}
+
+            {/* CARTEL FLOTANTE CON HOMBRE DE PALO SALTANDO Y TEXTO MOTIVACIONAL */}
+            {notificacionLogro && (
+                <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 text-white px-6 py-3.5 rounded-2xl shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-300 border border-indigo-300/30">
+                    <StickmanSaltando />
+                    <div>
+                        <p className="text-[10px] font-black tracking-widest uppercase opacity-80">¡EXCELENTE NOTICIA!</p>
+                        <p className="text-sm font-extrabold">{notificacionLogro.mensaje}</p>
+                    </div>
+                    <button 
+                        onClick={() => setNotificacionLogro(null)} 
+                        className="ml-2 text-white/70 hover:text-white p-1 rounded-lg text-sm transition cursor-pointer border-none bg-transparent"
+                        title="Cerrar"
+                    >
+                        ✕
+                    </button>
                 </div>
-                {planes.length > 0 && (
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="plan-selector" className="text-sm font-medium text-slate-700 whitespace-nowrap">Plan de Estudio:</label>
+            )}
+
+            {/* Estilos CSS para la animación de caída de confeti */}
+            <style>{`
+                @keyframes fall {
+                    0% {
+                        transform: translateY(-10px) rotate(0deg);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(100vh) rotate(720deg);
+                        opacity: 0;
+                    }
+                }
+                .animate-fall {
+                    animation: fall linear forwards;
+                }
+            `}</style>
+
+            {/* Barra superior */}
+            <div className="px-5 py-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white z-20 relative shadow-sm">
+                <div>
+                    <h3 className="text-base sm:text-lg font-semibold text-slate-800 leading-tight">Mi Progreso Académico</h3>
+                    <p className="text-xs text-slate-500">Haz clic en una materia o utiliza el buscador para analizar su camino crítico.</p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Buscador */}
+                    <div className="relative flex items-center min-w-[180px] sm:w-56">
+                        <FiSearch className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <input
+                            type="text"
+                            value={busquedaGrafo}
+                            onChange={(e) => setBusquedaGrafo(e.target.value)}
+                            placeholder="Buscar materia..."
+                            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 outline-none transition text-slate-800 placeholder-slate-400 font-medium"
+                        />
+                        {busquedaGrafo && (
+                            <button onClick={() => setBusquedaGrafo('')} className="absolute right-2.5 text-slate-400 hover:text-slate-600 text-xs">✕</button>
+                        )}
+                    </div>
+
+                    {/* Selector de Plan */}
+                    {planes.length > 0 && (
                         <select
-                            id="plan-selector"
                             value={selectedPlanId}
                             onChange={(e) => setSelectedPlanId(e.target.value)}
-                            className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-800 font-medium cursor-pointer max-w-xs"
+                            className="text-xs border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-800 font-medium cursor-pointer"
                         >
                             {planes.map(p => (
-                                <option key={p.id} value={p.id}>
-                                    {p.nombre}
-                                </option>
+                                <option key={p.id} value={p.id}>{p.nombre}</option>
                             ))}
                         </select>
-                    </div>
-                )}
+                    )}
+
+                    {/* Botón Pantalla Completa */}
+                    <button
+                        onClick={toggleFullscreen}
+                        className="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer border-none"
+                    >
+                        {isFullscreen ? <FiMinimize className="w-4 h-4" /> : <FiMaximize className="w-4 h-4" />}
+                        <span className="hidden md:inline">{isFullscreen ? 'Restaurar' : 'Maximizar'}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Lienzo del Grafo */}
@@ -463,48 +710,97 @@ const MapaCorrelatividades = () => {
                 {cargando && (
                     <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex flex-col items-center justify-center z-30 transition-all">
                         <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                        <p className="text-sm text-slate-600 font-medium">Cargando grafo...</p>
+                        <p className="text-sm text-slate-600 font-medium">Cargando mapa de correlatividades...</p>
                     </div>
                 )}
                 <div ref={containerRef} className="flex-1 w-full h-full" />
+
+                {/* Minimapa Interactivo en esquina inferior derecha */}
+                <div className="absolute bottom-4 right-4 w-40 h-28 bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl shadow-lg overflow-hidden z-10 hidden sm:block pointer-events-none">
+                    <div className="px-2 py-1 bg-slate-100 border-b border-slate-200 text-[9px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                        <FiCompass className="w-3 h-3 text-indigo-500" /> Minimapa
+                    </div>
+                    <canvas ref={minimapCanvasRef} width="160" height="90" className="w-full h-[calc(100%-21px)] block" />
+                </div>
             </div>
             
-            {/* Leyenda de Colores */}
-            <div className="p-4 border-t border-slate-100 bg-white z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">Estados de Materias y Requisitos</h4>
-                <div className="flex flex-col md:flex-row gap-6 text-xs text-slate-600">
-                    <div className="flex flex-wrap gap-4 border-r pr-6 border-slate-200">
-                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#d1fae5] border border-[#10b981]"></div> Aprobada</div>
-                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fef3c7] border border-[#f59e0b]"></div> Regular</div>
-                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f3e8ff] border border-[#a855f7]"></div> Cursando</div>
-                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#dbeafe] border border-[#3b82f6]"></div> Habilitada</div>
-                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#ffffff] border border-[#cbd5e1]"></div> Bloqueada</div>
+            {/* Leyenda de Colores + CONTROL HORIZONTAL DE ZOOM */}
+            <div className="p-3 border-t border-slate-100 bg-white z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-3 text-xs text-slate-600">
+                    
+                    {/* Estados de materias */}
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#d1fae5] border border-[#10b981]"></div> Aprobada</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#fef3c7] border border-[#f59e0b]"></div> Regular</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#f3e8ff] border border-[#a855f7]"></div> Cursando</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#dbeafe] border border-[#3b82f6]"></div> Habilitada</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#ffffff] border border-[#cbd5e1]"></div> Bloqueada</div>
                     </div>
-                    <div className="flex flex-wrap gap-4">
-                        <div className="flex items-center gap-2">
-                        <div className="w-6 border-b-2 border-dashed border-slate-400"></div> Requisito Regular (Cursar)
+
+                    {/* Tipos de Requisito + Control Horizontal de Zoom */}
+                    <div className="flex flex-wrap items-center gap-6">
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5"><div className="w-5 border-b-2 border-dashed border-slate-400"></div> Req. Regular</div>
+                            <div className="flex items-center gap-1.5"><div className="w-5 border-b-2 border-solid border-indigo-400"></div> Req. Aprobada</div>
                         </div>
-                        <div className="flex items-center gap-2">
-                        <div className="w-6 border-b-2 border-solid border-indigo-400"></div> Requisito Aprobada (Rendir)
+
+                        <div className="h-4 w-px bg-slate-200 hidden sm:block" />
+
+                        {/* Control Horizontal Interactivo de Zoom */}
+                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 shadow-2xs">
+                            <button
+                                onClick={() => cambiarZoom(zoomLevel - 15)}
+                                className="p-1 hover:bg-slate-200/60 rounded-lg text-slate-600 transition cursor-pointer border-none bg-transparent"
+                                title="Alejar zoom"
+                            >
+                                <FiMinus className="w-3.5 h-3.5 font-bold" />
+                            </button>
+
+                            <input
+                                type="range"
+                                min="10"
+                                max="200"
+                                step="5"
+                                value={zoomLevel}
+                                onChange={(e) => cambiarZoom(Number(e.target.value))}
+                                className="w-24 h-1.5 accent-indigo-600 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                            />
+
+                            <button
+                                onClick={() => cambiarZoom(zoomLevel + 15)}
+                                className="p-1 hover:bg-slate-200/60 rounded-lg text-slate-600 transition cursor-pointer border-none bg-transparent"
+                                title="Acercar zoom"
+                            >
+                                <FiPlus className="w-3.5 h-3.5 font-bold" />
+                            </button>
+
+                            <div className="h-3 w-px bg-slate-200 mx-1" />
+
+                            <button
+                                onClick={() => cambiarZoom(100)}
+                                className="px-1.5 py-0.5 hover:bg-indigo-50 text-indigo-600 rounded-md text-[10px] font-extrabold transition cursor-pointer border-none bg-transparent flex items-center gap-1"
+                                title="Restablecer vista a 100%"
+                            >
+                                <FiRotateCcw className="w-3 h-3" />
+                                <span>{zoomLevel}%</span>
+                            </button>
                         </div>
                     </div>
+
                 </div>
             </div>
 
             {/* Panel Flotante de Edición */}
             {nodoSeleccionado && (
                 <div 
-                    className="absolute bottom-0 md:top-20 md:bottom-auto left-0 md:left-auto right-0 md:right-5 w-full md:w-88 lg:w-96 bg-white border border-slate-200 rounded-t-2xl md:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.18)] md:shadow-2xl z-30 max-h-[80vh] md:max-h-[calc(100%-6rem)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 md:slide-in-from-right-4 duration-200"
+                    className="absolute bottom-0 md:top-20 md:bottom-auto left-0 md:left-auto right-0 md:right-5 w-full md:w-88 lg:w-96 bg-white border border-slate-200 rounded-t-2xl md:rounded-2xl shadow-2xl z-30 max-h-[80vh] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
                     onWheel={(e) => e.stopPropagation()}
                     onTouchMove={(e) => e.stopPropagation()}
                 >
-                    {/* Header fijo */}
-                    <div className="flex justify-between items-start p-4 sm:p-5 pb-3 border-b border-slate-100 bg-white shrink-0">
+                    <div className="flex justify-between items-start p-4 pb-3 border-b border-slate-100 bg-white shrink-0">
                         <div className="pr-2 min-w-0">
-                            <h2 className="text-base sm:text-lg font-bold text-slate-800 leading-tight truncate">
-                                {nodoSeleccionado.nombre}
-                            </h2>
-                            <span className="text-[11px] text-slate-500 font-mono mt-1 border border-slate-200 bg-slate-50 inline-block px-2 py-0.5 rounded">
+                            <h2 className="text-base font-bold text-slate-800 truncate">{nodoSeleccionado.nombre}</h2>
+                            <span className="text-[11px] text-slate-500 font-mono mt-0.5 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded inline-block">
                                 Código: {nodoSeleccionado.codigo}
                             </span>
                         </div>
@@ -516,53 +812,44 @@ const MapaCorrelatividades = () => {
                                     networkRef.current.emit('click', { nodes: [] });
                                 }
                             }} 
-                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg text-base transition-colors cursor-pointer shrink-0"
-                            title="Cerrar panel"
+                            className="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer border-none bg-transparent"
                         >
                             ✕
                         </button>
                     </div>
 
-                    {/* Cuerpo scrolleable con overscroll aislado */}
-                    <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 min-h-0 overscroll-contain">
-                        {/* Correlativas */}
+                    <div className="p-4 overflow-y-auto space-y-4 flex-1 min-h-0">
                         <div>
                             {nodoSeleccionado.correlativas?.length > 0 ? (
                                 <div className="space-y-3">
-                                    {/* Lista de Regulares */}
                                     {nodoSeleccionado.correlativas.filter(c => (c.correlativas_x_materia?.tipo_requisito || 'regular') === 'regular').length > 0 && (
                                         <div>
-                                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                                                Para cursar (Regular):
-                                            </h4>
-                                            <ul className="text-xs sm:text-sm text-slate-700 space-y-1">
+                                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Para cursar (Regular):</h4>
+                                            <ul className="text-xs text-slate-700 space-y-1">
                                                 {nodoSeleccionado.correlativas.filter(c => (c.correlativas_x_materia?.tipo_requisito || 'regular') === 'regular').map(c => {
                                                     const estadoCorrelativa = progreso.find(p => p.id_materia === c.id)?.estado || 'No Cursada';
                                                     const cumplido = estadoCorrelativa === 'Aprobada' || estadoCorrelativa === 'Regular';
                                                     return (
                                                         <li key={c.id} className="flex justify-between items-center bg-slate-50 border border-slate-100 px-2.5 py-1.5 rounded-lg">
                                                             <span className="truncate pr-2">{c.nombre}</span>
-                                                            <span className="shrink-0">{cumplido ? '✅' : '❌'}</span>
+                                                            <span>{cumplido ? '✅' : '❌'}</span>
                                                         </li>
                                                     );
                                                 })}
                                             </ul>
                                         </div>
                                     )}
-                                    {/* Lista de Aprobadas */}
                                     {nodoSeleccionado.correlativas.filter(c => c.correlativas_x_materia?.tipo_requisito === 'aprobada').length > 0 && (
                                         <div>
-                                            <h4 className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-1.5">
-                                                Para rendir final (Aprobada):
-                                            </h4>
-                                            <ul className="text-xs sm:text-sm text-slate-700 space-y-1">
+                                            <h4 className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Para rendir final (Aprobada):</h4>
+                                            <ul className="text-xs text-slate-700 space-y-1">
                                                 {nodoSeleccionado.correlativas.filter(c => c.correlativas_x_materia?.tipo_requisito === 'aprobada').map(c => {
                                                     const estadoCorrelativa = progreso.find(p => p.id_materia === c.id)?.estado || 'No Cursada';
                                                     const cumplido = estadoCorrelativa === 'Aprobada';
                                                     return (
                                                         <li key={c.id} className="flex justify-between items-center bg-indigo-50/70 border border-indigo-100 px-2.5 py-1.5 rounded-lg">
                                                             <span className="truncate pr-2 text-indigo-950">{c.nombre}</span>
-                                                            <span className="shrink-0">{cumplido ? '✅' : '❌'}</span>
+                                                            <span>{cumplido ? '✅' : '❌'}</span>
                                                         </li>
                                                     );
                                                 })}
@@ -571,74 +858,23 @@ const MapaCorrelatividades = () => {
                                     )}
                                 </div>
                             ) : (
-                                <div>
-                                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                                        Requisitos:
-                                    </h4>
-                                    <p className="text-xs text-slate-400 italic bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                        Sin correlativas previas
-                                    </p>
-                                </div>
+                                <p className="text-xs text-slate-400 italic bg-slate-50 p-2 rounded-lg border">Sin correlativas previas</p>
                             )}
                         </div>
 
-                        {/* Botones de Actualización de Estado (2x2 Grid para acceso instantáneo a No Cursada) */}
-                        <div className="pt-3 border-t border-slate-100 pb-3">
-                            <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2.5">
-                                Cambiar Estado Académico:
-                            </h4>
+                        <div className="pt-3 border-t border-slate-100">
+                            <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">Cambiar Estado Académico:</h4>
                             <div className="grid grid-cols-2 gap-2">
-                                <button 
-                                    disabled={guardando} 
-                                    onClick={() => handleCambiarEstado('Aprobada')} 
-                                    className={`py-2 px-3 text-xs sm:text-sm rounded-xl border font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
-                                        nodoSeleccionado.estadoActual === 'Aprobada' 
-                                            ? 'bg-[#d1fae5] text-emerald-800 border-emerald-500 shadow-xs ring-2 ring-emerald-500/20' 
-                                            : 'bg-white hover:bg-emerald-50/50 border-slate-200 text-slate-700 hover:border-emerald-300'
-                                    }`}
-                                >
-                                    <span>🟢</span> Aprobada
-                                </button>
-                                <button 
-                                    disabled={guardando} 
-                                    onClick={() => handleCambiarEstado('Regular')} 
-                                    className={`py-2 px-3 text-xs sm:text-sm rounded-xl border font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
-                                        nodoSeleccionado.estadoActual === 'Regular' 
-                                            ? 'bg-[#fef3c7] text-amber-800 border-amber-500 shadow-xs ring-2 ring-amber-500/20' 
-                                            : 'bg-white hover:bg-amber-50/50 border-slate-200 text-slate-700 hover:border-amber-300'
-                                    }`}
-                                >
-                                    <span>🟡</span> Regular
-                                </button>
-                                <button 
-                                    disabled={guardando} 
-                                    onClick={() => handleCambiarEstado('Cursando')} 
-                                    className={`py-2 px-3 text-xs sm:text-sm rounded-xl border font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
-                                        nodoSeleccionado.estadoActual === 'Cursando' 
-                                            ? 'bg-[#f3e8ff] text-purple-800 border-purple-500 shadow-xs ring-2 ring-purple-500/20' 
-                                            : 'bg-white hover:bg-purple-50/50 border-slate-200 text-slate-700 hover:border-purple-300'
-                                    }`}
-                                >
-                                    <span>🟣</span> Cursando
-                                </button>
-                                <button 
-                                    disabled={guardando} 
-                                    onClick={() => handleCambiarEstado('No Cursada')} 
-                                    className={`py-2 px-3 text-xs sm:text-sm rounded-xl border font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
-                                        nodoSeleccionado.estadoActual === 'No Cursada' 
-                                            ? 'bg-slate-200 text-slate-900 border-slate-500 shadow-xs ring-2 ring-slate-400/20 font-bold' 
-                                            : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 hover:border-slate-300'
-                                    }`}
-                                >
-                                    <span>⚪</span> No Cursada
-                                </button>
+                                <button disabled={guardando} onClick={() => handleCambiarEstado('Aprobada')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Aprobada' ? 'bg-[#d1fae5] text-emerald-800 border-emerald-500 font-bold' : 'bg-white hover:bg-emerald-50 border-slate-200 text-slate-700'}`}>🟢 Aprobada</button>
+                                <button disabled={guardando} onClick={() => handleCambiarEstado('Regular')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Regular' ? 'bg-[#fef3c7] text-amber-800 border-amber-500 font-bold' : 'bg-white hover:bg-amber-50 border-slate-200 text-slate-700'}`}>🟡 Regular</button>
+                                <button disabled={guardando} onClick={() => handleCambiarEstado('Cursando')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Cursando' ? 'bg-[#f3e8ff] text-purple-800 border-purple-500 font-bold' : 'bg-white hover:bg-purple-50 border-slate-200 text-slate-700'}`}>🟣 Cursando</button>
+                                <button disabled={guardando} onClick={() => handleCambiarEstado('No Cursada')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'No Cursada' ? 'bg-slate-200 text-slate-900 border-slate-500 font-bold' : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700'}`}>⚪ No Cursada</button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Modal Selección de Comisión (SCRUM-100) */}
             {modalComisionAbierto && nodoSeleccionado && (
                 <ModalSeleccionarComision
                     materia={nodoSeleccionado}
@@ -647,7 +883,6 @@ const MapaCorrelatividades = () => {
                 />
             )}
 
-            {/* Modal Encuesta de Cátedra Obligatoria (SCRUM-85) */}
             {modalEncuestaAbierto && nodoSeleccionado && estadoPendiente && (
                 <EncuestaCatedraObligatoria
                     materia={nodoSeleccionado}
