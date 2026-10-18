@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FiUploadCloud, FiTag, FiX, FiArrowLeft, FiBook, FiFileText } from 'react-icons/fi';
+import { FiUploadCloud, FiTag, FiX, FiArrowLeft, FiBook, FiFileText, FiAlertCircle } from 'react-icons/fi';
 
 const CrearMaterialEstudio = () => {
     const navigate = useNavigate();
@@ -23,6 +23,9 @@ const CrearMaterialEstudio = () => {
     const [todosLosTags, setTodosLosTags] = useState([]);
     const [cargandoSugerencias, setCargandoSugerencias] = useState(false);
     const inputRef = useRef(null);
+
+    // Extensiones estrictamente permitidas (sin .zip ni .rar)
+    const EXTENSIONES_PERMITIDAS = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'png', 'jpg', 'jpeg', 'webp'];
 
     // Datos del usuario logueado
     const usuarioGuardado = JSON.parse(localStorage.getItem('usuario')) || {};
@@ -72,7 +75,7 @@ const CrearMaterialEstudio = () => {
         fetchTodos();
     }, []);
 
-    // ── Sugerencias: texto escrito + relacionados a los seleccionados ─────────
+    // ── Sugerencias: texto escrito + relacionados ──────────────────────────────
     useEffect(() => {
         const texto = etiquetaInput.trim().toLowerCase();
 
@@ -87,7 +90,6 @@ const CrearMaterialEstudio = () => {
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-                // SECCIÓN 1: filtrado local por texto, ordenado por popularidad
                 const listaSegura = Array.isArray(todosLosTags) ? todosLosTags : [];
                 const coincidencias = listaSegura
                     .filter(({ tag }) =>
@@ -97,7 +99,6 @@ const CrearMaterialEstudio = () => {
                     .slice(0, 6)
                     .map(({ tag, count }) => ({ tag, count }));
 
-                // SECCIÓN 2: relacionados a los ya seleccionados
                 let relacionados = [];
                 if (etiquetas.length > 0) {
                     const llamadas = etiquetas.map(tagSel =>
@@ -109,7 +110,6 @@ const CrearMaterialEstudio = () => {
 
                     const rankings = await Promise.all(llamadas);
 
-                    // Fusionar: acumular count por tag en un Map
                     const acumulado = new Map();
                     rankings.forEach(ranking => {
                         ranking.forEach(({ tag, count }) => {
@@ -141,7 +141,7 @@ const CrearMaterialEstudio = () => {
         return () => clearTimeout(timer);
     }, [etiquetaInput, etiquetas, todosLosTags]);
 
-    // ── Agregar etiqueta ──────────────────────────────────────────────────────
+    // ── Agregar / Eliminar Etiqueta ──────────────────────────────────────────
     const agregarEtiqueta = (tag) => {
         const nueva = tag.trim().toLowerCase();
         if (nueva && !etiquetas.includes(nueva) && etiquetas.length < 10) {
@@ -161,7 +161,6 @@ const CrearMaterialEstudio = () => {
             e.preventDefault();
             agregarEtiqueta(etiquetaInput.replace(/,/g, ''));
         }
-        // Borrar última etiqueta con Backspace si el input está vacío
         if (e.key === 'Backspace' && !etiquetaInput && etiquetas.length > 0) {
             eliminarEtiqueta(etiquetas[etiquetas.length - 1]);
         }
@@ -170,6 +169,27 @@ const CrearMaterialEstudio = () => {
     const hayResultados =
         sugerencias.porTexto.length > 0 || sugerencias.porRelacion.length > 0;
 
+    // ── Función de Validación de Archivo ──────────────────────────────────────
+    const validarYSetearArchivo = (file) => {
+        setError('');
+        if (!file) return;
+
+        const extension = file.name.split('.').pop().toLowerCase();
+
+        // Si es zip o rar o cualquier formato no permitido
+        if (!EXTENSIONES_PERMITIDAS.includes(extension)) {
+            if (extension === 'zip' || extension === 'rar') {
+                setError('No se permiten subir archivos comprimidos (.zip o .rar) por políticas de seguridad.');
+            } else {
+                setError(`El formato .${extension} no está permitido. Solo puedes subir documentos (PDF, Word, Excel, PPT, TXT) o imágenes.`);
+            }
+            setArchivo(null);
+            return;
+        }
+
+        setArchivo(file);
+    };
+
     // ── Drag & Drop ───────────────────────────────────────────────────────────
     const handleDragOver = (e) => { e.preventDefault(); setArrastrando(true); };
     const handleDragLeave = () => setArrastrando(false);
@@ -177,11 +197,11 @@ const CrearMaterialEstudio = () => {
         e.preventDefault();
         setArrastrando(false);
         const file = e.dataTransfer.files[0];
-        if (file) setArchivo(file);
+        validarYSetearArchivo(file);
     };
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file) setArchivo(file);
+        validarYSetearArchivo(file);
     };
 
     // ── Submit ────────────────────────────────────────────────────────────────
@@ -192,7 +212,7 @@ const CrearMaterialEstudio = () => {
 
         if (!titulo.trim()) { setError('El título es obligatorio.'); return; }
         if (!idMateria) { setError('Debe seleccionar una materia.'); return; }
-        if (!archivo) { setError('Debe adjuntar un archivo para subir el material.'); return; }
+        if (!archivo) { setError('Debe adjuntar un archivo válido para subir el material.'); return; }
 
         setCargando(true);
         try {
@@ -254,8 +274,9 @@ const CrearMaterialEstudio = () => {
 
             {/* Alertas */}
             {error && (
-                <div className="p-3 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30 rounded-xl text-xs font-semibold">
-                    ⚠️ {error}
+                <div className="p-3.5 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30 rounded-xl text-xs font-semibold flex items-center gap-2">
+                    <FiAlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                    <span>{error}</span>
                 </div>
             )}
             {mensajeConfirmacion && (
@@ -309,7 +330,7 @@ const CrearMaterialEstudio = () => {
                         </div>
                     </div>
 
-                    {/* ── Etiquetas con sugerencias ─────────────────────────────────── */}
+                    {/* Etiquetas */}
                     <div>
                         <label className="text-[11px] text-gray-500 dark:text-zinc-400 font-bold uppercase block mb-1">
                             Etiquetas{' '}
@@ -319,7 +340,6 @@ const CrearMaterialEstudio = () => {
                         </label>
 
                         <div className="relative">
-                            {/* Caja de chips + input */}
                             <div
                                 onClick={() => inputRef.current?.focus()}
                                 className="flex flex-wrap gap-1.5 p-2 border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-xl min-h-[44px] items-center cursor-text"
@@ -356,7 +376,6 @@ const CrearMaterialEstudio = () => {
                                 />
                             </div>
 
-                            {/* Dropdown de sugerencias */}
                             {mostrarDesplegable && etiquetaInput.trim() !== '' && (
                                 <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 max-h-64 overflow-y-auto">
                                     {cargandoSugerencias ? (
@@ -365,7 +384,6 @@ const CrearMaterialEstudio = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            {/* SECCIÓN 1: coincidencias por texto */}
                                             {sugerencias.porTexto.length > 0 && (
                                                 <div className="py-1">
                                                     <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800">
@@ -390,7 +408,6 @@ const CrearMaterialEstudio = () => {
                                                 </div>
                                             )}
 
-                                            {/* SECCIÓN 2: relacionados a los ya seleccionados */}
                                             {sugerencias.porRelacion.length > 0 && (
                                                 <div className={`py-1 ${sugerencias.porTexto.length > 0 ? 'border-t border-zinc-100 dark:border-zinc-800' : ''}`}>
                                                     <div className="px-3 py-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider border-b border-zinc-100 dark:border-zinc-800">
@@ -415,7 +432,6 @@ const CrearMaterialEstudio = () => {
                                                 </div>
                                             )}
 
-                                            {/* Sin resultados */}
                                             {!hayResultados && !cargandoSugerencias && (
                                                 <div className="p-3 text-xs text-zinc-400 dark:text-zinc-500 text-center">
                                                     Sin sugerencias · Enter para agregar "{etiquetaInput}"
@@ -454,7 +470,7 @@ const CrearMaterialEstudio = () => {
                                 id="archivo-input"
                                 type="file"
                                 onChange={handleFileChange}
-                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,.zip"
+                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,.webp"
                                 className="hidden"
                             />
                             {archivo ? (
@@ -466,7 +482,7 @@ const CrearMaterialEstudio = () => {
                                             {(archivo.size / 1024 / 1024).toFixed(2)} MB
                                         </p>
                                     </div>
-                                    <span className="text-[10px] text-gray-400 dark:text-zinc-500">Clic para cambiar archivo</span>
+                                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold underline">Clic para cambiar archivo</span>
                                 </>
                             ) : (
                                 <>
@@ -478,8 +494,11 @@ const CrearMaterialEstudio = () => {
                                                 seleccioná desde tu dispositivo
                                             </span>
                                         </p>
-                                        <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-1">
-                                            PDF, Word, PowerPoint, Excel, imágenes o ZIP
+                                        <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 mt-1.5">
+                                            Formatos admitidos: PDF, Word, PowerPoint, Excel, TXT o Imágenes
+                                        </p>
+                                        <p className="text-[10px] text-rose-500 dark:text-rose-400 font-medium mt-0.5">
+                                            ⚠️ No se permiten archivos comprimidos (.zip o .rar)
                                         </p>
                                     </div>
                                 </>
@@ -517,7 +536,6 @@ const CrearMaterialEstudio = () => {
                             Vista previa
                         </h4>
                         <div className="border border-gray-100 dark:border-zinc-800 rounded-xl p-4 bg-gray-50/50 dark:bg-zinc-800/30 flex flex-col gap-2">
-                            {/* Avatar + autor */}
                             <div className="flex items-center gap-2">
                                 <div className="w-7 h-7 bg-indigo-500 text-white font-bold rounded-full text-[11px] flex items-center justify-center shrink-0 shadow-sm">
                                     {inicialesAvatar}
@@ -530,12 +548,10 @@ const CrearMaterialEstudio = () => {
                                 </div>
                             </div>
 
-                            {/* Título */}
                             <h3 className="text-sm font-bold text-gray-800 dark:text-zinc-100 mt-1">
                                 {titulo || 'Título del material'}
                             </h3>
 
-                            {/* Badges */}
                             <div className="flex flex-wrap gap-1">
                                 {nombreMateria && (
                                     <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 font-semibold px-2 py-0.5 rounded-full">
@@ -557,7 +573,6 @@ const CrearMaterialEstudio = () => {
                                 )}
                             </div>
 
-                            {/* Archivo */}
                             {archivo && (
                                 <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/20 rounded-lg px-2.5 py-1.5 mt-1">
                                     <FiFileText className="w-3 h-3 text-emerald-500 shrink-0" />
@@ -567,20 +582,18 @@ const CrearMaterialEstudio = () => {
                                 </div>
                             )}
 
-                            {/* Fecha */}
                             <div className="text-[10px] text-gray-400 dark:text-zinc-500 border-t border-gray-100 dark:border-zinc-700 pt-2 mt-1 flex items-center gap-1">
                                 📅 {new Date().toLocaleDateString()} · <span className="text-indigo-500 font-medium">Ahora</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Tip */}
                     <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/10 border border-indigo-100/50 dark:border-indigo-900/25 rounded-2xl text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
                         <p className="font-bold mb-1">💡 Consejos para un buen material</p>
                         <ul className="list-disc list-inside space-y-1 text-[11px] text-indigo-600/80 dark:text-indigo-400/80">
                             <li>Usá un título descriptivo y claro.</li>
                             <li>Agregá etiquetas para facilitar la búsqueda.</li>
-                            <li>Asegurate de que el archivo esté completo antes de subir.</li>
+                            <li>Subí archivos legibles en PDF, Word, PowerPoint o Imágenes.</li>
                         </ul>
                     </div>
                 </div>
