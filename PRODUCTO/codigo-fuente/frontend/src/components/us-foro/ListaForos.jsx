@@ -16,11 +16,13 @@ import {
   FiFilter
 } from "react-icons/fi";
 import CompartirPublicacion from "./CompartirPublicacion";
+import EmptyState from "../common/EmptyState";
 
 const ListaForos = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  const [votoAnimandoId, setVotoAnimandoId] = useState(null);
 
   // Estados de Materias (Sidebar Derecho)
   const [materias, setMaterias] = useState([]);
@@ -104,8 +106,34 @@ const ListaForos = () => {
     cargarFeed(true);
   };
 
-  // Reaccionar (+1 / -1 voto)
+  // Reaccionar (+1 / -1 voto) con actualización optimista y animación de escala
   const handleReaccionar = async (pubId, tipo) => {
+    setVotoAnimandoId(pubId);
+    setTimeout(() => setVotoAnimandoId(null), 250);
+
+    const pubActual = publicaciones.find(p => p.id === pubId);
+    const votosPrevios = pubActual ? (pubActual.votos || 0) : 0;
+    const reaccionPrevia = pubActual?.miReaccion || null;
+
+    let delta = 0;
+    let nuevaReaccion = null;
+
+    if (reaccionPrevia === tipo) {
+      delta = tipo === 'positivo' ? -1 : 1;
+      nuevaReaccion = null;
+    } else if (reaccionPrevia) {
+      delta = tipo === 'positivo' ? 2 : -2;
+      nuevaReaccion = tipo;
+    } else {
+      delta = tipo === 'positivo' ? 1 : -1;
+      nuevaReaccion = tipo;
+    }
+
+    // Actualización optimista inmediata
+    setPublicaciones(prev =>
+      prev.map(p => (p.id === pubId ? { ...p, votos: votosPrevios + delta, miReaccion: nuevaReaccion } : p))
+    );
+
     try {
       const response = await axios.post(
         `${apiUrl}/publicaciones/${pubId}/reaccionar`,
@@ -113,10 +141,14 @@ const ListaForos = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPublicaciones(prev =>
-        prev.map(p => (p.id === pubId ? { ...p, votos: response.data.votos } : p))
+        prev.map(p => (p.id === pubId ? { ...p, votos: response.data.votos, miReaccion: response.data.reaccion?.tipo || null } : p))
       );
     } catch (error) {
       console.error("Error al reaccionar:", error);
+      // Rollback
+      setPublicaciones(prev =>
+        prev.map(p => (p.id === pubId ? { ...p, votos: votosPrevios, miReaccion: reaccionPrevia } : p))
+      );
     }
   };
 
@@ -332,25 +364,18 @@ const ListaForos = () => {
               <p className="text-xs text-slate-500 font-medium">Cargando publicaciones del feed...</p>
             </div>
           ) : publicaciones.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 border border-slate-200/80 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mx-auto">
-                🔍
-              </div>
-              <h3 className="text-sm font-bold text-slate-800">No se encontraron publicaciones</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                No hay publicaciones que coincidan con los filtros o el término de búsqueda actual.
-              </p>
-              <button
-                onClick={() => {
-                  setBusquedaFeed("");
-                  setCategoriaSeleccionada("Todas");
-                  cargarFeed(true);
-                }}
-                className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition border-none cursor-pointer"
-              >
-                Limpiar filtros
-              </button>
-            </div>
+            <EmptyState
+              variant="search"
+              titulo="No se encontraron publicaciones"
+              mensaje="No hay publicaciones en el feed que coincidan con los filtros o el término de búsqueda actual."
+              accionTexto="Limpiar filtros"
+              alHacerClic={() => {
+                setBusquedaFeed("");
+                setCategoriaSeleccionada("Todas");
+                cargarFeed(true);
+              }}
+              className="my-3 py-10"
+            />
           ) : (
             <div className="space-y-4">
               {publicaciones.map((pub) => {
@@ -372,22 +397,32 @@ const ListaForos = () => {
                   >
                     <div className="p-5 flex gap-4">
                       
-                      {/* Votador Lateral Vertical (Estilo Reddit / StackOverflow) */}
+                      {/* Votador Lateral Vertical (Estilo Reddit / StackOverflow con microanimación) */}
                       <div className="flex flex-col items-center justify-start bg-slate-50/80 border border-slate-100 rounded-xl p-1.5 shrink-0 h-fit">
                         <button
                           onClick={() => handleReaccionar(pub.id, "positivo")}
                           title="Votar a favor (+1)"
-                          className="p-1 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-lg transition border-none bg-transparent cursor-pointer"
+                          className={`p-1 hover:bg-indigo-50 rounded-lg transition border-none bg-transparent cursor-pointer ${
+                            pub.miReaccion === 'positivo' ? 'text-indigo-600 font-black' : 'text-slate-400 hover:text-indigo-600'
+                          }`}
                         >
                           <FiArrowUp className="w-4 h-4 stroke-[2.5]" />
                         </button>
-                        <span className="text-xs font-extrabold text-slate-700 my-0.5">
+                        <span
+                          className={`text-xs min-w-[14px] text-center inline-block transition-transform duration-200 ease-out transform select-none my-0.5 ${
+                            votoAnimandoId === pub.id
+                              ? 'scale-110 text-indigo-600 font-black'
+                              : 'scale-100 font-extrabold text-slate-700'
+                          }`}
+                        >
                           {pub.votos || 0}
                         </span>
                         <button
                           onClick={() => handleReaccionar(pub.id, "negativo")}
                           title="Votar en contra (-1)"
-                          className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition border-none bg-transparent cursor-pointer"
+                          className={`p-1 hover:bg-rose-50 rounded-lg transition border-none bg-transparent cursor-pointer ${
+                            pub.miReaccion === 'negativo' ? 'text-rose-600 font-black' : 'text-slate-400 hover:text-rose-600'
+                          }`}
                         >
                           <FiArrowDown className="w-4 h-4 stroke-[2.5]" />
                         </button>

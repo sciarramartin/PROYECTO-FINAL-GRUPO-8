@@ -6,6 +6,16 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
     const [textoRespuesta, setTextoRespuesta] = useState("");
     const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
 
+    const [animandoEscala, setAnimandoEscala] = useState(false);
+
+    const manejarVotoConAnimacion = (tipo) => {
+        setAnimandoEscala(true);
+        setTimeout(() => setAnimandoEscala(false), 250);
+        if (alVotar) {
+            alVotar(comentario.id, tipo);
+        }
+    };
+
     // 🔍 Filtramos todas las respuestas cuyo padre sea ESTE comentario actual
     const misHijos = todasLasRespuestas.filter(r => r.id_comentario_padre === comentario.id);
 
@@ -52,21 +62,39 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
                     
                     <p className="text-gray-700 dark:text-zinc-300 text-sm whitespace-pre-wrap">{comentario.contenido}</p>
 
-                    {/* Botonera de acciones (con valoración e íconos premium) */}
+                    {/* Botonera de acciones (con valoración, feedback optimista y microanimación de escala US-V05) */}
                     <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-zinc-400">
                         <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200/70 dark:hover:bg-zinc-700/70 transition px-2 py-0.5 rounded-full font-bold">
                             <button
                                 type="button"
-                                onClick={() => alVotar && alVotar(comentario.id, 'positivo')}
-                                className="hover:text-amber-500 transition border-none bg-transparent cursor-pointer p-0.5 flex items-center"
+                                onClick={() => manejarVotoConAnimacion('positivo')}
+                                className={`transition border-none bg-transparent cursor-pointer p-0.5 flex items-center ${
+                                    comentario.miReaccion === 'positivo'
+                                        ? 'text-amber-500 dark:text-amber-400 font-extrabold'
+                                        : 'hover:text-amber-500 text-gray-400 dark:text-zinc-500'
+                                }`}
+                                title="Votar positivo"
                             >
                                 <FiArrowUp className="w-3.5 h-3.5" />
                             </button>
-                            <span className="text-[10px] text-gray-700 dark:text-zinc-300 min-w-[8px] text-center">{comentario.votos || 0}</span>
+                            <span
+                                className={`text-[10px] min-w-[12px] text-center inline-block transition-transform duration-200 ease-out transform select-none ${
+                                    animandoEscala
+                                        ? 'scale-110 text-amber-600 dark:text-amber-400 font-black'
+                                        : 'scale-100 font-bold text-gray-700 dark:text-zinc-300'
+                                }`}
+                            >
+                                {comentario.votos || 0}
+                            </span>
                             <button
                                 type="button"
-                                onClick={() => alVotar && alVotar(comentario.id, 'negativo')}
-                                className="hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-0.5 flex items-center"
+                                onClick={() => manejarVotoConAnimacion('negativo')}
+                                className={`transition border-none bg-transparent cursor-pointer p-0.5 flex items-center ${
+                                    comentario.miReaccion === 'negativo'
+                                        ? 'text-indigo-600 dark:text-indigo-400 font-extrabold'
+                                        : 'hover:text-indigo-500 text-gray-400 dark:text-zinc-500'
+                                }`}
+                                title="Votar negativo"
                             >
                                 <FiArrowDown className="w-3.5 h-3.5" />
                             </button>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import EmptyState from "../common/EmptyState";
 
 const ListaGrupos = () => {
   const navigate = useNavigate();
@@ -306,32 +307,52 @@ const ListaGrupos = () => {
           })}
         </div>
       ) : (
-        /* Empty State */
-        <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300 max-w-xl mx-auto mt-6">
-          <span className="text-5xl block mb-3">👥</span>
-          <h3 className="text-base font-bold text-gray-900">
-            {filtro 
+        /* Empty State Ilustrado US-V05 */
+        <EmptyState
+          variant={filtro ? "search" : "groups"}
+          titulo={
+            filtro 
               ? "No se encontraron grupos con ese nombre" 
               : tabActiva === "mis_grupos" 
                 ? "Aún no eres miembro de ningún grupo" 
-                : "No hay más grupos públicos para explorar"}
-          </h3>
-          <p className="text-xs text-gray-400 mt-1 mb-5">
-            {filtro 
-              ? "Probá buscando con otras palabras o borrando el filtro." 
+                : "No hay más grupos públicos para explorar"
+          }
+          mensaje={
+            filtro 
+              ? `No encontramos resultados para "${filtro}". Probá buscando con otras palabras clave o limpiá la búsqueda.` 
               : tabActiva === "mis_grupos"
-                ? "Creá tu primer grupo de estudio o buscá uno público en la pestaña 'Explorar Grupos'."
-                : "¡Sé el pionero y creá un nuevo grupo público para que se sumen otros compañeros!"}
-          </p>
-          {tabActiva === "mis_grupos" && !filtro && (
-            <button
-              onClick={() => setModalAbierto(true)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition duration-200 shadow-sm cursor-pointer border-none"
-            >
-              + Crear mi Primer Grupo
-            </button>
-          )}
-        </div>
+                ? "Los grupos de estudio son ideales para debatir ejercicios prácticos, compartir apuntes y coordinar horarios de estudio."
+                : "¡Sé el pionero y creá un nuevo grupo público para que se sumen compañeros de tu carrera!"
+          }
+          accionTexto={
+            filtro 
+              ? "Limpiar búsqueda" 
+              : tabActiva === "mis_grupos"
+                ? "+ Crear mi Primer Grupo"
+                : "+ Crear Nuevo Grupo Público"
+          }
+          alHacerClic={() => {
+            if (filtro) {
+              setFiltro("");
+            } else {
+              setError("");
+              setMensaje("");
+              setModalAbierto(true);
+            }
+          }}
+          botonSecundarioTexto={
+            !filtro && tabActiva === "mis_grupos" ? "Explorar Grupos Públicos" : null
+          }
+          alHacerClicSecundario={
+            !filtro && tabActiva === "mis_grupos"
+              ? () => {
+                  setTabActiva("explorar");
+                  setFiltro("");
+                }
+              : null
+          }
+          className="my-6 py-12"
+        />
       )}
 
       {/* MODAL: Crear Nuevo Grupo */}

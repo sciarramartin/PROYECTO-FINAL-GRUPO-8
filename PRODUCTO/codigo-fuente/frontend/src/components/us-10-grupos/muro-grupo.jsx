@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { EmptyStateIllustration } from "../common/EmptyState";
 
 const MuroGrupo = () => {
   const { id } = useParams();
@@ -559,7 +560,9 @@ const MuroGrupo = () => {
 
           {/* Panel Flotante a la Derecha para unirse */}
           <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm text-center space-y-4">
-            <span className="text-4xl block">🌍</span>
+            <div className="flex justify-center mb-1">
+              <EmptyStateIllustration variant="groups" className="w-28 h-24 text-indigo-500" />
+            </div>
             <h2 className="text-sm font-bold text-gray-900">¡Sumate al equipo!</h2>
             <p className="text-xs text-gray-400 leading-relaxed">
               Este es un grupo público. Unite ahora para poder leer los mensajes del muro, conversar con tus compañeros y compartir ideas de estudio.
@@ -569,7 +572,7 @@ const MuroGrupo = () => {
               onClick={unirseAlGrupo}
               disabled={uniendose}
               style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
-              className="w-full py-3 !bg-indigo-600 hover:!bg-indigo-700 !text-white rounded-xl text-xs font-extrabold shadow-sm hover:shadow-md transition duration-200 cursor-pointer border-none disabled:opacity-50"
+              className="w-full py-3 !bg-indigo-600 hover:!bg-indigo-700 active:scale-95 !text-white rounded-xl text-xs font-extrabold shadow-sm hover:shadow-md transition duration-200 cursor-pointer border-none disabled:opacity-50"
             >
               {uniendose ? "Ingresando..." : "✓ Unirse al Grupo"}
             </button>
@@ -681,11 +684,26 @@ const MuroGrupo = () => {
                   );
                 })
               ) : (
-                /* Empty Chat */
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center select-none pointer-events-none">
-                  <span className="text-4xl block mb-2 opacity-50">💬</span>
-                  <h4 className="text-xs font-bold text-gray-600">Comienzo del chat de grupo</h4>
-                  <p className="text-[10px] text-gray-400 mt-0.5 max-w-[240px]">¡Saludá al equipo y coordiná horarios de estudio para materias!</p>
+                /* Empty Chat Ilustrado con Acción */
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center select-none">
+                  <div className="w-24 h-24 mb-1">
+                    <EmptyStateIllustration variant="groups" className="w-24 h-24 text-indigo-500" />
+                  </div>
+                  <h4 className="text-xs font-bold text-gray-850">Comienzo del chat de grupo</h4>
+                  <p className="text-[11px] text-gray-500 mt-1 max-w-[260px] leading-relaxed">
+                    ¡Saludá al equipo y coordiná horarios de estudio para materias!
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNuevoMensaje("¡Hola a todos! 👋 ¿Cómo están para estudiar esta semana?");
+                      const input = document.getElementById("input-chat-grupo");
+                      if (input) input.focus();
+                    }}
+                    className="mt-3 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer border-none"
+                  >
+                    Saludar al equipo 👋
+                  </button>
                 </div>
               )}
 
@@ -694,6 +712,7 @@ const MuroGrupo = () => {
             {/* WhatsApp Send Dock (Barra de Entrada) */}
             <form onSubmit={publicarMensaje} className="bg-[#f0f2f5] border-t border-gray-200 px-4 py-3 flex items-center gap-3">
               <input
+                id="input-chat-grupo"
                 type="text"
                 placeholder="Escribe un mensaje aquí..."
                 value={nuevoMensaje}

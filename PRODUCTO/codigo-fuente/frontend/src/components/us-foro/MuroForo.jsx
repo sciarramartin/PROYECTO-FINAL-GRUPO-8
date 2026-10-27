@@ -16,8 +16,10 @@ import {
   FiInfo,
   FiMessageCircle,
   FiAlertCircle,
-  FiFlag
+  FiFlag,
+  FiEdit3
 } from "react-icons/fi";
+import EmptyState from "../common/EmptyState";
 
 const MuroForo = () => {
   const { materiaId } = useParams();
@@ -26,6 +28,7 @@ const MuroForo = () => {
   const [datosForo, setDatosForo] = useState({ materia: {}, publicaciones: [] });
   const [cargando, setCargando] = useState(true);
   const [vistaActual, setVistaActual] = useState('muro'); //sino crear
+  const [votoAnimandoId, setVotoAnimandoId] = useState(null);
 
   // Para mostrar alertas de funcionalidad deshabilitada correspondiente a otras US
   const [alertaTeammate, setAlertaTeammate] = useState(null);
@@ -160,6 +163,36 @@ const MuroForo = () => {
   };
 
   const handleReaccionarMuro = async (pubId, tipo) => {
+    // 🚀 Feedback reactivo y microanimación de escala
+    setVotoAnimandoId(pubId);
+    setTimeout(() => setVotoAnimandoId(null), 250);
+
+    const pubActual = datosForo.publicaciones.find(p => p.id === pubId);
+    const votosPrevios = pubActual ? (pubActual.votos || 0) : 0;
+    const reaccionPrevia = pubActual?.miReaccion || null;
+
+    let delta = 0;
+    let nuevaReaccion = null;
+
+    if (reaccionPrevia === tipo) {
+      delta = tipo === 'positivo' ? -1 : 1;
+      nuevaReaccion = null;
+    } else if (reaccionPrevia) {
+      delta = tipo === 'positivo' ? 2 : -2;
+      nuevaReaccion = tipo;
+    } else {
+      delta = tipo === 'positivo' ? 1 : -1;
+      nuevaReaccion = tipo;
+    }
+
+    // Actualización optimista inmediata (0ms de espera visual)
+    setDatosForo(prev => ({
+      ...prev,
+      publicaciones: prev.publicaciones.map(p =>
+        p.id === pubId ? { ...p, votos: votosPrevios + delta, miReaccion: nuevaReaccion } : p
+      )
+    }));
+
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -170,11 +203,18 @@ const MuroForo = () => {
       setDatosForo(prev => ({
         ...prev,
         publicaciones: prev.publicaciones.map(p =>
-          p.id === pubId ? { ...p, votos: res.data.votos } : p
+          p.id === pubId ? { ...p, votos: res.data.votos, miReaccion: res.data.reaccion?.tipo || null } : p
         )
       }));
     } catch (error) {
       console.error("Error al reaccionar en muro:", error);
+      // Rollback en caso de error
+      setDatosForo(prev => ({
+        ...prev,
+        publicaciones: prev.publicaciones.map(p =>
+          p.id === pubId ? { ...p, votos: votosPrevios, miReaccion: reaccionPrevia } : p
+        )
+      }));
       mostrarMensajeTeammate(error.response?.data?.error || "Error al registrar voto.");
     }
   };
@@ -641,43 +681,29 @@ const MuroForo = () => {
                 <p className="text-sm text-zinc-500 dark:text-zinc-450">Cargando publicaciones...</p>
               </div>
             ) : publicaciones.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3">
-                  <FiMessageCircle className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200 text-center">No existen publicaciones</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
-                  Aún no hay dudas ni aportes publicados en esta materia. ¡Sé el primero en crear una discusión académica!
-                </p>
-              </div>
+              <EmptyState
+                variant="debate"
+                titulo="Aún no hay debates en este foro"
+                mensaje="Esta materia aún no tiene aportes ni dudas publicadas. Sé el primero en iniciar una discusión académica, compartir apuntes o formular una pregunta."
+                accionTexto="Sé el primero en iniciar un debate"
+                iconoAccion={<FiEdit3 className="w-4 h-4" />}
+                alHacerClic={() => navigate(`/foros/${materiaId}/crear-publicacion`)}
+                className="my-3 py-12"
+              />
             ) : publicacionesFiltradas.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3">
-                  <FiMessageCircle className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200 text-center">Sin resultados</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
-                  No encontramos aportes
-                  {etiquetaSeleccionada && <> con la etiqueta <span className="font-bold text-indigo-600 dark:text-indigo-400">{etiquetaSeleccionada}</span></>}
-                  {etiquetaSeleccionada && categoriaSeleccionada && <> y</>}
-                  {categoriaSeleccionada && <> de tipo/categoría <span className="font-bold text-indigo-600 dark:text-indigo-400">{categoriaSeleccionada}</span></>}
-                  .
-                </p>
-                <div className="flex items-center gap-2 mt-3">
-                  {(etiquetaSeleccionada || categoriaSeleccionada) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEtiquetaSeleccionada(null);
-                        setCategoriaSeleccionada(null);
-                      }}
-                      className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-650 text-xs font-bold rounded-xl transition cursor-pointer"
-                    >
-                      Quitar todos los filtros
-                    </button>
-                  )}
-                </div>
-              </div>
+              <EmptyState
+                variant="search"
+                titulo="Sin resultados para los filtros seleccionados"
+                mensaje={`No encontramos aportes${etiquetaSeleccionada ? ` con la etiqueta "${etiquetaSeleccionada}"` : ''}${categoriaSeleccionada ? ` en la categoría "${categoriaSeleccionada}"` : ''}.`}
+                accionTexto="Quitar todos los filtros"
+                alHacerClic={() => {
+                  setEtiquetaSeleccionada(null);
+                  setCategoriaSeleccionada(null);
+                }}
+                botonSecundarioTexto="Crear una publicación"
+                alHacerClicSecundario={() => navigate(`/foros/${materiaId}/crear-publicacion`)}
+                className="my-3 py-10"
+              />
             ) : (
               <div className="space-y-3">
                 {publicacionesFiltradas.map((pub) => {
@@ -690,18 +716,28 @@ const MuroForo = () => {
                       key={pub.id}
                       className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 flex gap-4 transition shadow-sm hover:shadow-md hover:border-indigo-500/20"
                     >
-                      {/* Flechas de Votos (UI Shell para Reaccionar) */}
+                      {/* Flechas de Votos (UI Shell para Reaccionar con feedback optimista y microanimación) */}
                       <div className="flex flex-col items-center justify-start gap-1 text-zinc-450 shrink-0">
                         <button
                           onClick={() => handleReaccionarMuro(pub.id, 'positivo')}
                           className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-amber-500 transition"
+                          title="Votar positivo"
                         >
                           <FiArrowUp className="w-4 h-4" />
                         </button>
-                        <span className="text-xs font-bold">{pub.votos || 0}</span>
+                        <span
+                          className={`text-xs min-w-[14px] text-center inline-block transition-transform duration-200 ease-out transform select-none ${
+                            votoAnimandoId === pub.id
+                              ? 'scale-110 text-amber-600 dark:text-amber-400 font-black'
+                              : 'scale-100 font-bold'
+                          }`}
+                        >
+                          {pub.votos || 0}
+                        </span>
                         <button
                           onClick={() => handleReaccionarMuro(pub.id, 'negativo')}
                           className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-indigo-500 transition"
+                          title="Votar negativo"
                         >
                           <FiArrowDown className="w-4 h-4" />
                         </button>
@@ -827,39 +863,29 @@ const MuroForo = () => {
                 <p className="text-sm text-zinc-500 dark:text-zinc-450">Cargando tus aportes...</p>
               </div>
             ) : (misAportes.publicaciones.length === 0 && misAportes.comentarios.length === 0) ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3 animate-bounce">
-                  <FiFlag className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-855 dark:text-zinc-200 text-center">Sin publicaciones ni comentarios</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
-                  Aún no has creado publicaciones ni comentarios en este foro. ¡Anímate a participar!
-                </p>
-              </div>
+              <EmptyState
+                variant="debate"
+                titulo="Aún no tienes aportes en este foro"
+                mensaje="Aquí podrás consultar y gestionar rápidamente tus publicaciones y respuestas académicas en esta materia."
+                accionTexto="Sé el primero en iniciar un debate"
+                iconoAccion={<FiEdit3 className="w-4 h-4" />}
+                alHacerClic={() => navigate(`/foros/${materiaId}/crear-publicacion`)}
+                className="my-3 py-12"
+              />
             ) : ((etiquetaSeleccionada || categoriaSeleccionada) && misPublicacionesFiltradas.length === 0) ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3">
-                  <FiMessageCircle className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200 text-center">Sin resultados</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
-                  Ninguna de tus publicaciones coincide con los filtros aplicados:
-                  {etiquetaSeleccionada && <> etiqueta <span className="font-bold text-indigo-600 dark:text-indigo-400">{etiquetaSeleccionada}</span></>}
-                  {etiquetaSeleccionada && categoriaSeleccionada && <> y</>}
-                  {categoriaSeleccionada && <> tipo/categoría <span className="font-bold text-indigo-600 dark:text-indigo-400">{categoriaSeleccionada}</span></>}
-                  .
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEtiquetaSeleccionada(null);
-                    setCategoriaSeleccionada(null);
-                  }}
-                  className="mt-3 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-650 text-xs font-bold rounded-xl transition cursor-pointer"
-                >
-                  Quitar todos los filtros
-                </button>
-              </div>
+              <EmptyState
+                variant="search"
+                titulo="Sin aportes propios para estos filtros"
+                mensaje={`Ninguna de tus publicaciones coincide con ${etiquetaSeleccionada ? `la etiqueta "${etiquetaSeleccionada}"` : ''}${categoriaSeleccionada ? ` o la categoría "${categoriaSeleccionada}"` : ''}.`}
+                accionTexto="Quitar todos los filtros"
+                alHacerClic={() => {
+                  setEtiquetaSeleccionada(null);
+                  setCategoriaSeleccionada(null);
+                }}
+                botonSecundarioTexto="Crear una publicación"
+                alHacerClicSecundario={() => navigate(`/foros/${materiaId}/crear-publicacion`)}
+                className="my-3 py-10"
+              />
             ) : (
               <div className="space-y-6">
                 {/* Publicaciones creadas por mí */}
@@ -885,13 +911,23 @@ const MuroForo = () => {
                               <button
                                 onClick={() => handleReaccionarMuro(pub.id, 'positivo')}
                                 className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-amber-500 transition"
+                                title="Votar positivo"
                               >
                                 <FiArrowUp className="w-4 h-4" />
                               </button>
-                              <span className="text-xs font-bold">{pub.votos || 0}</span>
+                              <span
+                                className={`text-xs min-w-[14px] text-center inline-block transition-transform duration-200 ease-out transform select-none ${
+                                  votoAnimandoId === pub.id
+                                    ? 'scale-110 text-amber-600 dark:text-amber-400 font-black'
+                                    : 'scale-100 font-bold'
+                                }`}
+                              >
+                                {pub.votos || 0}
+                              </span>
                               <button
                                 onClick={() => handleReaccionarMuro(pub.id, 'negativo')}
                                 className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-indigo-500 transition"
+                                title="Votar negativo"
                               >
                                 <FiArrowDown className="w-4 h-4" />
                               </button>

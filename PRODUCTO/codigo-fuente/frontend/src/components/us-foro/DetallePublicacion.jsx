@@ -46,6 +46,7 @@ const DetallePublicacion = () => {
   const [editContenido, setEditContenido] = useState("");
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [reaccionUsuario, setReaccionUsuario] = useState(null); // 'positivo' o 'negativo'
+  const [animandoVotoPost, setAnimandoVotoPost] = useState(false);
 
   // Estados para compartir publicaciones
   const [compartirAbierto, setCompartirAbierto] = useState(false);
@@ -162,6 +163,34 @@ const DetallePublicacion = () => {
   };
 
   const handleReaccionar = async (tipo) => {
+    // 🚀 Feedback optimista inmediato y microanimación de escala
+    setAnimandoVotoPost(true);
+    setTimeout(() => setAnimandoVotoPost(false), 250);
+
+    const votosPrevios = datosHilo.publicacion?.votos || 0;
+    const reaccionPrevia = reaccionUsuario;
+
+    let delta = 0;
+    let nuevaReaccion = null;
+
+    if (reaccionPrevia === tipo) {
+      delta = tipo === 'positivo' ? -1 : 1;
+      nuevaReaccion = null;
+    } else if (reaccionPrevia) {
+      delta = tipo === 'positivo' ? 2 : -2;
+      nuevaReaccion = tipo;
+    } else {
+      delta = tipo === 'positivo' ? 1 : -1;
+      nuevaReaccion = tipo;
+    }
+
+    // Actualización inmediata (0ms)
+    setReaccionUsuario(nuevaReaccion);
+    setDatosHilo(prev => ({
+      ...prev,
+      publicacion: { ...prev.publicacion, votos: votosPrevios + delta }
+    }));
+
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -181,6 +210,12 @@ const DetallePublicacion = () => {
       }
     } catch (error) {
       console.error("Error al reaccionar:", error);
+      // Rollback en caso de error
+      setReaccionUsuario(reaccionPrevia);
+      setDatosHilo(prev => ({
+        ...prev,
+        publicacion: { ...prev.publicacion, votos: votosPrevios }
+      }));
       mostrarMensajeTeammate(error.response?.data?.error || "Error al registrar voto.");
     }
   };
@@ -430,7 +465,9 @@ const DetallePublicacion = () => {
                 >
                   <FiArrowUp className="w-4 h-4" />
                 </button>
-                <span className={`text-xs font-bold ${
+                <span className={`text-xs font-bold inline-block transition-transform duration-200 ease-out transform select-none ${
+                  animandoVotoPost ? 'scale-110 font-black text-amber-600 dark:text-amber-500' : 'scale-100'
+                } ${
                   reaccionUsuario === 'positivo' ? 'text-amber-600 dark:text-amber-500' :
                   reaccionUsuario === 'negativo' ? 'text-indigo-600 dark:text-indigo-500' : ''
                 }`}>

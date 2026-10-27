@@ -12,6 +12,7 @@ import {
   FiAlertCircle,
   FiBookOpen
 } from "react-icons/fi";
+import EmptyState from "../common/EmptyState";
 
 const MisGuardados = () => {
   const [publicaciones, setPublicaciones] = useState([]);
@@ -210,28 +211,25 @@ const MisGuardados = () => {
           ))}
         </div>
       ) : publicacionesFiltradas.length === 0 ? (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-12 text-center max-w-xl mx-auto shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-5 shadow-sm">
-            <FiBookmark className="w-8 h-8" />
-          </div>
-          <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-            {busqueda ? "No se encontraron publicaciones" : "Aún no tienes publicaciones guardadas"}
-          </h3>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium max-w-sm mx-auto mt-2 leading-relaxed">
-            {busqueda 
+        <EmptyState
+          variant={busqueda ? "search" : "debate"}
+          titulo={busqueda ? "No se encontraron publicaciones" : "Aún no tienes publicaciones guardadas"}
+          mensaje={
+            busqueda
               ? "Prueba refinando los términos de búsqueda o borrando el filtro actual."
-              : "Cuando encuentres una publicación interesante en el foro de una materia, guárdala para tener acceso rápido desde aquí."}
-          </p>
-          {!busqueda && (
-            <button
-              onClick={() => navigate("/foros")}
-              className="mt-6 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition shadow-md shadow-indigo-500/10 flex items-center gap-2 mx-auto"
-            >
-              <FiBookOpen className="w-4 h-4" />
-              Explorar Foros
-            </button>
-          )}
-        </div>
+              : "Cuando encuentres una publicación interesante en el foro de una materia, guárdala para tener acceso rápido desde aquí."
+          }
+          accionTexto={busqueda ? "Limpiar búsqueda" : "Explorar Foros"}
+          iconoAccion={<FiBookOpen className="w-4 h-4" />}
+          alHacerClic={() => {
+            if (busqueda) {
+              setBusqueda("");
+            } else {
+              navigate("/foros");
+            }
+          }}
+          className="my-6 py-12"
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {publicacionesFiltradas.map((pub) => {
