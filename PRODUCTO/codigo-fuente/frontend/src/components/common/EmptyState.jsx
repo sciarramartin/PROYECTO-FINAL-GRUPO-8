@@ -112,19 +112,19 @@ const EmptyState = ({
 }) => {
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center py-10 px-6 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm transition-all duration-300 max-w-xl mx-auto ${className}`}
+      className={`flex flex-col items-center justify-center text-center py-10 px-6 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm transition-all duration-300 max-w-xl w-full mx-auto overflow-hidden ${className}`}
     >
-      <div className="mb-2 transform transition-transform hover:scale-105 duration-300 select-none">
+      <div className="mb-2 transform transition-transform hover:scale-105 duration-300 select-none shrink-0">
         <EmptyStateIllustration variant={variant} />
       </div>
 
-      <h3 className="text-base sm:text-lg font-black text-zinc-900 dark:text-zinc-100 tracking-tight mb-1.5">
+      <h3 className="text-base sm:text-lg font-black text-zinc-900 dark:text-zinc-100 tracking-tight mb-1.5 max-w-full break-words [overflow-wrap:anywhere]">
         {titulo}
       </h3>
 
-      <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-md leading-relaxed mb-6">
+      <div className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-md w-full leading-relaxed mb-6 break-words [overflow-wrap:anywhere] px-2">
         {mensaje}
-      </p>
+      </div>
 
       {(accionTexto || children) && (
         <div className="flex flex-wrap items-center justify-center gap-3">

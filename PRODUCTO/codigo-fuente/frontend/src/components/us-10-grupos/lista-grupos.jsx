@@ -213,6 +213,7 @@ const ListaGrupos = () => {
             placeholder={tabActiva === "mis_grupos" ? "Buscar en mis grupos..." : "Explorar grupos públicos..."}
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
+            maxLength={60}
             className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition duration-200 outline-none text-gray-700 placeholder-gray-400"
           />
           {filtro && (
@@ -319,7 +320,11 @@ const ListaGrupos = () => {
           }
           mensaje={
             filtro 
-              ? `No encontramos resultados para "${filtro}". Probá buscando con otras palabras clave o limpiá la búsqueda.` 
+              ? (
+                <span>
+                  No encontramos resultados para <span className="font-bold break-all">"{filtro.length > 35 ? `${filtro.slice(0, 35)}...` : filtro}"</span>. Probá buscando con otras palabras clave o limpiá la búsqueda.
+                </span>
+              )
               : tabActiva === "mis_grupos"
                 ? "Los grupos de estudio son ideales para debatir ejercicios prácticos, compartir apuntes y coordinar horarios de estudio."
                 : "¡Sé el pionero y creá un nuevo grupo público para que se sumen compañeros de tu carrera!"
