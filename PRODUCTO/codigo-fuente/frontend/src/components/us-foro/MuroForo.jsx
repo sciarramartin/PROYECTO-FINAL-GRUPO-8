@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import CrearPublicacion from "./CrearPublicacion";
 import CompartirPublicacion from "./CompartirPublicacion";
@@ -16,7 +16,9 @@ import {
   FiInfo,
   FiMessageCircle,
   FiAlertCircle,
-  FiFlag
+  FiFlag,
+  FiLink,
+  FiEdit
 } from "react-icons/fi";
 
 const MuroForo = () => {
@@ -56,6 +58,30 @@ const MuroForo = () => {
     isOpen: false,
     publicacionData: null
   });
+
+  // Estado y ref para menú desplegable de más opciones por publicación (SCRUM-128)
+  const [menuMasOpcionesId, setMenuMasOpcionesId] = useState(null);
+  const menuOpcionesMuroRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickAfuera = (event) => {
+      if (menuOpcionesMuroRef.current && !menuOpcionesMuroRef.current.contains(event.target)) {
+        setMenuMasOpcionesId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickAfuera);
+    return () => document.removeEventListener("mousedown", handleClickAfuera);
+  }, []);
+
+  let usuarioActual = {};
+  try {
+    const usuarioStr = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+    if (usuarioStr && usuarioStr !== "undefined") {
+      usuarioActual = JSON.parse(usuarioStr);
+    }
+  } catch (e) {
+    console.error("Error parseando usuario actual en Muro:", e);
+  }
 
   const fetchMisAportes = async () => {
     setCargandoMisAportes(true);
@@ -805,12 +831,84 @@ const MuroForo = () => {
                               <FiShare2 className="w-3.5 h-3.5" />
                               <span className="hidden sm:inline">Compartir</span>
                             </button>
-                            <button
-                              onClick={() => mostrarMensajeTeammate("Las opciones adicionales corresponden a otras historias de usuario.")}
-                              className="p-1 hover:text-indigo-650 dark:hover:text-indigo-400 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/50 border-none bg-transparent cursor-pointer transition"
-                            >
-                              <FiMoreHorizontal className="w-4 h-4" />
-                            </button>
+                            <div className="relative" ref={menuMasOpcionesId === pub.id ? menuOpcionesMuroRef : null}>
+                              <button
+                                onClick={() => setMenuMasOpcionesId(menuMasOpcionesId === pub.id ? null : pub.id)}
+                                className="p-1 hover:text-indigo-650 dark:hover:text-indigo-400 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/50 border-none bg-transparent cursor-pointer transition"
+                                title="Más opciones"
+                              >
+                                <FiMoreHorizontal className="w-4 h-4" />
+                              </button>
+
+                              {menuMasOpcionesId === pub.id && (
+                                <div className="absolute right-0 bottom-full mb-2 w-48 bg-white dark:bg-zinc-850 rounded-xl shadow-xl border border-zinc-200 dark:border-zinc-750 py-1.5 z-30 animate-in fade-in zoom-in-95">
+                                  <button
+                                    onClick={() => {
+                                      setMenuMasOpcionesId(null);
+                                      navigate(`/foros/${materiaId}/publicacion/${pub.id}`);
+                                    }}
+                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                  >
+                                    <FiBookOpen className="w-3.5 h-3.5 text-zinc-400" />
+                                    <span>Ver publicación</span>
+                                  </button>
+
+                                  {(usuarioActual?.id === pub.Autor?.id || usuarioActual?.id === pub.id_usuario) ? (
+                                    <>
+                                      <button
+                                        onClick={() => {
+                                          setMenuMasOpcionesId(null);
+                                          navigate(`/foros/${materiaId}/publicacion/${pub.id}`);
+                                        }}
+                                        className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                      >
+                                        <FiEdit className="w-3.5 h-3.5 text-zinc-400" />
+                                        <span>Editar en detalle</span>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        onClick={() => {
+                                          setMenuMasOpcionesId(null);
+                                          setModalReportarAbierto(true);
+                                          setPubIdAReportar(pub.id);
+                                        }}
+                                        className="w-full text-left px-3.5 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                      >
+                                        <FiFlag className="w-3.5 h-3.5 text-red-500" />
+                                        <span>Reportar publicación</span>
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setMenuMasOpcionesId(null);
+                                          handleGuardarPublicacion(pub.id);
+                                        }}
+                                        className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                      >
+                                        <FiBookmark className="w-3.5 h-3.5 text-zinc-400" />
+                                        <span>{pub.esGuardada ? "Quitar de guardados" : "Guardar publicación"}</span>
+                                      </button>
+                                    </>
+                                  )}
+
+                                  <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
+                                  <button
+                                    onClick={() => {
+                                      setMenuMasOpcionesId(null);
+                                      const url = `${window.location.origin}/foros/${materiaId}/publicacion/${pub.id}`;
+                                      navigator.clipboard.writeText(url)
+                                        .then(() => mostrarMensajeTeammate("¡Enlace copiado al portapapeles con éxito!"))
+                                        .catch(() => mostrarMensajeTeammate("No se pudo copiar el enlace automáticamente."));
+                                    }}
+                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                  >
+                                    <FiLink className="w-3.5 h-3.5 text-zinc-400" />
+                                    <span>Copiar enlace</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
 

@@ -50,6 +50,20 @@ const DetallePublicacion = () => {
   // Estados para compartir publicaciones
   const [compartirAbierto, setCompartirAbierto] = useState(false);
 
+  // Estado y ref para menú desplegable de más opciones (SCRUM-128)
+  const [menuMasOpcionesAbierto, setMenuMasOpcionesAbierto] = useState(false);
+  const menuOpcionesRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickAfuera = (event) => {
+      if (menuOpcionesRef.current && !menuOpcionesRef.current.contains(event.target)) {
+        setMenuMasOpcionesAbierto(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickAfuera);
+    return () => document.removeEventListener("mousedown", handleClickAfuera);
+  }, []);
+
   const editorRef = useRef(null);
 
   const [formatState, setFormatState] = useState({
@@ -608,12 +622,84 @@ const DetallePublicacion = () => {
                       <FiShare2 className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Compartir</span>
                     </button>
-                    <button 
-                      onClick={() => mostrarMensajeTeammate("Las opciones adicionales corresponden a otras historias de usuario.")}
-                      className="p-1 hover:text-indigo-650 dark:hover:text-indigo-400 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/50 border-none bg-transparent cursor-pointer transition"
-                    >
-                      <FiMoreHorizontal className="w-4 h-4" />
-                    </button>
+                    <div className="relative" ref={menuOpcionesRef}>
+                      <button 
+                        onClick={() => setMenuMasOpcionesAbierto(prev => !prev)}
+                        className="p-1 hover:text-indigo-650 dark:hover:text-indigo-400 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/50 border-none bg-transparent cursor-pointer transition"
+                        title="Más opciones"
+                      >
+                        <FiMoreHorizontal className="w-4 h-4" />
+                      </button>
+
+                      {menuMasOpcionesAbierto && (
+                        <div className="absolute right-0 bottom-full mb-2 w-48 bg-white dark:bg-zinc-850 rounded-xl shadow-xl border border-zinc-200 dark:border-zinc-750 py-1.5 z-30 animate-in fade-in zoom-in-95">
+                          {esAutorPublicacion ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setMenuMasOpcionesAbierto(false);
+                                  if (!puedeEditar()) {
+                                    mostrarMensajeTeammate("El tiempo límite de 10 minutos para editar esta publicación ha expirado.");
+                                    return;
+                                  }
+                                  setEditTitulo(publicacion.titulo);
+                                  setEditContenido(publicacion.contenido);
+                                  setEditando(true);
+                                }}
+                                className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                              >
+                                <FiEdit className="w-3.5 h-3.5 text-zinc-400" />
+                                <span>Editar publicación</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setMenuMasOpcionesAbierto(false);
+                                  setMostrarConfirmacionEliminar(true);
+                                }}
+                                className="w-full text-left px-3.5 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                              >
+                                <FiTrash2 className="w-3.5 h-3.5 text-red-500" />
+                                <span>Eliminar publicación</span>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setMenuMasOpcionesAbierto(false);
+                                  abrirModalReportar();
+                                }}
+                                className="w-full text-left px-3.5 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                              >
+                                <FiFlag className="w-3.5 h-3.5 text-red-500" />
+                                <span>Reportar publicación</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setMenuMasOpcionesAbierto(false);
+                                  handleGuardarPublicacion();
+                                }}
+                                className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                              >
+                                <FiBookmark className="w-3.5 h-3.5 text-zinc-400" />
+                                <span>{publicacion.esGuardada ? "Quitar de guardados" : "Guardar publicación"}</span>
+                              </button>
+                            </>
+                          )}
+                          <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
+                          <button
+                            onClick={() => {
+                              setMenuMasOpcionesAbierto(false);
+                              copiarEnlaceAlPortapapeles();
+                            }}
+                            className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                          >
+                            <FiLink className="w-3.5 h-3.5 text-zinc-400" />
+                            <span>Copiar enlace</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

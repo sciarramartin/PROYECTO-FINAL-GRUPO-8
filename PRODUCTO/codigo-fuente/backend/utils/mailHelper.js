@@ -14,7 +14,8 @@ class MailHelper {
     }
 
     async enviarRecuperacion(mail, token) {
-        const link = `http://localhost:5173/resetear-contrasena?token=${token}`;
+        const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173';
+        const link = `${clientUrl}/resetear-contrasena?token=${token}`;
 
         await this.transporter.sendMail({
             from: `"Campus Plataforma Académica" <${process.env.MAIL_USER}>`,

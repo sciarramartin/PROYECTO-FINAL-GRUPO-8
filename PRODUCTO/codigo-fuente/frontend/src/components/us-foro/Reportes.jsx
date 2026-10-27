@@ -14,7 +14,8 @@ import {
   FiFlag,
   FiCheckCircle,
   FiInbox,
-  FiRotateCcw
+  FiRotateCcw,
+  FiSlash
 } from "react-icons/fi";
 
 const Reportes = () => {
@@ -24,6 +25,7 @@ const Reportes = () => {
   const [cargando, setCargando] = useState(true);
   const [errorAcceso, setErrorAcceso] = useState(false);
   const [alerta, setAlerta] = useState(null); // { mensaje, tipo: 'success' | 'error' }
+  const [modalConfirmacion, setModalConfirmacion] = useState(null); // { id, accion, titulo, mensaje }
   const navigate = useNavigate();
 
   // Obtener rol del usuario actual
@@ -74,21 +76,44 @@ const Reportes = () => {
     setTimeout(() => setAlerta(null), 4000);
   };
 
-  const handleResolverReporte = async (e, id) => {
-    e.stopPropagation();
+  const handleAccionReporte = async (id, accion) => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-      const response = await axios.post(`${apiUrl}/publicaciones/reportes/${id}/resolver`, {}, {
+      const response = await axios.post(`${apiUrl}/publicaciones/reportes/${id}/resolver`, { accion }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       const { reporte, mensaje } = response.data;
-      setReportes(prev => prev.map(r => r.id === id ? { ...r, resuelto: reporte.resuelto } : r));
+      setReportes(prev => prev.map(r => r.id === id ? { 
+        ...r, 
+        resuelto: reporte.resuelto,
+        // Si se eliminó el contenido, marcarlo localmente
+        ...(accion === 'eliminar_contenido' && r.Comentario ? { Comentario: null } : {}),
+        ...(accion === 'eliminar_contenido' && !r.Comentario ? { ForoPublicacion: null } : {})
+      } : r));
       mostrarAlerta(mensaje, "success");
+      setModalConfirmacion(null);
     } catch (error) {
-      console.error("Error al resolver/pendiente del reporte:", error);
+      console.error("Error al procesar acción del reporte:", error);
       mostrarAlerta("No se pudo actualizar el estado del reporte.", "error");
+    }
+  };
+
+  const handleEliminarReporteAuditoria = async (id) => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.delete(`${apiUrl}/publicaciones/reportes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setReportes(prev => prev.filter(r => r.id !== id));
+      mostrarAlerta(response.data?.mensaje || "Reporte eliminado de auditoría.", "success");
+      setModalConfirmacion(null);
+    } catch (error) {
+      console.error("Error al eliminar reporte:", error);
+      mostrarAlerta("No se pudo eliminar el reporte de la lista de auditoría.", "error");
     }
   };
 
@@ -221,6 +246,49 @@ const Reportes = () => {
         </div>
       )}
 
+      {/* Modal de Confirmación de Moderación */}
+      {modalConfirmacion && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 text-red-500 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/40 flex items-center justify-center">
+                <FiAlertCircle className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                {modalConfirmacion.titulo}
+              </h3>
+            </div>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
+              {modalConfirmacion.mensaje}
+            </p>
+            <div className="flex items-center justify-end gap-2.5">
+              <button
+                onClick={() => setModalConfirmacion(null)}
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold border-none cursor-pointer transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  if (modalConfirmacion.tipo === 'eliminar_auditoria') {
+                    handleEliminarReporteAuditoria(modalConfirmacion.id);
+                  } else {
+                    handleAccionReporte(modalConfirmacion.id, modalConfirmacion.accion);
+                  }
+                }}
+                className={`px-4 py-2 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition flex items-center gap-1.5 shadow-sm ${
+                  modalConfirmacion.peligro 
+                    ? "bg-red-600 hover:bg-red-700 shadow-red-500/20" 
+                    : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20"
+                }`}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Breadcrumbs */}
       <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500 font-medium mb-4 select-none">
         <span className="hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer transition" onClick={() => navigate("/dashboard")}>Inicio</span>
@@ -235,10 +303,10 @@ const Reportes = () => {
         <div>
           <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2.5">
             <FiFlag className="w-6 h-6 text-red-500" />
-            Reportes de Publicaciones
+            Panel de Moderación y Reportes
           </h1>
           <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium mt-1">
-            Revisión y moderación de contenido marcado por los estudiantes en los foros.
+            Gestión y moderación de publicaciones y comentarios denunciados por la comunidad.
           </p>
         </div>
 
@@ -351,24 +419,24 @@ const Reportes = () => {
             {busqueda 
               ? "Prueba refinando los términos de búsqueda o borrando el filtro actual."
               : filtroStatus === "pendientes"
-                ? "¡Buen trabajo! Todo el contenido reportado ha sido revisado y solucionado."
-                : "Los reportes resueltos se guardarán aquí para referencia futura."}
+                ? "¡Buen trabajo! Todo el contenido reportado ha sido moderado y solucionado."
+                : "Los reportes resueltos se guardarán aquí para auditoría y referencia futura."}
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           {reportesFiltrados.map((rep) => {
             const pub = rep.ForoPublicacion || {};
-            const materiaNombre = pub.Materia?.nombre || "Foro";
+            const materiaNombre = pub?.Materia?.nombre || "Foro Académico";
             const reportadorNombre = rep.Reportador 
               ? `${rep.Reportador.nombre} ${rep.Reportador.apellido}` 
               : "Usuario Anónimo";
             const autorNombre = rep.Comentario && rep.Comentario.Autor
               ? `${rep.Comentario.Autor.nombre} ${rep.Comentario.Autor.apellido}`
-              : (pub.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido}` : "Usuario Anónimo");
+              : (pub?.Autor ? `${pub.Autor.nombre} ${pub.Autor.apellido}` : "Usuario Anónimo");
             const autorUsuario = rep.Comentario && rep.Comentario.Autor
               ? rep.Comentario.Autor.nombre_usuario
-              : (pub.Autor ? pub.Autor.nombre_usuario : "");
+              : (pub?.Autor ? pub.Autor.nombre_usuario : "");
             
             return (
               <div
@@ -383,12 +451,12 @@ const Reportes = () => {
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-650 dark:text-zinc-350 px-2 py-0.5 rounded-full font-bold">
                       {renderMiniAvatar(rep.Reportador, "from-red-500 to-rose-600")}
-                      <span>Reportador: {reportadorNombre} (@{rep.Reportador?.nombre_usuario})</span>
+                      <span>Reportador: {reportadorNombre} {rep.Reportador?.nombre_usuario ? `(@${rep.Reportador.nombre_usuario})` : ""}</span>
                     </div>
                     <FiChevronRight className="hidden sm:block text-zinc-400" />
                     <div className="flex items-center gap-1.5 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-650 dark:text-zinc-350 px-2 py-0.5 rounded-full font-bold">
-                      {renderMiniAvatar(rep.Comentario ? rep.Comentario.Autor : pub.Autor, "from-indigo-500 to-blue-600")}
-                      <span>Reportado: {autorNombre} {autorUsuario ? `(@${autorUsuario})` : ""}</span>
+                      {renderMiniAvatar(rep.Comentario ? rep.Comentario.Autor : pub?.Autor, "from-indigo-500 to-blue-600")}
+                      <span>Autor reportado: {autorNombre} {autorUsuario ? `(@${autorUsuario})` : ""}</span>
                     </div>
                   </div>
                   
@@ -417,7 +485,7 @@ const Reportes = () => {
                     rep.resuelto ? "text-zinc-550 dark:text-zinc-400" : "text-red-500"
                   }`}>
                     <FiAlertCircle className="w-4 h-4 shrink-0" />
-                    Motivo del Reporte:
+                    Motivo de la Denuncia:
                   </h4>
                   <p className={`text-xs font-bold leading-relaxed whitespace-pre-wrap ${
                     rep.resuelto ? "text-zinc-500 dark:text-zinc-400 line-through" : "text-zinc-850 dark:text-zinc-200"
@@ -430,24 +498,28 @@ const Reportes = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className={`text-[9px] font-extrabold px-1.5 py-0.5 border rounded uppercase tracking-wider ${
-                      rep.Comentario ? "bg-amber-50 border-amber-100 text-amber-600 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-450" : getColoresCategoria(pub.categoria)
+                      rep.Comentario ? "bg-amber-50 border-amber-100 text-amber-600 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-450" : getColoresCategoria(pub?.categoria)
                     }`}>
-                      {rep.Comentario ? "Comentario" : (pub.categoria || "General")}
+                      {rep.Comentario ? "Comentario Denunciado" : (pub?.categoria ? `Publicación (${pub.categoria})` : "Publicación")}
                     </span>
-                    <span className="text-[9px] bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded font-bold">
-                      {materiaNombre}
-                    </span>
+                    {pub?.Materia && (
+                      <span className="text-[9px] bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 px-1.5 py-0.5 rounded font-bold">
+                        {materiaNombre}
+                      </span>
+                    )}
                   </div>
                   {rep.Comentario ? (
                     <>
                       <div className="text-xs bg-zinc-50 dark:bg-zinc-900/30 p-2.5 rounded-lg border border-zinc-150 dark:border-zinc-800/20 text-zinc-700 dark:text-zinc-350 italic">
                         "{rep.Comentario.contenido}"
                       </div>
-                      <p className="text-[10px] text-zinc-450 dark:text-zinc-500 font-semibold">
-                        En la publicación: <span className="underline">{pub.titulo || "Publicación sin título"}</span>
-                      </p>
+                      {pub?.titulo && (
+                        <p className="text-[10px] text-zinc-450 dark:text-zinc-500 font-semibold">
+                          En la publicación: <span className="underline">{pub.titulo}</span>
+                        </p>
+                      )}
                     </>
-                  ) : (
+                  ) : pub?.id ? (
                     <>
                       <h3 className="text-sm font-bold text-zinc-900 dark:text-white leading-tight">
                         {pub.titulo || "Publicación sin título"}
@@ -456,40 +528,87 @@ const Reportes = () => {
                         {pub.contenido || "Sin contenido."}
                       </p>
                     </>
+                  ) : (
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-850/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 text-xs italic flex items-center gap-2">
+                      <FiSlash className="w-4 h-4 text-zinc-400" />
+                      El contenido reportado ya ha sido dado de baja o eliminado del foro.
+                    </div>
                   )}
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-850 pt-3">
-                  {/* Resolve/reopen button */}
-                  <button
-                    onClick={(e) => handleResolverReporte(e, rep.id)}
-                    className={`px-4.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition flex items-center gap-1.5 ${
-                      rep.resuelto
-                        ? "bg-zinc-50 border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700 text-zinc-650 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-750"
-                        : "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/30 text-emerald-650 dark:text-emerald-450 hover:bg-emerald-100/80 dark:hover:bg-emerald-950/40 shadow-sm"
-                    }`}
-                  >
-                    {rep.resuelto ? (
+                {/* Action buttons (Moderación SCRUM-126) */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-zinc-100 dark:border-zinc-850 pt-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {!rep.resuelto ? (
                       <>
-                        <FiRotateCcw className="w-3.5 h-3.5" />
-                        <span>Marcar como Pendiente</span>
+                        <button
+                          onClick={() => setModalConfirmacion({
+                            id: rep.id,
+                            accion: 'eliminar_contenido',
+                            peligro: true,
+                            titulo: '¿Eliminar contenido reportado?',
+                            mensaje: `Esta acción dará de baja ${rep.Comentario ? 'el comentario' : 'la publicación'} denunciada de forma permanente del feed y marcará este reporte como resuelto.`
+                          })}
+                          className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-red-250 dark:border-red-900/40 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-650 dark:text-red-450 cursor-pointer transition flex items-center gap-1.5 shadow-sm"
+                          title="Eliminar contenido infractor y cerrar reporte"
+                        >
+                          <FiTrash2 className="w-3.5 h-3.5 text-red-500" />
+                          <span>Eliminar Contenido</span>
+                        </button>
+
+                        <button
+                          onClick={() => setModalConfirmacion({
+                            id: rep.id,
+                            accion: 'desestimar',
+                            peligro: false,
+                            titulo: '¿Desestimar reporte?',
+                            mensaje: 'Se marcará el reporte como resuelto sin modificar ni eliminar el contenido denunciado.'
+                          })}
+                          className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-emerald-250 dark:border-emerald-900/40 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 text-emerald-650 dark:text-emerald-450 cursor-pointer transition flex items-center gap-1.5 shadow-sm"
+                          title="Desestimar denuncia sin borrar contenido"
+                        >
+                          <FiCheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Desestimar</span>
+                        </button>
                       </>
                     ) : (
                       <>
-                        <FiCheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500" />
-                        <span>Resolver Reporte</span>
+                        <button
+                          onClick={() => handleAccionReporte(rep.id, 'reabrir')}
+                          className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-700 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-zinc-650 dark:text-zinc-300 cursor-pointer transition flex items-center gap-1.5"
+                          title="Reabrir este reporte como pendiente"
+                        >
+                          <FiRotateCcw className="w-3.5 h-3.5" />
+                          <span>Reabrir</span>
+                        </button>
+
+                        <button
+                          onClick={() => setModalConfirmacion({
+                            id: rep.id,
+                            tipo: 'eliminar_auditoria',
+                            peligro: true,
+                            titulo: '¿Borrar registro de auditoría?',
+                            mensaje: 'Esta acción borrará definitivamente este reporte del historial de auditoría de los administradores.'
+                          })}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold border border-zinc-200 dark:border-zinc-700 bg-transparent hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 text-zinc-400 dark:text-zinc-500 cursor-pointer transition flex items-center gap-1"
+                          title="Eliminar registro de la auditoría"
+                        >
+                          <FiTrash2 className="w-3.5 h-3.5" />
+                          <span>Borrar registro</span>
+                        </button>
                       </>
                     )}
-                  </button>
+                  </div>
 
-                  <button
-                    onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
-                    className="px-4.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition flex items-center gap-1.5 shadow-sm shadow-indigo-500/10"
-                  >
-                    <FiExternalLink className="w-3.5 h-3.5" />
-                    Ir a la Publicación
-                  </button>
+                  {pub?.id && (
+                    <button
+                      onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
+                      className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition flex items-center gap-1.5 shadow-sm shadow-indigo-500/10 ml-auto"
+                    >
+                      <FiExternalLink className="w-3.5 h-3.5" />
+                      Ir a la Publicación
+                    </button>
+                  )}
                 </div>
               </div>
             );
