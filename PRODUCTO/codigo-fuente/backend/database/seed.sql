@@ -545,26 +545,31 @@ INSERT INTO inscripciones_cursos (id_usuario, id_curso) VALUES
 
 
 -- ==============================================
--- ESTADOS DE MATERIA (Usuarios 5 a 19)
+-- ESTADOS DE MATERIA (Usuarios 2, 5 a 19)
 -- ==============================================
 INSERT INTO estado_materia_alumno (id_usuario, id_materia, estado) VALUES 
+-- Juan Perez (id: 2 - alumno@test.com)
+(2, 1, 'Aprobada'), (2, 2, 'Aprobada'), (2, 3, 'Regular'), (2, 4, 'Regular'), (2, 5, 'Cursando'), (2, 6, 'Cursando'),
+
 -- Francisco Funes (id: 5)
-(5, 1, 'Aprobada'), (5, 2, 'Aprobada'), (5, 15, 'Cursando'), (5, 20, 'Cursando'), (5, 31, 'Cursando'),
+(5, 1, 'Aprobada'), (5, 2, 'Aprobada'), (5, 3, 'Regular'), (5, 4, 'Regular'), (5, 15, 'Cursando'), (5, 20, 'Cursando'), (5, 31, 'Cursando'),
 
 -- Tito Montivero (id: 6)
-(6, 1, 'Aprobada'), (6, 6, 'Aprobada'), (6, 22, 'Cursando'), (6, 21, 'Cursando'), (6, 32, 'Cursando'),
+(6, 1, 'Aprobada'), (6, 6, 'Aprobada'), (6, 3, 'Regular'), (6, 4, 'Regular'), (6, 22, 'Cursando'), (6, 21, 'Cursando'), (6, 32, 'Cursando'),
 
 -- Franco Sosa (id: 7)
-(7, 3, 'Aprobada'), (7, 5, 'Aprobada'), (7, 17, 'Cursando'), (7, 22, 'Cursando'), (7, 33, 'Cursando'),
+(7, 3, 'Aprobada'), (7, 5, 'Aprobada'), (7, 1, 'Regular'), (7, 2, 'Regular'), (7, 17, 'Cursando'), (7, 22, 'Cursando'), (7, 33, 'Cursando'),
 
 -- Martin Sciarra (id: 8)
-(8, 2, 'Aprobada'), (8, 8, 'Aprobada'), (8, 18, 'Cursando'), (8, 23, 'Cursando'), (8, 34, 'Cursando'),
+(8, 2, 'Aprobada'), (8, 8, 'Aprobada'), (8, 1, 'Regular'), (8, 3, 'Regular'), (8, 18, 'Cursando'), (8, 23, 'Cursando'), (8, 34, 'Cursando'),
 
 -- Luciana Zahr (id: 9)
-(9, 1, 'Aprobada'), (9, 4, 'Aprobada'), (9, 9, 'Cursando'), (9, 12, 'Cursando'), (9, 19, 'Cursando'),
+(9, 1, 'Aprobada'), (9, 4, 'Aprobada'), (9, 2, 'Regular'), (9, 3, 'Regular'), (9, 9, 'Cursando'), (9, 12, 'Cursando'), (9, 19, 'Cursando'),
+
+-- Usuario 1 (id: 10 - usuario1@gmail.com)
+(10, 1, 'Aprobada'), (10, 2, 'Aprobada'), (10, 3, 'Regular'), (10, 4, 'Regular'), (10, 5, 'Cursando'), (10, 6, 'Cursando'),
 
 -- Usuarios Iniciales (2024 - Cursando materias de Nivel 1)
-(10, 1, 'Cursando'), (10, 2, 'Cursando'), (10, 3, 'Cursando'),
 (11, 1, 'Cursando'), (11, 2, 'Cursando'), (11, 4, 'Cursando'),
 (12, 1, 'Cursando'), (12, 2, 'Cursando'), (12, 3, 'Cursando'),
 (13, 1, 'Cursando'), (13, 2, 'Cursando'), (13, 5, 'Cursando'),

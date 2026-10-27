@@ -306,7 +306,8 @@ class ProgresoService {
         const porcentajeGrado = Math.min(100, Math.round((puntosElectivasAprobadas / puntosRequeridosGrado) * 100));
 
         const totalMaterias = obligatoriasPlan.length;
-        const materiasPendientes = Math.max(0, totalMaterias - materiasAprobadas);
+        const materiasPendientesPorAprobar = Math.max(0, totalMaterias - materiasAprobadas);
+        const materiasNoIniciadas = Math.max(0, totalMaterias - materiasAprobadas - materiasRegulares - materiasCursando);
         const porcentajeAvance = totalMaterias > 0 
             ? Number(((materiasAprobadas / totalMaterias) * 100).toFixed(1)) 
             : 0;
@@ -337,7 +338,9 @@ class ProgresoService {
             materiasAprobadas,
             materiasRegulares,
             materiasCursando,
-            materiasPendientes,
+            materiasPendientes: materiasPendientesPorAprobar,
+            materiasNoIniciadas,
+            materiasPendientesSinCursar: materiasNoIniciadas,
             porcentajeAvance,
             electivas: electivasResumen,
             desglosePorNivel: Object.values(desglosePorNivel),
@@ -395,8 +398,8 @@ class ProgresoService {
         const anioEstimado = anioActual + aniosAdicionales;
         const periodoEstimado = cuatrimestreFinal === 1 ? `Julio ${anioEstimado}` : `Diciembre ${anioEstimado}`;
 
-        // Generar matriz de simulación interactiva para diferentes ritmos (1 a 5 materias por cuatrimestre)
-        const ritmosSimulados = [1, 2, 3, 4, 5];
+        // Generar matriz de simulación interactiva para diferentes ritmos (2 a 5 materias por cuatrimestre según US-V04)
+        const ritmosSimulados = [2, 3, 4, 5];
         const simulacion = ritmosSimulados.map(ritmoCuatrimestral => {
             const cuatrimestresSim = Math.max(1, Math.ceil(materiasPendientes / ritmoCuatrimestral));
             const aniosSim = Number((cuatrimestresSim / 2).toFixed(1));

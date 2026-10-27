@@ -63,28 +63,35 @@ const ProgresoCurricularCard = () => {
     return null;
   }
 
-  // Datos para gráfico Doughnut de Chart.js
+  // Datos para gráfico Doughnut de Chart.js según criterios de US-V04
+  const aprobadas = progreso.materiasAprobadas || 0;
+  const regulares = progreso.materiasRegulares || 0;
+  const cursando = progreso.materiasCursando || 0;
+  const total = progreso.totalMaterias || 0;
+  // Pendientes reales = total del plan - (aprobadas + regulares + cursando)
+  const pendientes = Math.max(0, total - aprobadas - regulares - cursando);
+
+  // Segmentos proporcionales: si no hay asignaturas iniciadas, mostrar anillo gris completo (Pendientes)
+  const datosSegmentos = (aprobadas === 0 && regulares === 0 && cursando === 0 && pendientes === 0)
+    ? [0, 0, 0, 1]
+    : [aprobadas, regulares, cursando, pendientes];
+
   const chartData = {
-    labels: ['Aprobadas', 'Regulares', 'Cursando', 'Pendientes'],
+    labels: ['Aprobadas', 'Regulares con final pendiente', 'En Cursada', 'Pendientes'],
     datasets: [
       {
-        data: [
-          progreso.materiasAprobadas,
-          progreso.materiasRegulares,
-          progreso.materiasCursando,
-          progreso.materiasPendientes
-        ],
+        data: datosSegmentos,
         backgroundColor: [
-          '#10b981', // emerald-500
-          '#6366f1', // indigo-500
-          '#f59e0b', // amber-500
-          '#e4e4e7'  // zinc-200
+          '#10b981', // Verde: Aprobadas
+          '#f59e0b', // Amarillo: Regulares con final pendiente
+          '#3b82f6', // Azul: En Cursada
+          '#9ca3af'  // Gris: Pendientes
         ],
         borderColor: [
           '#059669',
-          '#4f46e5',
           '#d97706',
-          '#d4d4d8'
+          '#2563eb',
+          '#6b7280'
         ],
         borderWidth: 1.5,
         hoverOffset: 6
@@ -101,13 +108,17 @@ const ProgresoCurricularCard = () => {
         display: false
       },
       tooltip: {
-        backgroundColor: 'rgba(24, 24, 27, 0.9)',
+        backgroundColor: 'rgba(24, 24, 27, 0.95)',
         titleColor: '#fff',
         bodyColor: '#e4e4e7',
         padding: 10,
         cornerRadius: 8,
         callbacks: {
-          label: (context) => ` ${context.label}: ${context.raw} materias`
+          label: (context) => {
+            const val = context.raw || 0;
+            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+            return ` ${context.label}: ${val} materias (${pct}%)`;
+          }
         }
       }
     }
@@ -156,19 +167,23 @@ const ProgresoCurricularCard = () => {
             </div>
           </div>
 
-          {/* Leyenda resumida debajo del gráfico */}
-          <div className="flex flex-wrap justify-center gap-2.5 mt-3 text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
-            <span className="inline-flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Aprobadas ({progreso.materiasAprobadas})
+          {/* Leyenda clara por estados según US-V04 */}
+          <div className="flex flex-wrap justify-center gap-2 mt-3.5 text-[11px] font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50 shadow-2xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-200 dark:ring-emerald-900"></span>
+              <span>Aprobadas ({aprobadas})</span>
             </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Regulares ({progreso.materiasRegulares})
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/50 shadow-2xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-amber-200 dark:ring-amber-900"></span>
+              <span>Regulares con final pendiente ({regulares})</span>
             </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Cursando ({progreso.materiasCursando})
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/50 shadow-2xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-blue-200 dark:ring-blue-900"></span>
+              <span>En Cursada ({cursando})</span>
             </span>
-            <span className="inline-flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-zinc-300 dark:bg-zinc-700"></span> Pendientes ({progreso.materiasPendientes})
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 shadow-2xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 ring-2 ring-zinc-300 dark:ring-zinc-600"></span>
+              <span>Pendientes ({pendientes})</span>
             </span>
           </div>
         </div>
