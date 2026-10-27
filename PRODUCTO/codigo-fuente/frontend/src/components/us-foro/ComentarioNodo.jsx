@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { FiArrowUp, FiArrowDown, FiMessageSquare, FiFlag, FiTrash2 } from 'react-icons/fi';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuarioActual, idPublicacionAutor, alVotar, alReportar, alEliminar }) => {
     const [mostrarFormularioRespuesta, setMostrarFormularioRespuesta] = useState(false);
     const [textoRespuesta, setTextoRespuesta] = useState("");
     const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
+
+    const focusTrapRef = useFocusTrap(confirmandoEliminar, () => setConfirmandoEliminar(false));
 
     const [animandoEscala, setAnimandoEscala] = useState(false);
 
@@ -175,14 +178,21 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
             {/* Modal de Confirmación de Eliminación de Comentario (Estilo Premium igual al de Publicación) */}
             {confirmandoEliminar && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-                    <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 transition-colors duration-200">
+                    <div
+                        ref={focusTrapRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="¿Eliminar comentario?"
+                        tabIndex={-1}
+                        className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 transition-colors duration-200 outline-none"
+                    >
                         <h3 className="text-lg font-bold text-zinc-900 dark:text-slate-100 mb-2">¿Eliminar comentario?</h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Esta acción es irreversible y eliminará el comentario y todas sus respuestas asociadas.</p>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-6">Esta acción es irreversible y eliminará el comentario y todas sus respuestas asociadas.</p>
                         <div className="flex items-center justify-end gap-3">
                             <button 
                                 type="button"
                                 onClick={() => setConfirmandoEliminar(false)}
-                                className="px-4 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition border-none bg-transparent cursor-pointer"
+                                className="px-4 py-2 text-sm font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition border border-zinc-300 dark:border-zinc-700 bg-transparent cursor-pointer"
                             >
                                 Cancelar
                             </button>

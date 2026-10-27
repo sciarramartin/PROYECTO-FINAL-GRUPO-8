@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { FiAward, FiCheckCircle, FiX, FiShare2, FiStar, FiCalendar, FiBookOpen } from 'react-icons/fi';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const InsigniaGraduado = ({ carrera = 'Ingeniería en Sistemas', trayectoria = null, className = '', modalAutoOpen = false }) => {
   const [mostrarModal, setMostrarModal] = useState(modalAutoOpen);
+  const focusTrapRef = useFocusTrap(mostrarModal, () => setMostrarModal(false));
 
   return (
     <>
@@ -17,7 +19,7 @@ const InsigniaGraduado = ({ carrera = 'Ingeniería en Sistemas', trayectoria = n
         </span>
         <span className="tracking-tight">Ingeniero/a Graduado/a • UTN FRC</span>
         <span className="text-[10px] bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-100 px-2 py-0.5 rounded-lg font-mono font-extrabold flex items-center gap-1 border border-amber-300/60">
-          <FiAward className="text-amber-600 dark:text-amber-300" />
+          <FiAward className="text-amber-700 dark:text-amber-300" />
           Título Obtenido
         </span>
       </button>
@@ -26,7 +28,12 @@ const InsigniaGraduado = ({ carrera = 'Ingeniería en Sistemas', trayectoria = n
       {mostrarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div
-            className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-amber-200 dark:border-amber-900/50 overflow-hidden text-center p-6 sm:p-8 space-y-6 transition-colors duration-200"
+            ref={focusTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Diploma de Honor y Graduación"
+            tabIndex={-1}
+            className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-amber-200 dark:border-amber-900/50 overflow-hidden text-center p-6 sm:p-8 space-y-6 transition-colors duration-200 outline-none"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Fondo decorativo con gradiente */}
@@ -34,8 +41,10 @@ const InsigniaGraduado = ({ carrera = 'Ingeniería en Sistemas', trayectoria = n
 
             {/* Botón Cerrar */}
             <button
+              type="button"
               onClick={() => setMostrarModal(false)}
-              className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+              aria-label="Cerrar diploma de graduación"
+              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
             >
               <FiX className="text-lg" />
             </button>
@@ -46,40 +55,40 @@ const InsigniaGraduado = ({ carrera = 'Ingeniería en Sistemas', trayectoria = n
             </div>
 
             <div className="space-y-2 relative">
-              <span className="text-[11px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">
+              <span className="text-[11px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-400">
                 Universidad Tecnológica Nacional • FRC
               </span>
               <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
                 ¡Felicitaciones, Colega Ingeniero/a!
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto leading-relaxed">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 max-w-sm mx-auto leading-relaxed">
                 Has alcanzado el 100% de las asignaturas aprobadas y la aprobación de tu Proyecto Final de carrera.
               </p>
             </div>
 
             {/* Tarjeta de Resumen de Trayectoria */}
             <div className="bg-zinc-50 dark:bg-zinc-800/60 rounded-2xl p-4 border border-zinc-100 dark:border-zinc-800 space-y-3 text-left">
-              <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider block">
+              <span className="text-[10px] font-extrabold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider block">
                 Trayectoria Académica Verificada
               </span>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-2.5 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-100 dark:border-zinc-700/60">
-                  <div className="flex items-center gap-1.5 text-zinc-500 mb-1">
-                    <FiCalendar className="text-amber-500" />
+                  <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 mb-1">
+                    <FiCalendar className="text-amber-600 dark:text-amber-400" />
                     <span className="text-[11px] font-bold">Estado Curricular</span>
                   </div>
-                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                  <span className="font-extrabold text-emerald-700 dark:text-emerald-400">
                     100% Completado
                   </span>
                 </div>
 
                 <div className="p-2.5 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-100 dark:border-zinc-700/60">
-                  <div className="flex items-center gap-1.5 text-zinc-500 mb-1">
-                    <FiCheckCircle className="text-indigo-500" />
+                  <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 mb-1">
+                    <FiCheckCircle className="text-indigo-600 dark:text-indigo-400" />
                     <span className="text-[11px] font-bold">Proyecto Final</span>
                   </div>
-                  <span className="font-extrabold text-indigo-600 dark:text-indigo-400">
+                  <span className="font-extrabold text-indigo-700 dark:text-indigo-400">
                     Aprobado (PRO5 / PFI5)
                   </span>
                 </div>
@@ -88,7 +97,7 @@ const InsigniaGraduado = ({ carrera = 'Ingeniería en Sistemas', trayectoria = n
               <div className="p-3 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200/60 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-200 flex items-center justify-between">
                 <div>
                   <span className="font-extrabold block">Grado Académico</span>
-                  <span className="text-[11px] text-amber-700 dark:text-amber-300">
+                  <span className="text-[11px] text-amber-900 dark:text-amber-300 font-medium">
                     {carrera || 'Ingeniería en Sistemas de Información'}
                   </span>
                 </div>
@@ -99,6 +108,7 @@ const InsigniaGraduado = ({ carrera = 'Ingeniería en Sistemas', trayectoria = n
             {/* Acciones */}
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
+                type="button"
                 onClick={() => setMostrarModal(false)}
                 className="w-full py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-amber-500 dark:hover:bg-amber-600 dark:text-zinc-950 font-extrabold text-xs rounded-xl transition shadow-sm border-none cursor-pointer"
               >

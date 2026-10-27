@@ -136,11 +136,11 @@ const SeccionResenas = () => {
           {cargando ? (
             <div className="py-12 text-center space-y-2">
               <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
-              <p className="text-xs text-slate-400 font-medium">Cargando materias...</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">Cargando materias...</p>
             </div>
           ) : materiasDelAnio.length === 0 ? (
             <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
-              <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">No hay materias registradas para este año.</p>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">No hay materias registradas para este año.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -154,19 +154,19 @@ const SeccionResenas = () => {
                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
                       {materia.nombre}
                     </h3>
-                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300 font-medium">
                         {materia.promedio_general && Number(materia.promedio_general) > 0 ? (
-                            <span className="flex items-center gap-1 text-amber-500 font-bold">
-                                <FiStar className="fill-amber-400 w-3.5 h-3.5" />
+                            <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 font-bold">
+                                <FiStar className="fill-amber-500 w-3.5 h-3.5 text-amber-500" />
                                 {Number(materia.promedio_general).toFixed(1)}
                             </span>
                         ) : (
-                            <span className="text-slate-400 dark:text-slate-400 font-medium text-[11px] italic">
+                            <span className="text-slate-500 dark:text-slate-400 font-medium text-[11px] italic">
                                 Sin reseñas
                             </span>
                         )}
                         <span>•</span>
-                        <span>{materia.codigo || 'MAT'}</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">{materia.codigo || 'MAT'}</span>
                     </div>
                   </div>
                   <FiChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
@@ -210,8 +210,8 @@ const SeccionResenas = () => {
 
           {/* LISTA DE COMISIONES / CURSOS */}
           <div>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <FiUsers className="w-4 h-4 text-indigo-600" /> Comisiones Disponibles
+            <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <FiUsers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Comisiones Disponibles
             </h3>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -307,14 +307,14 @@ const SeccionResenas = () => {
 
             {/* PANEL DERECHO: TARJETAS DE OPINIONES / RESEÑAS */}
             <div className="lg:col-span-2 space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
                 <FiMessageSquare className="text-indigo-600 dark:text-indigo-400 w-4 h-4" /> Opiniones de Estudiantes ({encuestasFiltradas.length})
               </h4>
 
               {encuestasFiltradas.length === 0 ? (
                 <div className="p-8 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-2 transition-colors duration-200">
-                  <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Aún no hay reseñas registradas para esta selección.</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-400">Las opiniones se registran al cambiar el estado académico en el Mapa de Correlatividades.</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Aún no hay reseñas registradas para esta selección.</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">Las opiniones se registran al cambiar el estado académico en el Mapa de Correlatividades.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -330,18 +330,18 @@ const SeccionResenas = () => {
                             {resena.autor?.foto_perfil ? (
                               <img src={resena.autor.foto_perfil} alt="Perfil" className="w-full h-full object-cover" />
                             ) : resena.es_anonima ? (
-                              <FiShield className="w-4 h-4 text-slate-400 dark:text-slate-400" />
+                              <FiShield className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                             ) : (
-                              <FiUser className="w-4 h-4 text-slate-500 dark:text-slate-300" />
+                              <FiUser className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                             )}
                           </div>
                           <div>
                             <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 block leading-tight">
                               {resena.autor?.nombre}
                             </span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">
+                            <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                               {resena.curso ? `Comisión ${resena.curso}` : 'General'} • Cursó como{' '}
-                              <strong className={resena.estado_academico === 'Aprobada' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
+                              <strong className={resena.estado_academico === 'Aprobada' ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-amber-800 dark:text-amber-400 font-bold'}>
                                 {resena.estado_academico || 'Alumno'}
                               </strong>
                             </span>
@@ -349,8 +349,8 @@ const SeccionResenas = () => {
                         </div>
 
                         {/* Puntuación Promedio de la reseña */}
-                        <div className="flex items-center gap-1 text-amber-500 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60 px-2 py-0.5 rounded-lg text-xs font-bold">
-                          <FiStar className="fill-amber-400 w-3 h-3" />
+                        <div className="flex items-center gap-1 text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 px-2 py-0.5 rounded-lg text-xs font-extrabold">
+                          <FiStar className="fill-amber-500 w-3 h-3 text-amber-600 dark:text-amber-400" />
                           <span>{((resena.dificultad + resena.claridad_docente + resena.disponibilidad) / 3).toFixed(1)}</span>
                         </div>
                       </div>
@@ -361,7 +361,7 @@ const SeccionResenas = () => {
                           "{resena.comentario}"
                         </p>
                       ) : (
-                        <p className="text-[11px] text-slate-400 dark:text-slate-400 italic">Sin comentario escrito.</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">Sin comentario escrito.</p>
                       )}
                     </div>
                   ))}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import GrafoCorrelativas from './GrafoCorrelativas';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api' });
 
@@ -23,6 +24,11 @@ export default function ModuloCorrelativas() {
   const [editandoId, setEditandoId] = useState(null);
   const [creandoPlan, setCreandoPlan] = useState(false);
   const [nuevoPlanNombre, setNuevoPlanNombre] = useState('');
+
+  const focusTrapPlanRef = useFocusTrap(creandoPlan, () => {
+    setCreandoPlan(false);
+    setNuevoPlanNombre('');
+  });
 
   const [formData, setFormData] = useState({
     codigo: '', nombre: '', nivel_anio: 1, cuatrimestre: 1, correlativas: [], id_carrera: '', id_plan_academico: '', visible_en_grafo: false, es_electiva: false, puntos: 0
@@ -424,18 +430,39 @@ export default function ModuloCorrelativas() {
 
       {creandoPlan && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full transition-colors duration-200">
+          <div
+            ref={focusTrapPlanRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Crear Nuevo Plan Académico"
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 max-w-sm w-full transition-colors duration-200 outline-none"
+          >
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Crear Nuevo Plan Académico</h3>
             <form onSubmit={handleCrearPlan} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nombre del Plan</label>
-                <input type="text" required value={nuevoPlanNombre} onChange={(e) => setNuevoPlanNombre(e.target.value)} placeholder="Ej: Plan 2023" className="w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
+                <label className="block text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">Nombre del Plan</label>
+                <input
+                  type="text"
+                  required
+                  value={nuevoPlanNombre}
+                  onChange={(e) => setNuevoPlanNombre(e.target.value)}
+                  placeholder="Ej: Plan 2023"
+                  className="w-full rounded-md border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                />
               </div>
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => { setCreandoPlan(false); setNuevoPlanNombre(''); }} className="px-4 py-2 border border-slate-300 dark:border-slate-700 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700">
+                <button
+                  type="button"
+                  onClick={() => { setCreandoPlan(false); setNuevoPlanNombre(''); }}
+                  className="px-4 py-2 border border-slate-300 dark:border-slate-700 text-sm font-bold rounded-md text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
+                >
                   Cancelar
                 </button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-bold rounded-md text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer border-none shadow-sm"
+                >
                   Crear Plan
                 </button>
               </div>

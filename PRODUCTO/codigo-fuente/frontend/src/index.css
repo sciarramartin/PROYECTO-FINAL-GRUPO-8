@@ -171,3 +171,24 @@ code {
   -ms-overflow-style: none;  /* IE y Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* ===== WCAG 2.1 AA - FOCO VISIBLE Y CONSISTENTE (US-V10) ===== */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid transparent !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px var(--bg, #ffffff), 0 0 0 4px #6366f1 !important; /* focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 */
+}
+
+.dark button:focus-visible,
+.dark input:focus-visible,
+.dark select:focus-visible,
+.dark textarea:focus-visible,
+.dark a:focus-visible,
+.dark [tabindex]:focus-visible {
+  box-shadow: 0 0 0 2px #0f172a, 0 0 0 4px #818cf8 !important; /* dark ring offset and ring */
+}

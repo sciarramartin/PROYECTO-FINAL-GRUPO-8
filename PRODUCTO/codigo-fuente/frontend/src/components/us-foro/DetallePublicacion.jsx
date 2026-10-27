@@ -4,6 +4,7 @@ import axios from "axios";
 
 import  SeccionComentarios from './SeccionComentarios';
 import CompartirPublicacion from "./CompartirPublicacion";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 import { 
   FiArrowUp, 
@@ -50,6 +51,8 @@ const DetallePublicacion = () => {
 
   // Estados para compartir publicaciones
   const [compartirAbierto, setCompartirAbierto] = useState(false);
+
+  const focusTrapEliminarRef = useFocusTrap(mostrarConfirmacionEliminar, () => setMostrarConfirmacionEliminar(false));
 
   const editorRef = useRef(null);
 
@@ -300,6 +303,8 @@ const DetallePublicacion = () => {
     setErrorReporte("");
   };
 
+  const focusTrapReportarRef = useFocusTrap(modalReportarAbierto, cerrarModalReportar);
+
   const enviarReporte = async () => {
     if (!descripcionReporte.trim()) {
       setErrorReporte("El motivo del reporte es obligatorio.");
@@ -409,19 +414,28 @@ const DetallePublicacion = () => {
       {/* Modal de Confirmación de Eliminación */}
       {mostrarConfirmacionEliminar && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 transition-colors duration-200">
+          <div
+            ref={focusTrapEliminarRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="¿Eliminar publicación?"
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 transition-colors duration-200 outline-none"
+          >
             <h3 className="text-lg font-bold text-zinc-900 dark:text-slate-100 mb-2">¿Eliminar publicación?</h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Esta acción es irreversible y eliminará todos los comentarios asociados a la misma.</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-6">Esta acción es irreversible y eliminará todos los comentarios asociados a la misma.</p>
             <div className="flex items-center justify-end gap-3">
               <button 
+                type="button"
                 onClick={() => setMostrarConfirmacionEliminar(false)}
-                className="px-4 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition"
+                className="px-4 py-2 text-sm font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition border border-zinc-300 dark:border-zinc-700 bg-transparent cursor-pointer"
               >
                 Cancelar
               </button>
               <button 
+                type="button"
                 onClick={handleEliminar}
-                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition shadow-sm shadow-red-500/20"
+                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition shadow-sm shadow-red-500/20 border-none cursor-pointer"
               >
                 Sí, eliminar
               </button>
@@ -786,13 +800,20 @@ const DetallePublicacion = () => {
       {/* Modal de Reportar */}
       {modalReportarAbierto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 transition-colors duration-200">
+          <div
+            ref={focusTrapReportarRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={comentarioIdAReportar ? "Reportar Comentario" : "Reportar Publicación"}
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 transition-colors duration-200 outline-none"
+          >
             <div>
               <h3 className="text-base font-extrabold text-zinc-900 dark:text-slate-100 flex items-center gap-2">
-                <FiAlertCircle className="w-5 h-5 text-red-500" />
+                <FiAlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 {comentarioIdAReportar ? "Reportar Comentario" : "Reportar Publicación"}
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-1">
                 Por favor, describe detalladamente el motivo por el cual estás reportando {comentarioIdAReportar ? "este comentario" : "esta publicación"}. Un administrador revisará tu reporte.
               </p>
             </div>
@@ -805,11 +826,11 @@ const DetallePublicacion = () => {
               }}
               placeholder="Escribe el motivo del reporte aquí (obligatorio)..."
               rows={4}
-              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100"
+              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400"
             />
             
             {errorReporte && (
-              <p className="text-[11px] font-bold text-red-500 flex items-center gap-1">
+              <p className="text-[11px] font-bold text-red-700 dark:text-red-400 flex items-center gap-1">
                 <FiAlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {errorReporte}
               </p>
@@ -817,12 +838,14 @@ const DetallePublicacion = () => {
             
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
+                type="button"
                 onClick={cerrarModalReportar}
-                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold border-none cursor-pointer transition"
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold border border-zinc-300 dark:border-zinc-700 cursor-pointer transition"
               >
                 Cancelar
               </button>
               <button
+                type="button"
                 onClick={enviarReporte}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition shadow-md shadow-red-500/10"
               >

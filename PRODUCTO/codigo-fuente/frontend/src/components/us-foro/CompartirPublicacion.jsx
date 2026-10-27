@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiX, FiUsers, FiUser, FiCheck, FiSend, FiLoader, FiCopy } from 'react-icons/fi';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo }) => {
     const [pestañaActiva, setPestañaActiva] = useState('grupos'); // 'grupos' o 'amigos'
@@ -13,6 +14,8 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
     // Feedback de envío/copiado
     const [compartidoId, setCompartidoId] = useState(null); 
     const [copiado, setCopiado] = useState(false);
+
+    const focusTrapRef = useFocusTrap(isOpen, onClose);
 
     // URL base del backend
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -131,7 +134,14 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-150 animate-duration-150 transition-colors duration-200">
+            <div
+                ref={focusTrapRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Compartir publicación"
+                tabIndex={-1}
+                className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-150 animate-duration-150 transition-colors duration-200 outline-none"
+            >
                 
                 {/* Cabecera del Modal */}
                 <div className="flex items-center justify-between mb-4">
@@ -141,17 +151,18 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                     <button 
                         type="button"
                         onClick={onClose}
-                        className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition p-1 bg-transparent border-none cursor-pointer"
+                        aria-label="Cerrar modal de compartir"
+                        className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition p-1 bg-transparent border-none cursor-pointer rounded-lg"
                     >
                         <FiX className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Copiar enlace directo (Escenario 1) */}
-                <div className="mb-4 p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-150 dark:border-zinc-800/60 flex items-center justify-between gap-2">
+                <div className="mb-4 p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-800/60 flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Enlace directo</p>
-                        <p className="text-xs text-zinc-600 dark:text-zinc-300 truncate">
+                        <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Enlace directo</p>
+                        <p className="text-xs text-zinc-700 dark:text-zinc-200 font-medium truncate">
                             {obtenerUrlPublicacion()}
                         </p>
                     </div>
@@ -160,7 +171,7 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                         onClick={manejarCopiarEnlace}
                         className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer border-none shrink-0 ${
                             copiado
-                                ? 'bg-green-600 text-white'
+                                ? 'bg-green-700 text-white'
                                 : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'
                         }`}
                     >
@@ -170,14 +181,14 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                 </div>
 
                 {/* Selector de Pestañas (Grupos vs Amigos) */}
-                <div className="flex border-b border-zinc-100 dark:border-zinc-800 mb-4">
+                <div className="flex border-b border-zinc-200 dark:border-zinc-800 mb-4">
                     <button
                         type="button"
                         onClick={() => setPestañaActiva('grupos')}
                         className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-2 border-b-2 bg-transparent cursor-pointer transition-colors ${
                             pestañaActiva === 'grupos'
-                                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
-                                : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                                ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 dark:border-indigo-400'
+                                : 'border-transparent text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                         }`}
                     >
                         <FiUsers className="w-4 h-4" />
@@ -188,8 +199,8 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                         onClick={() => setPestañaActiva('amigos')}
                         className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-2 border-b-2 bg-transparent cursor-pointer transition-colors ${
                             pestañaActiva === 'amigos'
-                                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
-                                : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                                ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 dark:border-indigo-400'
+                                : 'border-transparent text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                         }`}
                     >
                         <FiUser className="w-4 h-4" />
@@ -199,9 +210,9 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
 
                 {/* Contenido / Listados */}
                 {cargando ? (
-                    <div className="py-12 flex flex-col items-center justify-center gap-2 text-zinc-400">
+                    <div className="py-12 flex flex-col items-center justify-center gap-2 text-zinc-600 dark:text-zinc-300">
                         <FiLoader className="w-6 h-6 animate-spin text-indigo-600" />
-                        <span className="text-xs">Buscando tus datos reales...</span>
+                        <span className="text-xs font-medium">Buscando tus datos reales...</span>
                     </div>
                 ) : (
                     <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
@@ -209,17 +220,17 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                         {/* Render de Pestaña Grupos */}
                         {pestañaActiva === 'grupos' && (
                             grupos.length === 0 ? (
-                                <p className="text-center text-xs text-zinc-400 py-6">No perteneces a ningún grupo todavía.</p>
+                                <p className="text-center text-xs text-zinc-600 dark:text-zinc-400 font-medium py-6">No perteneces a ningún grupo todavía.</p>
                             ) : (
                                 grupos.map((g) => (
-                                    <div key={g.id} className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/60">
+                                    <div key={g.id} className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800/60">
                                         <div className="flex items-center gap-2.5">
-                                            <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">
                                                 <FiUsers className="w-4 h-4" />
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[180px]">{g.nombre}</p>
-                                                <p className="text-[10px] text-zinc-400">Creador: {g.Creador?.nombre || 'Alguien'}</p>
+                                                <p className="text-xs font-bold text-zinc-850 dark:text-zinc-100 truncate max-w-[180px]">{g.nombre}</p>
+                                                <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium">Creador: {g.Creador?.nombre || 'Alguien'}</p>
                                             </div>
                                         </div>
                                         <button
@@ -227,7 +238,7 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                                             onClick={() => manejarCompartir(g.id, 'grupo')}
                                             className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer border-none shrink-0 ${
                                                 compartidoId === g.id
-                                                    ? 'bg-green-600 text-white'
+                                                    ? 'bg-green-700 text-white'
                                                     : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'
                                             }`}
                                         >
@@ -242,17 +253,17 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                         {/* Render de Pestaña Amigos */}
                         {pestañaActiva === 'amigos' && (
                             amigos.length === 0 ? (
-                                <p className="text-center text-xs text-zinc-400 py-6">Aún no tienes amigos agregados.</p>
+                                <p className="text-center text-xs text-zinc-600 dark:text-zinc-400 font-medium py-6">Aún no tienes amigos agregados.</p>
                             ) : (
                                 amigos.map((a) => (
-                                    <div key={a.id} className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-100 dark:border-zinc-800/60">
+                                    <div key={a.id} className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800/60">
                                         <div className="flex items-center gap-2.5">
-                                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-xs shrink-0">
                                                 {obtenerIniciales(a.nombre, a.apellido)}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[180px]">{a.nombre} {a.apellido}</p>
-                                                <p className="text-[10px] text-zinc-400">@{a.nombre_usuario || 'usuario'}</p>
+                                                <p className="text-xs font-bold text-zinc-850 dark:text-zinc-100 truncate max-w-[180px]">{a.nombre} {a.apellido}</p>
+                                                <p className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium">@{a.nombre_usuario || 'usuario'}</p>
                                             </div>
                                         </div>
                                         <button
@@ -260,7 +271,7 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
                                             onClick={() => manejarCompartir(a.id, 'amigo')}
                                             className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition flex items-center gap-1 cursor-pointer border-none shrink-0 ${
                                                 compartidoId === a.id
-                                                    ? 'bg-green-600 text-white'
+                                                    ? 'bg-green-700 text-white'
                                                     : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'
                                             }`}
                                         >

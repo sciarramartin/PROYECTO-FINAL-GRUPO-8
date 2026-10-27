@@ -93,20 +93,20 @@ const getEtiquetaCuatrimestre = (cuatrimestre) => {
         return {
             texto: '1° Cuatrimestre',
             corto: '1C',
-            bg: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/40'
+            bg: 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800/40'
         };
     }
     if (cuat === 2) {
         return {
             texto: '2° Cuatrimestre',
             corto: '2C',
-            bg: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/40'
+            bg: 'bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800/40'
         };
     }
     return {
         texto: 'Anual',
         corto: 'Anual',
-        bg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/40'
+        bg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-800/40'
     };
 };
 
@@ -499,10 +499,10 @@ const Planificador = () => {
                                 />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className="text-[10px] font-mono font-bold bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-gray-500 dark:text-zinc-400">
+                                        <span className="text-[10px] font-mono font-bold bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-slate-700 dark:text-zinc-300">
                                             {materia.codigo || `ID: ${materia.id}`}
                                         </span>
-                                        <span className={`text-[10px] border px-2 py-0.5 rounded-full font-medium ${cuatInfo.bg}`}>
+                                        <span className={`text-[10px] border px-2 py-0.5 rounded-full font-bold ${cuatInfo.bg}`}>
                                             {cuatInfo.texto}
                                         </span>
                                     </div>
@@ -515,21 +515,21 @@ const Planificador = () => {
                                         {/* Criterio de Aceptación US-V07: Badge con horas cátedra semanales estimadas (ej. 4 hs/sem) */}
                                         <span 
                                             id={`badge-horas-${materia.id}`}
-                                            className="inline-flex items-center gap-1 text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60 px-2 py-0.5 rounded-md shadow-2xs"
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60 px-2 py-0.5 rounded-md shadow-2xs"
                                             title={`Carga horaria semanal estimada: ${horasEstimadas} horas cátedra`}
                                         >
-                                            <svg className="w-3 h-3 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                             <span>{horasEstimadas} hs/sem</span>
                                         </span>
 
-                                        <span className="text-[10px] bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full font-medium">
+                                        <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50 px-2 py-0.5 rounded-full font-bold">
                                             Habilitada
                                         </span>
 
                                         {materia.nivel_anio && (
-                                            <span className="text-[10px] bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 px-2 py-0.5 rounded-full font-medium">
+                                            <span className="text-[10px] bg-gray-150 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 px-2 py-0.5 rounded-full font-bold">
                                                 Nivel {materia.nivel_anio}
                                             </span>
                                         )}

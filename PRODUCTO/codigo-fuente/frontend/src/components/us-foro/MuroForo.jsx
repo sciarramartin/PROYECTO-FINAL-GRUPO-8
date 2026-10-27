@@ -20,6 +20,7 @@ import {
   FiEdit3
 } from "react-icons/fi";
 import EmptyState from "../common/EmptyState";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const MuroForo = () => {
   const { materiaId } = useParams();
@@ -254,6 +255,8 @@ const MuroForo = () => {
     setDescripcionReporte("");
     setErrorReporte("");
   };
+
+  const focusTrapReportarRef = useFocusTrap(modalReportarAbierto, cerrarModalReportar);
 
   const enviarReporte = async () => {
     if (!descripcionReporte.trim()) {
@@ -1145,13 +1148,20 @@ const MuroForo = () => {
       {/* Modal de Reportar */}
       {modalReportarAbierto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 transition-colors duration-200">
+          <div
+            ref={focusTrapReportarRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Reportar Publicación"
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 transition-colors duration-200 outline-none"
+          >
             <div>
               <h3 className="text-base font-extrabold text-zinc-900 dark:text-slate-100 flex items-center gap-2">
-                <FiAlertCircle className="w-5 h-5 text-red-500" />
+                <FiAlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 Reportar Publicación
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-1">
                 Por favor, describe detalladamente el motivo por el cual estás reportando esta publicación. Un administrador revisará tu reporte.
               </p>
             </div>
@@ -1164,11 +1174,11 @@ const MuroForo = () => {
               }}
               placeholder="Escribe el motivo del reporte aquí (obligatorio)..."
               rows={4}
-              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100"
+              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400"
             />
 
             {errorReporte && (
-              <p className="text-[11px] font-bold text-red-500 flex items-center gap-1">
+              <p className="text-[11px] font-bold text-red-700 dark:text-red-400 flex items-center gap-1">
                 <FiAlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {errorReporte}
               </p>
@@ -1176,12 +1186,14 @@ const MuroForo = () => {
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
+                type="button"
                 onClick={cerrarModalReportar}
-                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold border-none cursor-pointer transition"
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold border border-zinc-300 dark:border-zinc-700 cursor-pointer transition"
               >
                 Cancelar
               </button>
               <button
+                type="button"
                 onClick={enviarReporte}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition shadow-md shadow-red-500/10"
               >

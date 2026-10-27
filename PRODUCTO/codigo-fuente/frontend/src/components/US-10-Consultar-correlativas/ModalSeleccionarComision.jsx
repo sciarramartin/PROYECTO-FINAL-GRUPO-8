@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { FiClock, FiCalendar, FiCheckCircle, FiBookOpen, FiAlertCircle, FiSearch, FiFilter } from 'react-icons/fi';
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const diasTexto = {
   1: 'Lunes',
@@ -30,6 +31,8 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
   const [error, setError] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [turnoSeleccionado, setTurnoSeleccionado] = useState('Todos');
+
+  const focusTrapRef = useFocusTrap(true, onCancelar);
 
   useEffect(() => {
     const fetchCursos = async () => {
@@ -89,7 +92,14 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col gap-3 sm:gap-4 my-auto max-h-[92vh] overflow-y-auto transition-colors duration-200">
+      <div
+        ref={focusTrapRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Seleccionar Comisión de Cursado"
+        tabIndex={-1}
+        className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col gap-3 sm:gap-4 my-auto max-h-[92vh] overflow-y-auto transition-colors duration-200 outline-none"
+      >
         
         {/* Cabecera */}
         <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3 gap-2">
@@ -101,14 +111,16 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
               <h3 className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-100 leading-tight">
                 Seleccionar Comisión de Cursado
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 font-medium">
                 {materia?.nombre} {materia?.codigo ? `(${materia?.codigo})` : ''}
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onCancelar}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-lg p-1 bg-transparent border-none cursor-pointer shrink-0"
+            aria-label="Cerrar modal de comisiones"
+            className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 text-lg p-1 bg-transparent border-none cursor-pointer shrink-0 rounded-lg"
           >
             ✕
           </button>
@@ -136,7 +148,7 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
               />
             </div>
             <div className="flex items-center justify-between gap-1 pt-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Turno:</span>
+              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Turno:</span>
               <div className="flex items-center gap-1">
                 {['Todos', 'Mañana', 'Tarde', 'Noche'].map((t) => (
                   <button
@@ -146,7 +158,7 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition border cursor-pointer ${
                       turnoSeleccionado === t
                         ? 'bg-purple-600 text-white border-purple-600 shadow-2xs'
-                        : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                        : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700'
                     }`}
                   >
                     {t}
@@ -162,20 +174,20 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
           {cargando ? (
             <div className="py-8 text-center space-y-2">
               <div className="w-6 h-6 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto"></div>
-              <p className="text-xs text-slate-400">Buscando comisiones disponibles...</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300">Buscando comisiones disponibles...</p>
             </div>
           ) : error ? (
-            <div className="p-4 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 rounded-2xl text-xs text-center border border-red-200 dark:border-red-900/40">
+            <div className="p-4 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 rounded-2xl text-xs text-center border border-red-200 dark:border-red-900/40">
               {error}
             </div>
           ) : cursos.length === 0 ? (
             <div className="p-5 text-center bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl space-y-2">
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No hay comisiones cargadas en el sistema para esta materia.</p>
-              <p className="text-[11px] text-slate-400">Podés marcarla como Cursando de forma general.</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">No hay comisiones cargadas en el sistema para esta materia.</p>
+              <p className="text-[11px] text-slate-600 dark:text-slate-400">Podés marcarla como Cursando de forma general.</p>
             </div>
           ) : cursosFiltrados.length === 0 ? (
             <div className="p-4 text-center bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-2xl">
-              <p className="text-xs text-slate-500 dark:text-slate-400">No hay comisiones que coincidan con el filtro actual.</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300">No hay comisiones que coincidan con el filtro actual.</p>
               <button
                 type="button"
                 onClick={() => {
@@ -197,7 +209,16 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
               return (
                 <div
                   key={c.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={seleccionado}
                   onClick={() => setCursoSeleccionado(c.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setCursoSeleccionado(c.id);
+                    }
+                  }}
                   className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                     seleccionado
                       ? 'bg-purple-50/80 dark:bg-purple-950/40 border-purple-400 dark:border-purple-500 shadow-xs'
@@ -210,12 +231,12 @@ const ModalSeleccionarComision = ({ materia, onConfirmar, onCancelar }) => {
                         Comisión {c.nombre}
                       </span>
                       {seleccionado && (
-                        <span className="text-[10px] bg-purple-600 text-white font-bold px-2 py-0.2 rounded-full">
+                        <span className="text-[10px] bg-purple-700 text-white font-bold px-2 py-0.5 rounded-full">
                           Seleccionada
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-slate-300 font-medium">
                       <span className="flex items-center gap-1">
                         <FiCalendar className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                         {dias}

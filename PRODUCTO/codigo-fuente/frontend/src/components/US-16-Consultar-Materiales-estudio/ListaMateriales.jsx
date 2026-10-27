@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FiSearch, FiCornerDownRight, FiBookOpen, FiTag, FiPlus, FiDownload, FiEye, FiLoader, FiFileText, FiStar } from "react-icons/fi";
 import { BsFiletypePdf, BsFiletypeDocx, BsFiletypeXlsx, BsFiletypePptx, BsFiletypeTxt, BsFiletypePng, BsFileEarmark } from "react-icons/bs";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
@@ -12,35 +13,35 @@ function obtenerInfoFormato(ubicacion = "") {
     case "pdf":
       return {
         label: "PDF",
-        icon: <BsFiletypePdf className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />,
-        badge: "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200"
+        icon: <BsFiletypePdf className="w-4 h-4 text-rose-700 dark:text-rose-400 shrink-0" />,
+        badge: "bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800"
       };
     case "doc":
     case "docx":
       return {
         label: "Word",
-        icon: <BsFiletypeDocx className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
-        badge: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border-blue-200"
+        icon: <BsFiletypeDocx className="w-4 h-4 text-blue-700 dark:text-blue-400 shrink-0" />,
+        badge: "bg-blue-50 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800"
       };
     case "xls":
     case "xlsx":
       return {
         label: "Excel",
-        icon: <BsFiletypeXlsx className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />,
-        badge: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200"
+        icon: <BsFiletypeXlsx className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" />,
+        badge: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
       };
     case "ppt":
     case "pptx":
       return {
         label: "PowerPoint",
-        icon: <BsFiletypePptx className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />,
-        badge: "bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400 border-orange-200"
+        icon: <BsFiletypePptx className="w-4 h-4 text-orange-700 dark:text-orange-400 shrink-0" />,
+        badge: "bg-orange-50 text-orange-900 dark:bg-orange-950/40 dark:text-orange-300 border-orange-200 dark:border-orange-800"
       };
     case "txt":
       return {
         label: "TXT",
-        icon: <BsFiletypeTxt className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />,
-        badge: "bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400 border-violet-200"
+        icon: <BsFiletypeTxt className="w-4 h-4 text-violet-700 dark:text-violet-400 shrink-0" />,
+        badge: "bg-violet-50 text-violet-800 dark:bg-violet-950/40 dark:text-violet-300 border-violet-200 dark:border-violet-800"
       };
     case "png":
     case "jpg":
@@ -48,14 +49,14 @@ function obtenerInfoFormato(ubicacion = "") {
     case "webp":
       return {
         label: "Imagen",
-        icon: <BsFiletypePng className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0" />,
-        badge: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200"
+        icon: <BsFiletypePng className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />,
+        badge: "bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
       };
     default:
       return {
         label: ext ? ext.toUpperCase() : "Archivo",
-        icon: <BsFileEarmark className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />,
-        badge: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border-zinc-200"
+        icon: <BsFileEarmark className="w-4 h-4 text-zinc-600 dark:text-zinc-400 shrink-0" />,
+        badge: "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border-zinc-300 dark:border-zinc-700"
       };
   }
 }
@@ -329,6 +330,8 @@ const ListaMateriales = () => {
     setPreviewBlobUrl(null);
   };
 
+  const focusTrapPreviewRef = useFocusTrap(Boolean(materialPreview), cerrarVistaPrevia);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
 
@@ -569,39 +572,61 @@ const ListaMateriales = () => {
       {/* ── MODAL DE VISTA PREVIA RÁPIDA EMBEBIDA ── */}
       {materialPreview && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl border border-zinc-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors duration-200">
+          <div
+            ref={focusTrapPreviewRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Vista previa: ${materialPreview.titulo}`}
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-2xl border border-zinc-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors duration-200 outline-none"
+          >
             
             <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate">{materialPreview.titulo}</h3>
-                <p className="text-xs text-zinc-500">Materia: {materialPreview.materiaNombre} • Tamaño: {materialPreview.tamano}</p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Materia: {materialPreview.materiaNombre} • Tamaño: {materialPreview.tamano}</p>
               </div>
-              <button onClick={cerrarVistaPrevia} className="text-zinc-400 hover:text-zinc-700 text-lg font-bold p-1 bg-transparent border-none cursor-pointer">×</button>
+              <button
+                type="button"
+                onClick={cerrarVistaPrevia}
+                aria-label="Cerrar vista previa"
+                className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 text-lg font-bold p-1 bg-transparent border-none cursor-pointer rounded-lg"
+              >
+                ×
+              </button>
             </div>
 
             <div className="flex-1 bg-zinc-50 dark:bg-zinc-950 p-4 flex items-center justify-center min-h-[400px] overflow-auto">
               {cargandoPreview ? (
                 <div className="flex flex-col items-center gap-2">
                   <FiLoader className="w-6 h-6 animate-spin text-indigo-600" />
-                  <p className="text-xs text-zinc-500">Cargando previsualización...</p>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium">Cargando previsualización...</p>
                 </div>
               ) : previewBlobUrl && materialPreview.ubicacion.endsWith('.pdf') ? (
                 <iframe src={previewBlobUrl} title="Vista previa PDF" className="w-full h-[500px] border-none rounded-lg" />
-              ) : previewBlobUrl && /\.(png|jpg|jpeg|webp)\$/i.test(materialPreview.ubicacion) ? (
+              ) : previewBlobUrl && /\.(png|jpg|jpeg|webp)$/i.test(materialPreview.ubicacion) ? (
                 <img src={previewBlobUrl} alt="Vista previa" className="max-w-full max-h-[500px] object-contain rounded-lg" />
               ) : (
                 <div className="text-center py-12">
-                  <FiFileText className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
-                  <p className="text-sm text-zinc-500 mb-4">Este tipo de formato no soporta previsualización directa en el modal.</p>
+                  <FiFileText className="w-12 h-12 text-zinc-400 mx-auto mb-3" />
+                  <p className="text-sm text-zinc-600 dark:text-zinc-300 font-medium mb-4">Este tipo de formato no soporta previsualización directa en el modal.</p>
                 </div>
               )}
             </div>
 
             <div className="px-5 py-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-end gap-2 bg-white dark:bg-zinc-900">
-              <button onClick={cerrarVistaPrevia} className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold cursor-pointer border-none">
+              <button
+                type="button"
+                onClick={cerrarVistaPrevia}
+                className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold cursor-pointer border border-zinc-300 dark:border-zinc-700"
+              >
                 Cerrar
               </button>
-              <button onClick={(e) => handleDescargarDirecto(materialPreview, e)} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer border-none">
+              <button
+                type="button"
+                onClick={(e) => handleDescargarDirecto(materialPreview, e)}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer border-none shadow-sm"
+              >
                 <FiDownload className="w-3.5 h-3.5" /> Descargar Archivo
               </button>
             </div>

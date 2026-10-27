@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import TimeSelect from './timeSelect';
-
+import useFocusTrap from '../../hooks/useFocusTrap';
 
 const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActual, preview, onSave, onCancel, DeleteActividad }) => {
     const days = [
@@ -94,6 +94,9 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
         }
     };
 
+    // Focus trap hook: Atrapa el foco dentro del editor y cierra con Escape (WCAG AA US-V10)
+    const focusTrapRef = useFocusTrap(editor, handleCancel);
+
     // Guardar edición
     const handleSave = () => {
         if (!formData.nombre.trim()) {
@@ -132,23 +135,30 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
     if (!editor) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 md:left-52 right-0 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 shadow-[0_-1px_8px_rgba(0,0,0,0.2)] z-50 transition-colors duration-200">
+        <div 
+            ref={focusTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Editor de actividad personal"
+            className="fixed bottom-0 left-0 md:left-52 right-0 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 shadow-[0_-1px_8px_rgba(0,0,0,0.2)] z-50 transition-colors duration-200"
+        >
             <div className="px-4 py-2 flex flex-col gap-2">
 
                 {/* Fila 2: Días + Colores + Horas */}
                 <div className="flex items-center gap-x-3 gap-y-2 flex-wrap pb-1">
 
                     {/* Días */}
-                    <div className="flex gap-1 shrink-0">
+                    <div className="flex gap-1 shrink-0" role="group" aria-label="Días de la semana">
                         {days.map(([dayName, dayValue]) => (
                             <button
                                 key={dayName}
                                 type="button"
                                 onClick={() => toggleDay(dayValue)}
+                                aria-pressed={(formData.dias & dayValue) !== 0}
                                 className={`w-7 h-7 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer
                                     ${(formData.dias & dayValue) !== 0
-                                        ? 'bg-indigo-500 text-white shadow-sm'
-                                        : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                                        ? 'bg-indigo-600 text-white shadow-sm'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                                     }`}
                                 title={dayName}
                             >
@@ -160,7 +170,7 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                     <div className="w-px h-5 bg-gray-200 dark:bg-slate-700 shrink-0" />
 
                     {/* Colores */}
-                    <div className="flex gap-1.5 items-center shrink-0">
+                    <div className="flex gap-1.5 items-center shrink-0" role="radiogroup" aria-label="Color de la actividad">
                         {[
                             { name: 'Rosa',        value: '#D08B9B' },
                             { name: 'Verde claro', value: '#C5E99B' },
@@ -174,10 +184,11 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                                 key={color.value}
                                 type="button"
                                 onClick={() => setFormData(prev => ({ ...prev, color: color.value }))}
+                                aria-label={`Seleccionar color ${color.name}`}
                                 className={`w-5 h-5 rounded-full border-2 transition-transform duration-200 cursor-pointer ${
                                     formData.color === color.value
-                                        ? 'border-gray-700 dark:border-white scale-110 shadow-sm'
-                                        : 'border-transparent hover:border-gray-300 dark:hover:border-slate-500'
+                                        ? 'border-gray-800 dark:border-white scale-110 shadow-sm'
+                                        : 'border-transparent hover:border-gray-400 dark:hover:border-slate-500'
                                 }`}
                                 style={{ backgroundColor: color.value }}
                                 title={color.name}
@@ -189,13 +200,13 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
 
                     {/* Horas y Minutos con desplegables idénticos */}
                     <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                        <span className="text-xs text-gray-400 dark:text-slate-400">Inicio</span>
+                        <span className="text-xs text-slate-700 dark:text-slate-200 font-semibold">Inicio</span>
                         <TimeSelect
                             value={formData.horaInicio.split(':')[0]}
                             options={horaOpts}
                             onChange={(v) => setFormData(prev => ({ ...prev, horaInicio: `${v}:${formData.horaInicio.split(':')[1]}` }))}
                         />
-                        <span className="text-gray-300 dark:text-slate-600 text-sm">:</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-bold text-sm">:</span>
                         <TimeSelect
                             value={formData.horaInicio.split(':')[1]}
                             options={minOpts}
@@ -204,13 +215,13 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
 
                         <div className="w-px h-5 bg-gray-200 dark:bg-slate-700 shrink-0" />
 
-                        <span className="text-xs text-gray-400 dark:text-slate-400">Fin</span>
+                        <span className="text-xs text-slate-700 dark:text-slate-200 font-semibold">Fin</span>
                         <TimeSelect
                             value={formData.horaFin.split(':')[0]}
                             options={horaOpts}
                             onChange={(v) => setFormData(prev => ({ ...prev, horaFin: `${v}:${formData.horaFin.split(':')[1]}` }))}
                         />
-                        <span className="text-gray-300 dark:text-slate-600 text-sm">:</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-bold text-sm">:</span>
                         <TimeSelect
                             value={formData.horaFin.split(':')[1]}
                             options={minOpts}
@@ -227,15 +238,16 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                         name="nombre"
                         value={formData.nombre}
                         onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-                        className="px-2.5 py-1.5 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-indigo-500 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 min-w-0 flex-1 transition-colors duration-200"
+                        className="px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:border-indigo-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 min-w-0 flex-1 transition-colors duration-200 font-medium"
                         placeholder="Nombre de la actividad"
+                        aria-label="Nombre de la actividad"
                     />
                     <div className="flex gap-2 shrink-0">
                         {actividadActual?.id !== 'preview' && (
                             <button
                                 type="button"
                                 onClick={() => handleDelete()}
-                                className="px-3 py-1.5 text-sm font-medium text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-transparent dark:border-red-900/40 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors duration-200 cursor-pointer"
+                                className="px-3 py-1.5 text-sm font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors duration-200 cursor-pointer"
                             >
                                 Eliminar
                             </button>
@@ -243,14 +255,14 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
                         <button
                             type="button"
                             onClick={handleCancel}
-                            className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors duration-200 cursor-pointer"
+                            className="px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200 cursor-pointer border border-slate-200 dark:border-slate-700"
                         >
                             Cancelar
                         </button>
                         <button
                             type="button"
                             onClick={handleSave}
-                            className="px-3 py-1.5 text-sm font-medium text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 transition-colors duration-200 cursor-pointer shadow-sm"
+                            className="px-3 py-1.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors duration-200 cursor-pointer shadow-sm"
                         >
                             Guardar
                         </button>
@@ -260,6 +272,6 @@ const ActividadEditor = ({ editor, setEditor, actividadActual, setActividadActua
             </div>
         </div>
     );
-}
+};
 
 export default ActividadEditor;

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { EmptyStateIllustration } from "../common/EmptyState";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const MuroGrupo = () => {
   const { id } = useParams();
@@ -69,6 +70,8 @@ const MuroGrupo = () => {
   const [estadoConfig, setEstadoConfig] = useState("publico");
   const [guardandoConfig, setGuardandoConfig] = useState(false);
   const [errorConfig, setErrorConfig] = useState("");
+
+  const focusTrapRef = useFocusTrap(modalConfiguracionAbierto, () => setModalConfiguracionAbierto(false));
 
   const abrirModalConfiguracion = () => {
     if (!grupo) return;
@@ -509,7 +512,7 @@ const MuroGrupo = () => {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 leading-snug truncate transition-colors duration-200">{grupo.nombre}</h1>
-                    <span className="text-[9px] font-bold px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 rounded-full uppercase tracking-wider transition-colors duration-200">
+                    <span className="text-[9px] font-bold px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-full uppercase tracking-wider transition-colors duration-200">
                       Público
                     </span>
                   </div>
@@ -789,7 +792,7 @@ const MuroGrupo = () => {
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={`text-[8.5px] font-bold py-0.5 rounded-full w-16 text-center justify-center flex shrink-0 transition-colors duration-200 ${esAdmin ? "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"
+                          <span className={`text-[8.5px] font-bold py-0.5 rounded-full w-16 text-center justify-center flex shrink-0 transition-colors duration-200 ${esAdmin ? "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300" : "bg-gray-150 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-bold"
                             }`}>
                             {rolTexto}
                           </span>
@@ -953,17 +956,25 @@ const MuroGrupo = () => {
       {/* Modal de Configuración (Solo Administradores) */}
       {modalConfiguracionAbierto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 w-full max-w-md shadow-2xl overflow-hidden flex flex-col transition-colors duration-200">
+          <div
+            ref={focusTrapRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Configuración del Grupo"
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 w-full max-w-md shadow-2xl overflow-hidden flex flex-col transition-colors duration-200 outline-none"
+          >
             {/* Cabecera */}
             <div className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-5 py-4 flex items-center justify-between transition-colors duration-200">
               <div className="flex items-center gap-2">
                 <span className="text-base">⚙️</span>
-                <h3 className="text-xs font-bold text-gray-800 dark:text-slate-100">Configuración del Grupo</h3>
+                <h3 className="text-xs font-bold text-gray-900 dark:text-slate-100">Configuración del Grupo</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setModalConfiguracionAbierto(false)}
-                className="text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors duration-200 cursor-pointer border-none bg-transparent text-sm font-bold"
+                aria-label="Cerrar modal de configuración"
+                className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors duration-200 cursor-pointer border-none bg-transparent text-sm font-bold p-1 rounded-lg"
               >
                 ✕
               </button>
@@ -972,19 +983,19 @@ const MuroGrupo = () => {
             {/* Formulario */}
             <form onSubmit={handleGuardarConfiguracion} className="p-5 space-y-4">
               {errorConfig && (
-                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400 rounded-xl px-4 py-2.5 text-[10px] animate-fade-in flex items-center gap-2">
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 rounded-xl px-4 py-2.5 text-[10px] animate-fade-in flex items-center gap-2">
                   <span>⚠️</span> {errorConfig}
                 </div>
               )}
 
               {/* Nombre */}
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-gray-700 dark:text-slate-300">Nombre del Grupo</label>
+                <label className="block text-[10px] font-bold text-gray-800 dark:text-slate-200">Nombre del Grupo</label>
                 <input
                   type="text"
                   value={nombreConfig}
                   onChange={(e) => setNombreConfig(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-colors duration-200"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl text-xs text-gray-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-colors duration-200"
                   placeholder="Ej: Grupo de Álgebra I"
                   required
                 />
@@ -992,25 +1003,25 @@ const MuroGrupo = () => {
 
               {/* Descripción */}
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-gray-700 dark:text-slate-300">Descripción</label>
+                <label className="block text-[10px] font-bold text-gray-800 dark:text-slate-200">Descripción</label>
                 <textarea
                   value={descripcionConfig}
                   onChange={(e) => setDescripcionConfig(e.target.value)}
                   rows="3"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-colors duration-200 resize-none"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl text-xs text-gray-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-colors duration-200 resize-none"
                   placeholder="Describí los temas o metas del grupo..."
                 />
               </div>
 
               {/* Visibilidad (Estado) */}
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-gray-700 dark:text-slate-300 mb-1">Privacidad / Visibilidad</label>
+                <label className="block text-[10px] font-bold text-gray-800 dark:text-slate-200 mb-1">Privacidad / Visibilidad</label>
                 <div className="grid grid-cols-2 gap-3">
                   {/* Opción Público */}
                   <label
                     className={`flex flex-col p-3 border rounded-xl cursor-pointer transition-colors duration-200 select-none ${estadoConfig === "publico"
-                        ? "border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500"
-                        : "border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400"
+                        ? "border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 ring-1 ring-indigo-600"
+                        : "border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-300"
                       }`}
                   >
                     <div className="flex items-center gap-2">
@@ -1025,7 +1036,7 @@ const MuroGrupo = () => {
                       <span className="text-xs">🌐</span>
                       <span className="text-[10px] font-bold">Público</span>
                     </div>
-                    <span className="text-[8.5px] text-gray-400 dark:text-slate-400 mt-1 leading-tight">
+                    <span className="text-[8.5px] text-gray-600 dark:text-slate-400 mt-1 leading-tight font-medium">
                       Cualquier estudiante puede buscarlo e ingresar.
                     </span>
                   </label>
@@ -1033,8 +1044,8 @@ const MuroGrupo = () => {
                   {/* Opción Privado */}
                   <label
                     className={`flex flex-col p-3 border rounded-xl cursor-pointer transition-colors duration-200 select-none ${estadoConfig === "privado"
-                        ? "border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500"
-                        : "border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400"
+                        ? "border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 ring-1 ring-indigo-600"
+                        : "border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-300"
                       }`}
                   >
                     <div className="flex items-center gap-2">
@@ -1049,7 +1060,7 @@ const MuroGrupo = () => {
                       <span className="text-xs">🔒</span>
                       <span className="text-[10px] font-bold">Privado</span>
                     </div>
-                    <span className="text-[8.5px] text-gray-400 dark:text-slate-400 mt-1 leading-tight">
+                    <span className="text-[8.5px] text-gray-600 dark:text-slate-400 mt-1 leading-tight font-medium">
                       Solo personas invitadas pueden verlo y unirse.
                     </span>
                   </label>
@@ -1061,7 +1072,7 @@ const MuroGrupo = () => {
                 <button
                   type="button"
                   onClick={() => setModalConfiguracionAbierto(false)}
-                  className="flex-1 text-center py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors duration-200 border-none cursor-pointer"
+                  className="flex-1 text-center py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors duration-200 border border-gray-300 dark:border-slate-700 cursor-pointer"
                 >
                   Cancelar
                 </button>
