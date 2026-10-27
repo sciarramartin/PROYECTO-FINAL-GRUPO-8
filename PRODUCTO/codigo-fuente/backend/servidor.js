@@ -22,6 +22,7 @@ require('./modelos/ForoPublicacionGuardada');
 require('./modelos/ForoReporte');
 require('./modelos/MaterialDeEstudioCalificaciones');
 require('./modelos/EncuestaCatedra');
+require('./modelos/ConsultaIA');
 
 require('./modelos/asociaciones');
 
@@ -51,6 +52,7 @@ const rutasIA = require('./controladores/ia.controlador.js');
 const ragService = require('./servicios/rag.servicio.js');
 const rutasReputacion = require('./controladores/reputacion.controller.js');
 const rutasMetricasMaterialEstudio = require('./controladores/metricasMaterialEstudio.controlador.js');
+const rutasMetricasGlobales = require('./controladores/metricasGlobales.controlador.js');
 
 
 const http = require('http');
@@ -134,6 +136,7 @@ app.use('/api/reputacion', rutasReputacion);
 app.use('/api/encuestas-catedra', rutasEncuestasCatedra);
 app.use('/api/ia', rutasIA);
 app.use('/api/metricas-material-estudio', rutasMetricasMaterialEstudio);
+app.use('/api/metricas-globales', rutasMetricasGlobales);
 
 // Ruta base
 app.get('/', (req, res) => {

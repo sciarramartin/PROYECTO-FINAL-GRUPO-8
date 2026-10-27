@@ -28,7 +28,8 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiPieChart,
-  FiFolder
+  FiFolder,
+  FiActivity
 } from "react-icons/fi";
 
 import { RiRobot2Line } from "react-icons/ri";
@@ -47,6 +48,7 @@ const menuItems = [
   { label: "Grupos", icon: <FiUsers />, path: "/grupos" },
   { label: "Foros", icon: <BsChatRightDots />, path: "/foros" },
   { label: "Repositorio", icon: <FiFolder />, path: "/repositorio" },
+  { label: "Métricas Globales", icon: <FiActivity />, path: "/metricas-globales", role: 3 },
   { label: "Reportes", icon: <FiBarChart2 />, path: "/reportes", role: 3 },
   { label: "Mapa Correlativas", icon: <FiTrello />, path: "/mapa-correlatividades", role: 1 },
   { label: "Registrar Correlativas", icon: <FiPlusCircle />, path: "/correlativas", role: 3 },

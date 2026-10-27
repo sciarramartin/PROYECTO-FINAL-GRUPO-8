@@ -440,5 +440,22 @@ CREATE TABLE IF NOT EXISTS encuestas_catedra (
 CREATE INDEX IF NOT EXISTS idx_encuestas_materia ON encuestas_catedra(id_materia);
 CREATE INDEX IF NOT EXISTS idx_encuestas_usuario_materia ON encuestas_catedra(id_usuario, id_materia);
 
+-- =========================
+-- CONSULTAS ASISTENTE IA (US-MET-GLOBALES)
+-- =========================
+CREATE TABLE IF NOT EXISTS consultas_ia (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER DEFAULT NULL,
+    prompt TEXT NOT NULL,
+    respuesta TEXT DEFAULT NULL,
+    total_fuentes INTEGER DEFAULT 0,
+    satisfactoria BOOLEAN DEFAULT 1,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_consultas_ia_createdAt ON consultas_ia(createdAt);
+
 
 

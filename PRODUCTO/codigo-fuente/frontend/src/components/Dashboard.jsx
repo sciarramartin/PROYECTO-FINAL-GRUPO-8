@@ -9,7 +9,7 @@ import InsigniaGraduado from './common/InsigniaGraduado';
 import MetricaHorario from './common/MetricaHorario';
 import MetricaReputacion from './common/MetricaReputacion';
 import MetricaMaterialEstudio from './common/MetricaMaterialEstudio';
-import { FiGrid, FiAward, FiBarChart2, FiUser, FiInfo, FiLayers, FiArrowRight, FiFileText } from 'react-icons/fi';
+import { FiGrid, FiAward, FiBarChart2, FiUser, FiInfo, FiLayers, FiArrowRight, FiFileText, FiActivity } from 'react-icons/fi';
 
 const Dashboard = () => {
   const [estadoGraduacion, setEstadoGraduacion] = useState(null);
@@ -142,16 +142,23 @@ const Dashboard = () => {
         {/* 🏛️ SECCIÓN 3: ANALÍTICAS INSTITUCIONALES (US-MET-11)                       */}
         {/* ========================================================================= */}
         <div className="space-y-4 pt-6 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
               <h2 className="text-sm font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
                 Panel Institucional de Analíticas (Administración & Autoridades)
               </h2>
             </div>
-            <span className="text-[11px] text-zinc-400">
-              Datos globales consolidados
-            </span>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/metricas-globales"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 px-3 py-1.5 rounded-lg transition-colors border border-indigo-200/60 dark:border-indigo-800/60 shadow-xs"
+              >
+                <FiActivity className="w-3.5 h-3.5" />
+                <span>Auditar Volumen Global & IA</span>
+                <FiArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
 
           {/* US-MET-11: Métricas de Graduados, Tasa de Egreso y Duración de Carrera */}
