@@ -1144,10 +1144,10 @@ const MuroForo = () => {
 
       {/* Modal de Reportar */}
       {modalReportarAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 transition-colors duration-200">
             <div>
-              <h3 className="text-base font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-zinc-900 dark:text-slate-100 flex items-center gap-2">
                 <FiAlertCircle className="w-5 h-5 text-red-500" />
                 Reportar Publicación
               </h3>

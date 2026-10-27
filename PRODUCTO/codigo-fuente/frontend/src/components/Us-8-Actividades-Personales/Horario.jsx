@@ -211,8 +211,8 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
 
     return (
         <>
-            <div className="w-full min-w-0 bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="flex md:hidden justify-between gap-1 p-2.5 bg-gray-50 border-b border-gray-200">
+            <div className="w-full min-w-0 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-lg overflow-hidden transition-colors duration-200">
+                <div className="flex md:hidden justify-between gap-1 p-2.5 bg-gray-50 dark:bg-slate-800/60 border-b border-gray-200 dark:border-slate-800 transition-colors duration-200">
                     {DAYS.map(([name, value]) => {
                         const isActive = selectedDayTab === value;
                         return (
@@ -223,7 +223,7 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 cursor-pointer text-center ${
                                     isActive
                                         ? 'bg-indigo-500 text-white shadow-sm scale-105'
-                                        : 'text-gray-600 hover:bg-gray-150'
+                                        : 'text-gray-600 dark:text-slate-300 hover:bg-gray-150 dark:hover:bg-slate-700'
                                 }`}
                             >
                                 {name.slice(0, 3)}
@@ -234,14 +234,14 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
 
                 <div className="overflow-x-auto">
                     <div className="flex w-full" style={{ minWidth: 'min(600px, 100%)' }}>
-                        <div className="flex-shrink-0 w-14 md:w-20 bg-gray-50 border-r-2 border-gray-200">
-                            <div className="h-16 flex items-center justify-center font-bold bg-gray-100 border-b-2 border-gray-200 text-gray-700 text-sm">
+                        <div className="flex-shrink-0 w-14 md:w-20 bg-gray-50 dark:bg-slate-900 border-r-2 border-gray-200 dark:border-slate-800 transition-colors duration-200">
+                            <div className="h-16 flex items-center justify-center font-bold bg-gray-100 dark:bg-slate-800/80 border-b-2 border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-200 text-sm transition-colors duration-200">
                                 Hora
                             </div>
                             {horas.map((hora) => (
                                 <div
                                     key={hora}
-                                    className="h-8 flex items-start justify-center text-xs text-gray-500 border-b border-gray-100 pt-1"
+                                    className="h-8 flex items-start justify-center text-xs text-gray-500 dark:text-slate-400 border-b border-gray-100 dark:border-slate-800/60 pt-1 transition-colors duration-200"
                                 >
                                     {hora}
                                 </div>
@@ -255,11 +255,11 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                             return (
                                 <div
                                     key={column.id}
-                                    className={`flex-1 min-w-0 relative border-r border-gray-100 ${
+                                    className={`flex-1 min-w-0 relative border-r border-gray-100 dark:border-slate-800 ${
                                         isVisible ? 'flex' : 'hidden md:flex'
-                                    } flex-col`}
+                                    } flex-col transition-colors duration-200`}
                                 >
-                                    <div className="h-16 flex items-center justify-center font-semibold text-sm border-b-2 border-gray-200 px-1 text-center">
+                                    <div className="h-16 flex items-center justify-center font-semibold text-sm border-b-2 border-gray-200 dark:border-slate-800 px-1 text-center text-gray-800 dark:text-slate-100 bg-gray-50/50 dark:bg-slate-800/40 transition-colors duration-200">
                                         {column.title}
                                     </div>
 
@@ -277,7 +277,7 @@ const Horario = ({ refresh, actividades: actividadesProp, onActividadesChange })
                                                 onKeyDown={(e) =>
                                                     e.key === 'Enter' && handleNewActividad(hora, column.id)
                                                 }
-                                                className="h-8 border-b border-gray-100 w-full text-left transition-all cursor-pointer hover:bg-gray-50/70"
+                                                className="h-8 border-b border-gray-100 dark:border-slate-800/60 w-full text-left transition-colors duration-200 cursor-pointer hover:bg-gray-50/70 dark:hover:bg-slate-800/50"
                                                 onClick={() => handleNewActividad(hora, column.id)}
                                             />
                                         ))}

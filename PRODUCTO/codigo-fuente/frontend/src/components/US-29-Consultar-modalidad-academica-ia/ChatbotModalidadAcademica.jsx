@@ -907,7 +907,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
       {mostrarGuia && (
         <div className="xl:hidden fixed inset-0 z-50 flex justify-end animate-in fade-in duration-200">
           <div
-            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMostrarGuia(false)}
           />
           <aside className="relative z-50 w-full sm:w-[420px] max-w-full h-full bg-white dark:bg-gray-900 border-l border-slate-200 dark:border-gray-800 shadow-2xl p-4 flex flex-col min-h-0">

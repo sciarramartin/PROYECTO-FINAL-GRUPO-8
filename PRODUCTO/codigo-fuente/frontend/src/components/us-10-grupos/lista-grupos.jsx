@@ -138,10 +138,10 @@ const ListaGrupos = () => {
     <div className="max-w-6xl mx-auto px-2">
       
       {/* Cabecera Principal */}
-      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-5">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-5 transition-colors duration-200">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 leading-tight font-sans">Grupos de Estudio</h1>
-          <p className="text-xs text-gray-400 mt-1">Colaborá con compañeros de tu materia, compartí archivos y comunicate de forma ágil.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 leading-tight font-sans transition-colors duration-200">Grupos de Estudio</h1>
+          <p className="text-xs text-gray-400 dark:text-slate-400 mt-1 transition-colors duration-200">Colaborá con compañeros de tu materia, compartí archivos y comunicate de forma ágil.</p>
         </div>
         
         {/* Botón Compacto y a la Derecha */}
@@ -151,8 +151,7 @@ const ListaGrupos = () => {
             setMensaje("");
             setModalAbierto(true);
           }}
-          style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
-          className="self-end md:self-center px-3.5 py-2 !bg-indigo-600 hover:!bg-indigo-700 !text-white rounded-xl text-xs font-bold transition duration-200 shadow-sm flex items-center gap-1.5 hover:shadow-md cursor-pointer border-none shrink-0"
+          className="self-end md:self-center px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 shadow-sm flex items-center gap-1.5 hover:shadow-md cursor-pointer border-none shrink-0"
         >
           <span className="text-sm font-semibold">+</span> Crear Grupo
         </button>
@@ -160,30 +159,30 @@ const ListaGrupos = () => {
 
       {/* Alertas */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-500 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
           <span>⚠️</span> {error}
         </div>
       )}
       {mensaje && (
-        <div className="bg-green-50 border border-green-200 text-green-600 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
+        <div className="bg-green-50 dark:bg-emerald-950/30 border border-green-200 dark:border-emerald-900/50 text-green-600 dark:text-emerald-400 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
           <span>✓</span> {mensaje}
         </div>
       )}
 
       {/* TABS DE CONTROL: Mis Grupos vs Explorar */}
-      <div className="border-b border-gray-250 flex gap-6 mb-6">
+      <div className="border-b border-gray-200 dark:border-slate-800 flex gap-6 mb-6 transition-colors duration-200">
         <button
           onClick={() => {
             setTabActiva("mis_grupos");
             setFiltro("");
           }}
-          className={`pb-3 text-xs font-bold relative transition cursor-pointer ${
-            tabActiva === "mis_grupos" ? "text-indigo-600 font-extrabold" : "text-gray-400 hover:text-gray-650"
+          className={`pb-3 text-xs font-bold relative transition-colors duration-200 cursor-pointer ${
+            tabActiva === "mis_grupos" ? "text-indigo-600 dark:text-indigo-400 font-extrabold" : "text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200"
           }`}
         >
           Mis Grupos ({gruposPropistas.length})
           {tabActiva === "mis_grupos" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full"></span>
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-500 rounded-full"></span>
           )}
         </button>
         <button
@@ -191,13 +190,13 @@ const ListaGrupos = () => {
             setTabActiva("explorar");
             setFiltro("");
           }}
-          className={`pb-3 text-xs font-bold relative transition cursor-pointer ${
-            tabActiva === "explorar" ? "text-indigo-600 font-extrabold" : "text-gray-400 hover:text-gray-650"
+          className={`pb-3 text-xs font-bold relative transition-colors duration-200 cursor-pointer ${
+            tabActiva === "explorar" ? "text-indigo-600 dark:text-indigo-400 font-extrabold" : "text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200"
           }`}
         >
           Explorar Grupos ({gruposExploracion.length})
           {tabActiva === "explorar" && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full"></span>
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-500 rounded-full"></span>
           )}
         </button>
       </div>
@@ -205,7 +204,7 @@ const ListaGrupos = () => {
       {/* Barra de Filtro / Búsqueda */}
       <div className="mb-6">
         <div className="relative max-w-md w-full">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-slate-500">
             🔍
           </span>
           <input
@@ -214,12 +213,12 @@ const ListaGrupos = () => {
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             maxLength={60}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition duration-200 outline-none text-gray-700 placeholder-gray-400"
+            className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 transition-colors duration-200 outline-none text-gray-700 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
           />
           {filtro && (
             <button
               onClick={() => setFiltro("")}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-650 cursor-pointer border-none bg-transparent"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 cursor-pointer border-none bg-transparent"
             >
               ✕
             </button>
@@ -240,18 +239,18 @@ const ListaGrupos = () => {
             return (
               <div
                 key={grupo.id}
-                className="bg-white rounded-2xl border border-gray-150 p-5 shadow-sm hover:shadow-md hover:border-gray-250 transition duration-300 flex flex-col justify-between"
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-slate-700 transition duration-300 flex flex-col justify-between"
               >
                 <div>
                   {/* Ficha Inicial del Grupo */}
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-base font-extrabold shrink-0">
+                      <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-base font-extrabold shrink-0 transition-colors duration-200">
                         {inicial}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <h3 className="text-xs font-bold text-gray-900 leading-snug truncate">
+                          <h3 className="text-xs font-bold text-gray-900 dark:text-slate-100 leading-snug truncate transition-colors duration-200">
                             {grupo.nombre}
                           </h3>
                           {(() => {
@@ -273,24 +272,24 @@ const ListaGrupos = () => {
                             return null;
                           })()}
                         </div>
-                        <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+                        <p className="text-[10px] text-gray-400 dark:text-slate-400 mt-0.5 truncate transition-colors duration-200">
                           Por: {grupo.Creador ? `${grupo.Creador.nombre} ${grupo.Creador.apellido}` : "Tú"}
                         </p>
                       </div>
                     </div>
 
                     {/* Badge de Visibilidad */}
-                    <span className={`text-[8.5px] font-bold px-2 py-0.5 rounded-full shrink-0 border uppercase tracking-wider ${
+                    <span className={`text-[8.5px] font-bold px-2 py-0.5 rounded-full shrink-0 border uppercase tracking-wider transition-colors duration-200 ${
                       grupo.estado === 'publico' 
-                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
-                        : 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40' 
+                        : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/40'
                     }`}>
                       {grupo.estado === 'publico' ? 'Público' : 'Privado'}
                     </span>
                   </div>
 
                   {/* Descripción del Grupo */}
-                  <div className="text-xs text-gray-500 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100 min-h-[64px] line-clamp-3">
+                  <div className="text-xs text-gray-500 dark:text-slate-400 mb-4 bg-gray-50 dark:bg-slate-800/60 p-3 rounded-xl border border-gray-100 dark:border-slate-800 min-h-[64px] line-clamp-3 transition-colors duration-200">
                     {grupo.descripcion || "Este grupo no tiene una descripción configurada aún. ¡Ingresá y definí un tema de estudio!"}
                   </div>
                 </div>
@@ -298,8 +297,7 @@ const ListaGrupos = () => {
                 {/* Acción de Entrada/Ver */}
                 <button
                   onClick={() => navigate(`/grupos/${grupo.id}`)}
-                  style={{ backgroundColor: '#e0e7ff', color: '#4f46e5', borderColor: 'transparent' }}
-                  className="w-full py-2 rounded-lg text-xs font-bold text-center transition flex items-center justify-center gap-1.5 cursor-pointer border !bg-indigo-50 hover:!bg-indigo-100 !text-indigo-600 hover:border-indigo-200"
+                  className="w-full py-2 rounded-lg text-xs font-bold text-center transition-colors duration-200 flex items-center justify-center gap-1.5 cursor-pointer border border-transparent bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:border-indigo-200 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 dark:text-indigo-300 dark:border-indigo-900/50"
                 >
                   {tabActiva === "mis_grupos" ? "💬 Entrar al Chat" : "👁 Explorar / Unirse"}
                 </button>
@@ -363,17 +361,16 @@ const ListaGrupos = () => {
       {/* MODAL: Crear Nuevo Grupo */}
       {modalAbierto && (
         <div 
-          className="fixed inset-0 bg-black/65 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
-          style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
         >
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-gray-400 overflow-hidden transform transition-all animate-slide-up">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-2xl border border-gray-200 dark:border-slate-800 overflow-hidden transform transition-all animate-slide-up">
             
             {/* Cabecera Modal */}
-            <div className="px-6 py-4 bg-indigo-50 border-b border-indigo-100 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-indigo-900">Crear Grupo de Estudio</h2>
+            <div className="px-6 py-4 bg-indigo-50/80 dark:bg-slate-800 border-b border-indigo-100 dark:border-slate-700 flex items-center justify-between transition-colors duration-200">
+              <h2 className="text-sm font-bold text-indigo-900 dark:text-slate-100">Crear Grupo de Estudio</h2>
               <button
                 onClick={() => setModalAbierto(false)}
-                className="text-gray-400 hover:text-gray-650 text-base font-semibold cursor-pointer border-none bg-transparent"
+                className="text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 text-base font-semibold cursor-pointer border-none bg-transparent transition-colors duration-200"
               >
                 ✕
               </button>
@@ -382,7 +379,7 @@ const ListaGrupos = () => {
             {/* Formulario */}
             <form onSubmit={handleCrearGrupo} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                   Nombre del Grupo <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -392,12 +389,12 @@ const ListaGrupos = () => {
                   onChange={(e) => setNombreNuevo(e.target.value)}
                   maxLength={50}
                   required
-                  className="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition duration-200 outline-none text-gray-800 placeholder-gray-400"
+                  className="w-full px-3.5 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 transition-colors duration-200 outline-none text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
                   Descripción
                 </label>
                 <textarea
@@ -406,27 +403,27 @@ const ListaGrupos = () => {
                   onChange={(e) => setDescripcionNueva(e.target.value)}
                   maxLength={250}
                   rows={3}
-                  className="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition duration-200 outline-none text-gray-800 placeholder-gray-400 resize-none"
+                  className="w-full px-3.5 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 transition-colors duration-200 outline-none text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 resize-none"
                 />
               </div>
 
               {/* Selector de Visibilidad (Tarjetas de Radio Premium) */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-2">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-2">
                   Visibilidad del Grupo
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   {/* Tarjeta Público */}
                   <label 
                     onClick={() => setEstadoNuevo("publico")}
-                    className={`border rounded-xl p-3 flex flex-col justify-between cursor-pointer transition select-none ${
+                    className={`border rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-colors duration-200 select-none ${
                       estadoNuevo === "publico" 
-                        ? "border-indigo-600 bg-indigo-50/40 ring-1 ring-indigo-600" 
-                        : "border-gray-200 bg-white hover:bg-gray-50"
+                        ? "border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 ring-1 ring-indigo-600" 
+                        : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:bg-gray-50 dark:hover:bg-slate-800"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] font-bold text-gray-800 flex items-center gap-1">
+                      <span className="text-[11px] font-bold text-gray-800 dark:text-slate-200 flex items-center gap-1">
                         🌍 Público
                       </span>
                       <input 
@@ -438,7 +435,7 @@ const ListaGrupos = () => {
                         className="accent-indigo-600 w-3.5 h-3.5 shrink-0"
                       />
                     </div>
-                    <p className="text-[9.5px] text-gray-400 leading-normal">
+                    <p className="text-[9.5px] text-gray-400 dark:text-slate-400 leading-normal">
                       Cualquier estudiante puede buscarlo, explorarlo y unirse directamente.
                     </p>
                   </label>
@@ -446,14 +443,14 @@ const ListaGrupos = () => {
                   {/* Tarjeta Privado */}
                   <label 
                     onClick={() => setEstadoNuevo("privado")}
-                    className={`border rounded-xl p-3 flex flex-col justify-between cursor-pointer transition select-none ${
+                    className={`border rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-colors duration-200 select-none ${
                       estadoNuevo === "privado" 
-                        ? "border-indigo-600 bg-indigo-50/40 ring-1 ring-indigo-600" 
-                        : "border-gray-200 bg-white hover:bg-gray-50"
+                        ? "border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 ring-1 ring-indigo-600" 
+                        : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:bg-gray-50 dark:hover:bg-slate-800"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[11px] font-bold text-gray-800 flex items-center gap-1">
+                      <span className="text-[11px] font-bold text-gray-800 dark:text-slate-200 flex items-center gap-1">
                         🔒 Privado
                       </span>
                       <input 
@@ -465,7 +462,7 @@ const ListaGrupos = () => {
                         className="accent-indigo-600 w-3.5 h-3.5 shrink-0"
                       />
                     </div>
-                    <p className="text-[9.5px] text-gray-400 leading-normal">
+                    <p className="text-[9.5px] text-gray-400 dark:text-slate-400 leading-normal">
                       Sólo visible en 'Mis Grupos'. El ingreso es únicamente por invitación.
                     </p>
                   </label>
@@ -473,18 +470,18 @@ const ListaGrupos = () => {
               </div>
 
               {/* Botones de Acción */}
-              <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+              <div className="flex justify-end gap-3 pt-3 border-t border-gray-100 dark:border-slate-800 transition-colors duration-200">
                 <button
                   type="button"
                   onClick={() => setModalAbierto(false)}
-                  className="px-4 py-2 hover:bg-gray-100 text-gray-500 rounded-xl text-xs font-bold transition border border-gray-200 cursor-pointer"
+                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 rounded-xl text-xs font-bold transition-colors duration-200 border border-gray-200 dark:border-slate-700 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={creando || !nombreNuevo.trim()}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer border-none"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer border-none"
                 >
                   {creando ? "Creando..." : "Crear Grupo"}
                 </button>

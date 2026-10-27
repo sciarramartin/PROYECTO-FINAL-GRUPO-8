@@ -390,13 +390,13 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 flex flex-col font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
 
       {/* HEADER */}
-      <header className="h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80 flex items-center justify-between px-4 md:px-6 fixed top-0 left-0 right-0 z-30 transition-colors duration-300">
+      <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between px-4 md:px-6 fixed top-0 left-0 right-0 z-30 transition-colors duration-200">
         <div className="flex items-center gap-3">
           <button
-            className="md:hidden p-2 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            className="md:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
             onClick={() => setSidebarAbierto(!sidebarAbierto)}
           >
             {sidebarAbierto ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
@@ -410,8 +410,8 @@ const Layout = ({ children }) => {
               />
             </div>
             <div>
-              <p className="text-base font-bold text-zinc-900 dark:text-zinc-50 leading-none">Campus</p>
-              <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium mt-0.5">Planificá tu cursada</p>
+              <p className="text-base font-bold text-slate-900 dark:text-slate-50 leading-none">Campus</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">Planificá tu cursada</p>
             </div>
           </div>
         </div>
@@ -419,7 +419,7 @@ const Layout = ({ children }) => {
         {/* BUSCADOR GLOBAL */}
         <div className="flex-1 max-w-xs md:max-w-md mx-4 md:mx-12 relative">
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-400 pointer-events-none">🔍</span>
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">🔍</span>
             <input
               type="text"
               value={busqueda}
@@ -427,35 +427,35 @@ const Layout = ({ children }) => {
               onFocus={() => setMostrarSugerencias(true)}
               onBlur={() => setTimeout(() => setMostrarSugerencias(false), 200)}
               placeholder="Buscar compañeros..."
-              className="w-full pl-9 pr-8 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full focus:bg-white dark:focus:bg-zinc-900 focus:border-indigo-500 outline-none transition text-zinc-800 dark:text-zinc-200"
+              className="w-full pl-9 pr-8 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-500 outline-none transition-colors duration-200 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
             />
             {busqueda && (
-              <button onClick={() => { setBusqueda(""); setResultados([]); }} className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400">✕</button>
+              <button onClick={() => { setBusqueda(""); setResultados([]); }} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400">✕</button>
             )}
           </div>
 
           {mostrarSugerencias && (busqueda.trim() || cargandoBusqueda) && (
-            <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 max-h-60 overflow-y-auto">
+            <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 max-h-60 overflow-y-auto">
               {cargandoBusqueda ? (
-                <div className="p-4 text-center text-xs text-zinc-400">Buscando compañeros...</div>
+                <div className="p-4 text-center text-xs text-slate-400">Buscando compañeros...</div>
               ) : resultados.length > 0 ? (
                 <div className="py-1">
                   {resultados.map((user) => (
                     <button
                       key={user.id}
                       onClick={() => { setMostrarSugerencias(false); setBusqueda(""); navigate(`/perfil/${user.id}`); }}
-                      className="w-full text-left px-4 py-3 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 flex items-center gap-3 border-b border-zinc-50 dark:border-zinc-800/50 transition"
+                      className="w-full text-left px-4 py-3 hover:bg-indigo-50 dark:hover:bg-slate-800/70 flex items-center gap-3 border-b border-slate-50 dark:border-slate-800/50 transition-colors duration-200"
                     >
                       {renderAvatarChico(user.Perfil?.foto_perfil || user.perfil?.foto_perfil, `${user.nombre[0]}${user.apellido[0]}`.toUpperCase())}
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{user.nombre} {user.apellido}</p>
-                        <p className="text-xs text-zinc-400 truncate">@{user.nombre_usuario}</p>
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{user.nombre} {user.apellido}</p>
+                        <p className="text-xs text-slate-400 truncate">@{user.nombre_usuario}</p>
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="p-4 text-center text-xs text-zinc-400">No se encontraron compañeros.</div>
+                <div className="p-4 text-center text-xs text-slate-400">No se encontraron compañeros.</div>
               )}
             </div>
           )}
@@ -463,13 +463,13 @@ const Layout = ({ children }) => {
 
         {/* DERECHA */}
         <div className="flex items-center gap-2 md:gap-4">
-          <button onClick={toggleTema} className="p-2.5 rounded-xl text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+          <button onClick={toggleTema} className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200">
             {temaOscuro ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
           </button>
 
           {/* CAMPANA NOTIFICACIONES */}
           <div className="relative">
-            <button onClick={() => setMostrarCampanitaDropdown(!mostrarCampanitaDropdown)} className="relative p-2 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition">
+            <button onClick={() => setMostrarCampanitaDropdown(!mostrarCampanitaDropdown)} className="relative p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors duration-200">
               <FiBell className="w-5 h-5" />
               {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px] font-bold">
@@ -481,21 +481,21 @@ const Layout = ({ children }) => {
             {mostrarCampanitaDropdown && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setMostrarCampanitaDropdown(false)} />
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 py-3.5 px-4 max-h-96 overflow-y-auto">
-                  <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-100 dark:border-zinc-800 pb-2 flex items-center justify-between">
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 py-3.5 px-4 max-h-96 overflow-y-auto">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between">
                     <span>Notificaciones</span>
                   </h3>
 
                   {/* Solicitudes Amistad */}
                   {cantPendientes > 0 && (
                     <div className="mt-3">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase">Amistades ({cantPendientes})</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">Amistades ({cantPendientes})</p>
                       <div className="mt-1 space-y-1">
                         {solicitudesAmistadPendientes.map((sol) => {
                           const amigo = sol.usuario || sol.UsuarioOrigen || {};
                           return (
-                            <div key={sol.id} className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg flex flex-col gap-1">
-                              <p className="text-xs font-semibold">{amigo.nombre} {amigo.apellido}</p>
+                            <div key={sol.id} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg flex flex-col gap-1">
+                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{amigo.nombre} {amigo.apellido}</p>
                               <div className="flex gap-1">
                                 <button onClick={() => aceptarSolicitudAmistad(amigo.id)} className="flex-1 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold">Aceptar</button>
                                 <button onClick={() => rechazarSolicitudAmistad(amigo.id)} className="flex-1 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold">Rechazar</button>
@@ -510,11 +510,11 @@ const Layout = ({ children }) => {
                   {/* Invitaciones Grupos */}
                   {cantInvitacionesPendientes > 0 && (
                     <div className="mt-3">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase">Grupos ({cantInvitacionesPendientes})</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">Grupos ({cantInvitacionesPendientes})</p>
                       <div className="mt-1 space-y-1">
                         {invitacionesPendientes.map((inv) => (
-                          <div key={inv.id} className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg flex flex-col gap-1">
-                            <p className="text-xs font-semibold">{inv.Grupo?.nombre}</p>
+                          <div key={inv.id} className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg flex flex-col gap-1">
+                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{inv.Grupo?.nombre}</p>
                             <div className="flex gap-1">
                               <button onClick={() => aceptarInvitacionGrupo(inv.Grupo?.id)} className="flex-1 py-0.5 bg-green-600 text-white rounded text-[9px] font-bold">Aceptar</button>
                               <button onClick={() => rejectInvitacionGrupo(inv.Grupo?.id)} className="flex-1 py-0.5 bg-red-600 text-white rounded text-[9px] font-bold">Rechazar</button>
@@ -526,7 +526,7 @@ const Layout = ({ children }) => {
                   )}
 
                   {cantPendientes + cantInvitacionesPendientes + cantMensajesPendientes + cantGruposMensajesPendientes === 0 && (
-                    <div className="py-6 text-center text-xs text-zinc-400">Sin notificaciones pendientes.</div>
+                    <div className="py-6 text-center text-xs text-slate-400">Sin notificaciones pendientes.</div>
                   )}
                 </div>
               </>
@@ -535,21 +535,21 @@ const Layout = ({ children }) => {
 
           {/* USUARIO */}
           <div className="relative">
-            <button onClick={() => setMenuUsuarioAbierto(!menuUsuarioAbierto)} className="flex items-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl p-1.5 transition">
+            <button onClick={() => setMenuUsuarioAbierto(!menuUsuarioAbierto)} className="flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl p-1.5 transition-colors duration-200">
               {renderAvatarChico(fotoPerfil, iniciales)}
               <div className="hidden md:block text-left select-none max-w-[120px]">
-                <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{usuario?.nombre || "Usuario"}</p>
-                <p className="text-[10px] text-zinc-400">{usuario?.id_tipo_usuario === 3 ? "Administrador" : "Estudiante"}</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{usuario?.nombre || "Usuario"}</p>
+                <p className="text-[10px] text-slate-400">{usuario?.id_tipo_usuario === 3 ? "Administrador" : "Estudiante"}</p>
               </div>
-              <FiChevronDown className={`text-zinc-400 w-3 h-3 transition-transform ${menuUsuarioAbierto ? 'rotate-180' : ''}`} />
+              <FiChevronDown className={`text-slate-400 w-3 h-3 transition-transform ${menuUsuarioAbierto ? 'rotate-180' : ''}`} />
             </button>
 
             {menuUsuarioAbierto && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setMenuUsuarioAbierto(false)} />
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl py-1.5 z-50">
-                  <button onClick={() => { setMenuUsuarioAbierto(false); navigate("/mi-perfil"); }} className="w-full text-left px-4 py-2.5 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2">👤 Mi Perfil</button>
-                  <button onClick={() => { cerrarSesion(); setMenuUsuarioAbierto(false); }} className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2"><FiLogOut /> Cerrar sesión</button>
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1.5 z-50">
+                  <button onClick={() => { setMenuUsuarioAbierto(false); navigate("/mi-perfil"); }} className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-2">👤 Mi Perfil</button>
+                  <button onClick={() => { cerrarSesion(); setMenuUsuarioAbierto(false); }} className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2"><FiLogOut /> Cerrar sesión</button>
                 </div>
               </>
             )}
@@ -559,11 +559,11 @@ const Layout = ({ children }) => {
 
       <div className="flex pt-16 min-h-[calc(100vh-4rem)]">
 
-        {sidebarAbierto && <div className="fixed inset-0 bg-zinc-950/50 z-20 md:hidden" onClick={() => setSidebarAbierto(false)} />}
+        {sidebarAbierto && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 md:hidden" onClick={() => setSidebarAbierto(false)} />}
 
         {/* SIDEBAR COLAPSIBLE */}
         <aside className={`
-          fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white dark:bg-zinc-900 border-r border-zinc-200/80 dark:border-zinc-800/80
+          fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800/80
           flex flex-col justify-between z-20 transition-all duration-300
           ${sidebarAbierto ? "translate-x-0 w-60" : "-translate-x-full md:translate-x-0"}
           ${sidebarColapsado ? "md:w-20" : "md:w-60"}
@@ -582,12 +582,12 @@ const Layout = ({ children }) => {
                     title={sidebarColapsado ? item.label : ""}
                     className={`
                       flex items-center ${sidebarColapsado ? "justify-center" : "justify-between"} px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full relative group
-                      ${activo ? "bg-indigo-50/70 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"}
+                      ${activo ? "bg-indigo-50/70 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"}
                     `}
                   >
                     {activo && <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-indigo-500" />}
                     <div className={`flex items-center gap-3 ${sidebarColapsado ? "justify-center" : ""}`}>
-                      <span className={`text-xl transition-transform group-hover:scale-110 ${activo ? "text-indigo-500" : "text-zinc-400"}`}>
+                      <span className={`text-xl transition-transform group-hover:scale-110 ${activo ? "text-indigo-500" : "text-slate-400"}`}>
                         {item.icon}
                       </span>
                       {!sidebarColapsado && <span className="truncate">{item.label}</span>}
@@ -604,21 +604,21 @@ const Layout = ({ children }) => {
             </nav>
 
             {/* BOTÓN INFERIOR DE COLAPSO Y LOGOUT */}
-            <div className="p-3.5 border-t border-zinc-200/80 dark:border-zinc-800/80 flex flex-col gap-2">
+            <div className="p-3.5 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-col gap-2">
               <button
                 onClick={() => {
                   const nuevo = !sidebarColapsado;
                   setSidebarColapsado(nuevo);
                   localStorage.setItem("sidebarColapsado", nuevo);
                 }}
-                className="hidden md:flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition w-full cursor-pointer"
+                className="hidden md:flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200 w-full cursor-pointer"
               >
                 {sidebarColapsado ? <FiChevronRight className="w-4 h-4" /> : <><FiChevronLeft className="w-4 h-4" /><span>Colapsar menú</span></>}
               </button>
 
               <button
                 onClick={cerrarSesion}
-                className={`flex items-center ${sidebarColapsado ? "justify-center" : "gap-3"} px-3.5 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition w-full`}
+                className={`flex items-center ${sidebarColapsado ? "justify-center" : "gap-3"} px-3.5 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors duration-200 w-full`}
                 title={sidebarColapsado ? "Cerrar sesión" : ""}
               >
                 <FiLogOut className="text-lg shrink-0" />
@@ -633,7 +633,7 @@ const Layout = ({ children }) => {
           sidebarColapsado ? "md:ml-20" : "md:ml-60"
         } ${
           location.pathname === "/asistente-ia" ? "p-2 sm:p-3 md:p-4 h-[calc(100vh-4rem)] overflow-hidden flex flex-col" : "p-4 md:p-8 min-h-full"
-        } bg-zinc-50 dark:bg-zinc-950`}>
+        } bg-slate-50 dark:bg-slate-950`}>
           <div className={location.pathname === "/asistente-ia" ? "w-full h-full flex flex-col min-h-0 max-w-[1850px] mx-auto" : "max-w-7xl mx-auto"}>
             {children}
           </div>

@@ -199,17 +199,17 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
         : (materiasDisponibles.find(m => m.id === Number(selectedMateriaId))?.nombre || "Materia seleccionada");
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen flex flex-col gap-4 font-sans">
+        <div className="p-6 bg-gray-50 dark:bg-slate-950 min-h-screen flex flex-col gap-4 font-sans transition-colors duration-200">
             {/* Breadcrumb de navegación superior */}
             <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-400 flex gap-2 items-center">
-                    <span>Foros</span> &gt; <span className="text-indigo-600 font-medium">{materiaNombreMostrada}</span> &gt; <span>Crear publicación</span>
+                <div className="text-xs text-gray-400 dark:text-slate-400 flex gap-2 items-center">
+                    <span>Foros</span> &gt; <span className="text-indigo-600 dark:text-indigo-400 font-medium">{materiaNombreMostrada}</span> &gt; <span>Crear publicación</span>
                 </div>
                 {onCancelar && (
                     <button
                         type="button"
                         onClick={onCancelar}
-                        className="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 rounded-xl transition cursor-pointer"
+                        className="px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-xl transition cursor-pointer"
                     >
                         ✕ Cancelar
                     </button>
@@ -217,41 +217,41 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
             </div>
 
             <div className="flex flex-col gap-1 mb-2">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
                     💬 Crear publicación en foro
                 </h2>
-                <p className="text-xs text-gray-400">Comparte tus dudas, consultas, recursos u opiniones con otros miembros de la comunidad.</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400">Comparte tus dudas, consultas, recursos u opiniones con otros miembros de la comunidad.</p>
             </div>
 
             {/* Alertas de Éxito / Error */}
-            {error && <div className="p-3 bg-red-50 text-red-600 border border-red-100 rounded-xl text-xs font-semibold">⚠️ {error}</div>}
-            {mensajeConfirmacion && <div className="p-3 bg-green-50 text-green-600 border border-green-100 rounded-xl text-xs font-semibold">✅ {mensajeConfirmacion}</div>}
+            {error && <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 rounded-xl text-xs font-semibold">⚠️ {error}</div>}
+            {mensajeConfirmacion && <div className="p-3 bg-green-50 dark:bg-emerald-950/30 text-green-600 dark:text-emerald-400 border border-green-100 dark:border-emerald-900/40 rounded-xl text-xs font-semibold">✅ {mensajeConfirmacion}</div>}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 
                 {/* COLUMNA IZQUIERDA: Formulario de Carga */}
-                <form onSubmit={handlePublicar} className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4">
+                <form onSubmit={handlePublicar} className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col gap-4 transition-colors duration-200">
                     <div>
-                        <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Título *</label>
+                        <label className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase block mb-1">Título *</label>
                         <input 
                             type="text" 
                             placeholder="Escribe un título claro y descriptivo..." 
                             value={titulo}
                             onChange={(e) => setTitulo(e.target.value)}
                             maxLength={100}
-                            className="w-full p-3 border border-gray-200 rounded-xl text-xs outline-none focus:border-indigo-500 transition-all"
+                            className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 outline-none focus:border-indigo-500 transition-all placeholder-slate-400 dark:placeholder-slate-500"
                         />
-                        <span className="text-[10px] text-gray-400 float-right mt-1">{titulo.length}/100</span>
+                        <span className="text-[10px] text-gray-400 dark:text-slate-500 float-right mt-1">{titulo.length}/100</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Materia *</label>
+                            <label className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase block mb-1">Materia *</label>
                             {materiasDisponibles && materiasDisponibles.length > 0 && !idMateriaActual ? (
                                 <select 
                                     value={selectedMateriaId} 
                                     onChange={(e) => setSelectedMateriaId(e.target.value)}
-                                    className="w-full p-3 border border-gray-200 rounded-xl text-xs bg-white outline-none focus:border-indigo-500 text-gray-700 font-medium"
+                                    className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 outline-none focus:border-indigo-500 text-gray-700 dark:text-slate-200 font-medium"
                                 >
                                     <option value="">-- Seleccionar materia --</option>
                                     {materiasDisponibles.map(m => (
@@ -263,16 +263,16 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                                     type="text" 
                                     value={nombreMateriaActual || "Materia seleccionada"} 
                                     disabled 
-                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-500 font-medium cursor-not-allowed"
+                                    className="w-full p-3 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-500 dark:text-slate-400 font-medium cursor-not-allowed"
                                 />
                             )}
                         </div>
                         <div>
-                            <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Categoría / Tipo de post</label>
+                            <label className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase block mb-1">Categoría / Tipo de post</label>
                             <select 
                                 value={categoria}
                                 onChange={(e) => setCategoria(e.target.value)}
-                                className="w-full p-3 border border-gray-200 rounded-xl text-xs bg-white outline-none focus:border-indigo-500 text-gray-700"
+                                className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl text-xs bg-white dark:bg-slate-800 outline-none focus:border-indigo-500 text-gray-700 dark:text-slate-200"
                             >
                                 <option value="Duda">❓ Duda o Consulta</option>
                                 <option value="General">📚 General</option>
@@ -283,25 +283,25 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                     </div>
 
                     {/* SECCIÓN DE ETIQUETAS */}
-                    <div className="border-t border-gray-100 pt-4 flex flex-col gap-2">
-                        <label className="text-[11px] text-gray-500 font-bold uppercase block">Etiquetas</label>
+                    <div className="border-t border-gray-100 dark:border-slate-800 pt-4 flex flex-col gap-2">
+                        <label className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase block">Etiquetas</label>
                         
                         <div className="flex gap-2 items-center">
                             <div className="relative flex items-center grow">
-                                <span className="absolute left-3 text-gray-400 font-semibold text-xs select-none">#</span>
+                                <span className="absolute left-3 text-gray-400 dark:text-slate-500 font-semibold text-xs select-none">#</span>
                                 <input
                                     type="text"
                                     placeholder="Agregar etiqueta (ej: 3k1, resumen)..."
                                     value={nuevaEtiqueta}
                                     onChange={(e) => setNuevaEtiqueta(e.target.value.replace(/[^a-zA-Z0-9_#]/g, ''))}
                                     onKeyDown={handleKeyDownEtiqueta}
-                                    className="w-full pl-6 pr-3 py-2.5 border border-gray-200 rounded-xl text-xs outline-none focus:border-indigo-500 transition-all"
+                                    className="w-full pl-6 pr-3 py-2.5 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 rounded-xl text-xs outline-none focus:border-indigo-500 transition-all"
                                 />
                             </div>
                             <button
                                 type="button"
                                 onClick={agregarEtiqueta}
-                                className="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-xl text-xs transition cursor-pointer"
+                                className="px-4 py-2.5 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 font-bold rounded-xl text-xs transition cursor-pointer"
                             >
                                 Agregar
                             </button>
@@ -311,12 +311,12 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                         {etiquetasLista.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mt-1">
                                 {etiquetasLista.map((tag) => (
-                                    <span key={tag} className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-semibold select-none">
+                                    <span key={tag} className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-full text-xs font-semibold select-none">
                                         {tag}
                                         <button
                                             type="button"
                                             onClick={() => eliminarEtiqueta(tag)}
-                                            className="text-indigo-400 hover:text-indigo-700 font-bold ml-1 text-xs cursor-pointer focus:outline-none"
+                                            className="text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-200 font-bold ml-1 text-xs cursor-pointer focus:outline-none"
                                         >
                                             &times;
                                         </button>
@@ -326,9 +326,9 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                         )}
 
                         {/* Ejemplos y sugerencias */}
-                        <div className="mt-1 flex flex-col gap-2 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <div className="mt-1 flex flex-col gap-2 bg-gray-50 dark:bg-slate-800/60 p-3 rounded-xl border border-gray-100 dark:border-slate-700/60">
                             <div className="flex flex-wrap gap-1.5 items-center">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase mr-1">Ejemplos:</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase mr-1">Ejemplos:</span>
                                 {['3k1', '5k3', 'resumen', 'parcial'].map((sug) => {
                                     const tagSug = `#${sug}`;
                                     const yaAgregado = etiquetasLista.includes(tagSug);
@@ -340,8 +340,8 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                                             onClick={() => agregarEtiquetaDirecta(tagSug)}
                                             className={`px-2 py-1 rounded-lg border transition text-[10px] font-medium cursor-pointer ${
                                                 yaAgregado 
-                                                    ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-white border-gray-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 text-gray-600'
+                                                    ? 'bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-600 cursor-not-allowed'
+                                                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-300 hover:border-indigo-200 text-gray-600 dark:text-slate-300'
                                             }`}
                                         >
                                             {tagSug}
@@ -352,8 +352,8 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
 
                             {/* Etiquetas más usadas */}
                             {popularesCargadas.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 items-center border-t border-gray-200/60 pt-2">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase mr-1">Etiquetas populares:</span>
+                                <div className="flex flex-wrap gap-1.5 items-center border-t border-gray-200/60 dark:border-slate-700/60 pt-2">
+                                    <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase mr-1">Etiquetas populares:</span>
                                     {popularesCargadas.map((pop) => {
                                         const yaAgregado = etiquetasLista.includes(pop);
                                         return (
@@ -364,8 +364,8 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                                                 onClick={() => agregarEtiquetaDirecta(pop)}
                                                 className={`px-2 py-1 rounded-lg border transition text-[10px] font-medium cursor-pointer ${
                                                     yaAgregado 
-                                                        ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                                                        : 'bg-white border-purple-200 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300 text-gray-600'
+                                                        ? 'bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-600 cursor-not-allowed'
+                                                        : 'bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/60 hover:text-purple-600 dark:hover:text-purple-300 text-gray-600 dark:text-slate-300'
                                                 }`}
                                             >
                                                 {pop}
@@ -385,39 +385,39 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                                 cursor: text;
                             }
                         `}</style>
-                        <label className="text-[11px] text-gray-500 font-bold uppercase block mb-1">Contenido *</label>
-                        <div className="flex gap-2 p-2 border border-b-0 border-gray-200 bg-gray-50 rounded-t-xl text-xs text-gray-500 font-mono select-none">
+                        <label className="text-[11px] text-gray-500 dark:text-slate-400 font-bold uppercase block mb-1">Contenido *</label>
+                        <div className="flex gap-2 p-2 border border-b-0 border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 rounded-t-xl text-xs text-gray-500 dark:text-slate-400 font-mono select-none">
                             <span 
                                 onMouseDown={(e) => { e.preventDefault(); aplicarFormato("negrita"); }} 
-                                className={`font-bold px-1.5 cursor-pointer rounded transition ${formatState.bold ? 'bg-gray-200 text-black font-extrabold' : 'hover:text-black'}`}
+                                className={`font-bold px-1.5 cursor-pointer rounded transition ${formatState.bold ? 'bg-gray-200 dark:bg-slate-700 text-black dark:text-white font-extrabold' : 'hover:text-black dark:hover:text-white'}`}
                                 title="Negrita"
                             >
                                 B
                             </span>
                             <span 
                                 onMouseDown={(e) => { e.preventDefault(); aplicarFormato("italic"); }} 
-                                className={`italic px-1.5 cursor-pointer rounded transition ${formatState.italic ? 'bg-gray-200 text-black font-extrabold' : 'hover:text-black'}`}
+                                className={`italic px-1.5 cursor-pointer rounded transition ${formatState.italic ? 'bg-gray-200 dark:bg-slate-700 text-black dark:text-white font-extrabold' : 'hover:text-black dark:hover:text-white'}`}
                                 title="Cursiva"
                             >
                                 I
                             </span>
                             <span 
                                 onMouseDown={(e) => { e.preventDefault(); aplicarFormato("subrayado"); }} 
-                                className={`underline px-1.5 cursor-pointer rounded transition ${formatState.underline ? 'bg-gray-200 text-black font-extrabold' : 'hover:text-black'}`}
+                                className={`underline px-1.5 cursor-pointer rounded transition ${formatState.underline ? 'bg-gray-200 dark:bg-slate-700 text-black dark:text-white font-extrabold' : 'hover:text-black dark:hover:text-white'}`}
                                 title="Subrayado"
                             >
                                 U
                             </span>
                             <span 
                                 onMouseDown={(e) => { e.preventDefault(); aplicarFormato("link"); }} 
-                                className="px-1.5 border-l border-gray-300 cursor-pointer hover:text-black"
+                                className="px-1.5 border-l border-gray-300 dark:border-slate-700 cursor-pointer hover:text-black dark:hover:text-white"
                                 title="Enlace"
                             >
                                 🔗
                             </span>
                             <span 
                                 onMouseDown={(e) => { e.preventDefault(); aplicarFormato("imagen"); }} 
-                                className="px-1.5 cursor-pointer hover:text-black"
+                                className="px-1.5 cursor-pointer hover:text-black dark:hover:text-white"
                                 title="Imagen"
                             >
                                 🖼️
@@ -431,16 +431,16 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                             onKeyUp={actualizarEstadosFormato}
                             onMouseUp={actualizarEstadosFormato}
                             onClick={actualizarEstadosFormato}
-                            className="rich-editor w-full p-3 border border-gray-200 rounded-b-xl text-xs outline-none focus:border-indigo-500 min-h-[150px] overflow-y-auto bg-white dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
+                            className="rich-editor w-full p-3 border border-gray-200 dark:border-slate-700 rounded-b-xl text-xs outline-none focus:border-indigo-500 min-h-[150px] overflow-y-auto bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100"
                         />
-                        <span className="text-[10px] text-gray-400 float-right mt-1">{obtenerLongitudTextoSinTags(contenido)}/4000</span>
+                        <span className="text-[10px] text-gray-400 dark:text-slate-500 float-right mt-1">{obtenerLongitudTextoSinTags(contenido)}/4000</span>
                     </div>
 
                     <div className="flex justify-end gap-2 mt-2">
                         <button 
                             type="button" 
                             onClick={onCancelar}
-                            className="px-5 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 font-bold rounded-xl text-xs transition cursor-pointer"
+                            className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 font-bold rounded-xl text-xs transition cursor-pointer"
                         >
                             Cancelar
                         </button>
@@ -455,10 +455,10 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
 
                 {/* COLUMNA DERECHA: Vista previa dinámica */}
                 <div className="flex flex-col gap-4">
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-3">
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Vista previa</h4>
+                    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col gap-3 transition-colors duration-200">
+                        <h4 className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Vista previa</h4>
                         
-                        <div className="border border-gray-100 rounded-xl p-4 bg-gray-50/50 flex flex-col gap-2">
+                        <div className="border border-gray-100 dark:border-slate-800 rounded-xl p-4 bg-gray-50/50 dark:bg-slate-850/50 flex flex-col gap-2">
                             <div className="flex items-center gap-2">
                                 {/* 👇 SECTOR 2: Avatar con iniciales dinámicas reales del estudiante */}
                                 <div className="w-7 h-7 bg-indigo-500 text-white font-bold rounded-full text-[11px] flex items-center justify-center shrink-0 shadow-sm">
@@ -466,40 +466,40 @@ const CrearPublicacion = ({ idMateriaActual, nombreMateriaActual, materiasDispon
                                 </div>
                                 <div>
                                     {/* 👇 SECTOR 2: Nombre y Apellido dinámicos reales */}
-                                    <p className="text-xs font-bold text-gray-800">
+                                    <p className="text-xs font-bold text-gray-800 dark:text-slate-100">
                                         {nombreUsuarioLogueado} {apellidoUsuarioLogueado}
                                     </p>
-                                    <p className="text-[10px] text-gray-400">Estudiante</p>
+                                    <p className="text-[10px] text-gray-400 dark:text-slate-500">Estudiante</p>
                                 </div>
                             </div>
                             
-                            <h3 className="text-sm font-bold text-gray-800 mt-1">
+                            <h3 className="text-sm font-bold text-gray-800 dark:text-slate-100 mt-1">
                                 {titulo || 'Título de la publicación'}
                             </h3>
                             
                             <div className="flex flex-wrap gap-1 mt-1">
-                                <span className="text-[9px] bg-indigo-50 text-indigo-600 font-semibold px-2 py-0.5 rounded-full">
+                                <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold px-2 py-0.5 rounded-full">
                                     {nombreMateriaActual}
                                 </span>
-                                <span className="text-[9px] bg-purple-50 text-purple-600 font-semibold px-2 py-0.5 rounded-full">
+                                <span className="text-[9px] bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-semibold px-2 py-0.5 rounded-full">
                                     {categoria}
                                 </span>
                                 {etiquetasLista.map((tag) => (
-                                    <span key={tag} className="text-[9px] bg-zinc-200/70 text-zinc-700 font-medium px-2 py-0.5 rounded-full">
+                                    <span key={tag} className="text-[9px] bg-zinc-200/70 dark:bg-slate-800 text-zinc-700 dark:text-slate-300 font-medium px-2 py-0.5 rounded-full">
                                         {tag}
                                     </span>
                                 ))}
                             </div>
 
                             <div 
-                                className="text-xs text-gray-600 whitespace-pre-wrap mt-1 min-h-[40px]"
+                                className="text-xs text-gray-600 dark:text-slate-300 whitespace-pre-wrap mt-1 min-h-[40px]"
                                 dangerouslySetInnerHTML={{ 
                                     __html: contenido || 'Este es un ejemplo de cómo se verá tu publicación en el foro una vez que sea publicada.' 
                                 }}
                             />
                             
-                            <div className="text-[10px] text-gray-400 border-t border-gray-100 pt-2 mt-2 flex items-center gap-1">
-                                📅 {new Date().toLocaleDateString()} • <span className="text-indigo-500 font-medium">Ahora</span>
+                            <div className="text-[10px] text-gray-400 dark:text-slate-500 border-t border-gray-100 dark:border-slate-800 pt-2 mt-2 flex items-center gap-1">
+                                📅 {new Date().toLocaleDateString()} • <span className="text-indigo-500 dark:text-indigo-400 font-medium">Ahora</span>
                             </div>
                         </div>
                     </div>

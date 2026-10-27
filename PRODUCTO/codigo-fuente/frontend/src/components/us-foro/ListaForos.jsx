@@ -204,17 +204,17 @@ const ListaForos = () => {
   const getBadgeCategoria = (cat) => {
     switch (cat) {
       case "Duda":
-        return "bg-amber-50 text-amber-700 border-amber-200/60";
+        return "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/60";
       case "Aporte":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+        return "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-800/60";
       case "Recurso":
-        return "bg-indigo-50 text-indigo-700 border-indigo-200/60";
+        return "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60";
       case "Debate":
-        return "bg-purple-50 text-purple-700 border-purple-200/60";
+        return "bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800/60";
       case "Opinión":
-        return "bg-rose-50 text-rose-700 border-rose-200/60";
+        return "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200/60 dark:border-rose-800/60";
       default:
-        return "bg-slate-50 text-slate-700 border-slate-200/60";
+        return "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-slate-700";
     }
   };
 
@@ -288,17 +288,17 @@ const ListaForos = () => {
           </div>
 
           {/* Barra de Búsqueda y Filtros de Categoría */}
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3 transition-colors duration-200">
             
             {/* Buscador de posts */}
             <form onSubmit={handleBuscarFeed} className="relative flex items-center">
-              <FiSearch className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+              <FiSearch className="absolute left-3.5 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
               <input
                 type="text"
                 value={busquedaFeed}
                 onChange={(e) => setBusquedaFeed(e.target.value)}
                 placeholder="Buscar por título, temas o contenidos del foro..."
-                className="w-full pl-10 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-indigo-500 outline-none transition text-slate-800 placeholder-slate-400"
+                className="w-full pl-10 pr-24 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:bg-white dark:focus:bg-slate-800 focus:border-indigo-500 outline-none transition text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               />
               <button
                 type="submit"
@@ -309,7 +309,7 @@ const ListaForos = () => {
             </form>
 
             {/* Fila de Filtros y Orden */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
               
               {/* Categorías (Pills) */}
               <div className="flex flex-wrap items-center gap-1.5">
@@ -320,7 +320,7 @@ const ListaForos = () => {
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border cursor-pointer ${
                       categoriaSeleccionada === cat
                         ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-                        : "bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200/80"
+                        : "bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700"
                     }`}
                   >
                     {cat}
@@ -329,13 +329,13 @@ const ListaForos = () => {
               </div>
 
               {/* Orden: Más votadas / Recientes */}
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1">
+              <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl gap-1">
                 <button
                   onClick={() => setOrden("votos")}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition border-none cursor-pointer ${
                     orden === "votos"
-                      ? "bg-white text-indigo-700 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800 bg-transparent"
+                      ? "bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-xs"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 bg-transparent"
                   }`}
                 >
                   <FiTrendingUp className="w-3.5 h-3.5" />
@@ -345,8 +345,8 @@ const ListaForos = () => {
                   onClick={() => setOrden("reciente")}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition border-none cursor-pointer ${
                     orden === "reciente"
-                      ? "bg-white text-indigo-700 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800 bg-transparent"
+                      ? "bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-xs"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 bg-transparent"
                   }`}
                 >
                   <FiClock className="w-3.5 h-3.5" />
@@ -359,9 +359,9 @@ const ListaForos = () => {
 
           {/* Listado de Tarjetas del Feed */}
           {cargandoFeed && publicaciones.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 border border-slate-200/80 text-center space-y-3">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 border border-slate-200/80 dark:border-slate-800 text-center space-y-3 transition-colors duration-200">
               <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
-              <p className="text-xs text-slate-500 font-medium">Cargando publicaciones del feed...</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Cargando publicaciones del feed...</p>
             </div>
           ) : publicaciones.length === 0 ? (
             <EmptyState
@@ -393,17 +393,17 @@ const ListaForos = () => {
                 return (
                   <article
                     key={pub.id}
-                    className="bg-white rounded-2xl border border-slate-200/90 hover:border-indigo-300/80 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
+                    className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 hover:border-indigo-300/80 dark:hover:border-indigo-500/50 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
                   >
                     <div className="p-5 flex gap-4">
                       
                       {/* Votador Lateral Vertical (Estilo Reddit / StackOverflow con microanimación) */}
-                      <div className="flex flex-col items-center justify-start bg-slate-50/80 border border-slate-100 rounded-xl p-1.5 shrink-0 h-fit">
+                      <div className="flex flex-col items-center justify-start bg-slate-50/80 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 rounded-xl p-1.5 shrink-0 h-fit transition-colors duration-200">
                         <button
                           onClick={() => handleReaccionar(pub.id, "positivo")}
                           title="Votar a favor (+1)"
-                          className={`p-1 hover:bg-indigo-50 rounded-lg transition border-none bg-transparent cursor-pointer ${
-                            pub.miReaccion === 'positivo' ? 'text-indigo-600 font-black' : 'text-slate-400 hover:text-indigo-600'
+                          className={`p-1 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg transition border-none bg-transparent cursor-pointer ${
+                            pub.miReaccion === 'positivo' ? 'text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
                           }`}
                         >
                           <FiArrowUp className="w-4 h-4 stroke-[2.5]" />
@@ -411,8 +411,8 @@ const ListaForos = () => {
                         <span
                           className={`text-xs min-w-[14px] text-center inline-block transition-transform duration-200 ease-out transform select-none my-0.5 ${
                             votoAnimandoId === pub.id
-                              ? 'scale-110 text-indigo-600 font-black'
-                              : 'scale-100 font-extrabold text-slate-700'
+                              ? 'scale-110 text-indigo-600 dark:text-indigo-400 font-black'
+                              : 'scale-100 font-extrabold text-slate-700 dark:text-slate-300'
                           }`}
                         >
                           {pub.votos || 0}
@@ -420,8 +420,8 @@ const ListaForos = () => {
                         <button
                           onClick={() => handleReaccionar(pub.id, "negativo")}
                           title="Votar en contra (-1)"
-                          className={`p-1 hover:bg-rose-50 rounded-lg transition border-none bg-transparent cursor-pointer ${
-                            pub.miReaccion === 'negativo' ? 'text-rose-600 font-black' : 'text-slate-400 hover:text-rose-600'
+                          className={`p-1 hover:bg-rose-50 dark:hover:bg-slate-700 rounded-lg transition border-none bg-transparent cursor-pointer ${
+                            pub.miReaccion === 'negativo' ? 'text-rose-600 dark:text-rose-400 font-black' : 'text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400'
                           }`}
                         >
                           <FiArrowDown className="w-4 h-4 stroke-[2.5]" />
@@ -438,9 +438,9 @@ const ListaForos = () => {
                           <button
                             onClick={() => navigate(`/foros/${pub.id_materia}`)}
                             title={`Ir al foro exclusivo de ${materiaNombre}`}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition border border-indigo-200/80 cursor-pointer text-[11px] group"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold rounded-lg transition border border-indigo-200/80 dark:border-indigo-800/80 cursor-pointer text-[11px] group"
                           >
-                            <FiBookOpen className="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
+                            <FiBookOpen className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
                             <span>Materia: <strong className="font-extrabold">{materiaNombre}</strong></span>
                             {materiaCodigo && <span className="text-indigo-400 font-mono text-[10px]">({materiaCodigo})</span>}
                             {materiaNivel && (
@@ -453,28 +453,28 @@ const ListaForos = () => {
                             {pub.categoria || "General"}
                           </span>
 
-                          <span className="text-slate-300">•</span>
+                          <span className="text-slate-300 dark:text-slate-700">•</span>
 
                           {/* Autor */}
-                          <div className="flex items-center gap-1.5 text-slate-500 font-medium text-[11px]">
-                            <span className="font-bold text-slate-700">{autorNombre}</span>
-                            <span className="text-slate-400">@{autorUsername}</span>
+                          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium text-[11px]">
+                            <span className="font-bold text-slate-700 dark:text-slate-200">{autorNombre}</span>
+                            <span className="text-slate-400 dark:text-slate-500">@{autorUsername}</span>
                           </div>
 
-                          <span className="text-slate-300">•</span>
-                          <span className="text-slate-400 text-[10px]">{fechaFormat}</span>
+                          <span className="text-slate-300 dark:text-slate-700">•</span>
+                          <span className="text-slate-400 dark:text-slate-500 text-[10px]">{fechaFormat}</span>
                         </div>
 
                         {/* Título de la Publicación (Clicable hacia detalle) */}
                         <h2
                           onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
-                          className="text-base font-bold text-slate-900 hover:text-indigo-600 transition cursor-pointer leading-snug"
+                          className="text-base font-bold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer leading-snug"
                         >
                           {pub.titulo}
                         </h2>
 
                         {/* Vista previa de Contenido */}
-                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
                           {pub.contenido ? pub.contenido.replace(/<[^>]*>?/gm, "") : ""}
                         </p>
 
@@ -484,7 +484,7 @@ const ListaForos = () => {
                             {pub.Etiquetas.map((tag) => (
                               <span
                                 key={tag.id || tag.nombre}
-                                className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md font-mono transition"
+                                className="text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-mono transition"
                               >
                                 #{tag.nombre.replace(/^#/, "")}
                               </span>
@@ -493,13 +493,13 @@ const ListaForos = () => {
                         )}
 
                         {/* Barra de Acciones Inferior */}
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
                           
                           <div className="flex items-center gap-4">
                             {/* Comentarios */}
                             <button
                               onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
-                              className="flex items-center gap-1.5 hover:text-indigo-600 transition border-none bg-transparent cursor-pointer font-semibold"
+                              className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition border-none bg-transparent cursor-pointer font-semibold"
                             >
                               <FiMessageSquare className="w-3.5 h-3.5" />
                               <span>{pub.cantComentarios || 0} comentarios</span>
@@ -509,7 +509,7 @@ const ListaForos = () => {
                             <button
                               onClick={() => handleGuardar(pub.id)}
                               className={`flex items-center gap-1.5 transition border-none bg-transparent cursor-pointer font-semibold ${
-                                pub.esGuardada ? "text-indigo-600 font-bold" : "hover:text-indigo-600"
+                                pub.esGuardada ? "text-indigo-600 dark:text-indigo-400 font-bold" : "hover:text-indigo-600 dark:hover:text-indigo-400"
                               }`}
                             >
                               <FiBookmark className={`w-3.5 h-3.5 ${pub.esGuardada ? "fill-current" : ""}`} />
@@ -520,7 +520,7 @@ const ListaForos = () => {
                           {/* Compartir */}
                           <button
                             onClick={() => setCompartirData({ isOpen: true, post: pub })}
-                            className="flex items-center gap-1.5 hover:text-indigo-600 transition border-none bg-transparent cursor-pointer text-slate-400"
+                            className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition border-none bg-transparent cursor-pointer text-slate-400 dark:text-slate-500"
                             title="Compartir publicación"
                           >
                             <FiShare2 className="w-3.5 h-3.5" />
@@ -542,7 +542,7 @@ const ListaForos = () => {
             <div className="text-center pt-2">
               <button
                 onClick={() => cargarFeed(false)}
-                className="px-6 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition shadow-xs hover:shadow cursor-pointer"
+                className="px-6 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition shadow-xs hover:shadow cursor-pointer"
               >
                 Cargar más publicaciones ({publicaciones.length} de {totalFeed})
               </button>
@@ -550,7 +550,7 @@ const ListaForos = () => {
           )}
 
           {cargandoFeed && publicaciones.length > 0 && (
-            <div className="text-center py-3 text-xs text-slate-400 font-medium">
+            <div className="text-center py-3 text-xs text-slate-400 dark:text-slate-500 font-medium">
               Cargando más publicaciones...
             </div>
           )}
@@ -563,18 +563,18 @@ const ListaForos = () => {
         <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-6">
           
           {/* Tarjeta de Foros por Materia */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-5 space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-5 space-y-4 transition-colors duration-200">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">
                   📚
                 </div>
                 <div>
-                  <h2 className="text-sm font-extrabold text-slate-900 leading-tight">
+                  <h2 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-tight">
                     Foros por Materia
                   </h2>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
                     {materias.length} cátedras disponibles
                   </p>
                 </div>
@@ -583,13 +583,13 @@ const ListaForos = () => {
 
             {/* Buscador Rápido de Materias */}
             <div className="relative">
-              <FiSearch className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              <FiSearch className="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
               <input
                 type="text"
                 value={busquedaMateria}
                 onChange={(e) => setBusquedaMateria(e.target.value)}
                 placeholder="Filtrar materia o código..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-indigo-500 focus:bg-white transition text-slate-800 placeholder-slate-400"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               />
             </div>
 
@@ -597,11 +597,11 @@ const ListaForos = () => {
             {cargandoMaterias ? (
               <div className="py-8 text-center space-y-2">
                 <div className="w-5 h-5 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div>
-                <p className="text-[11px] text-slate-400">Cargando catálogo...</p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">Cargando catálogo...</p>
               </div>
             ) : materiasFiltradas.length === 0 ? (
-              <div className="p-4 text-center bg-slate-50 rounded-xl border border-slate-100">
-                <p className="text-xs text-slate-500">No hay materias que coincidan.</p>
+              <div className="p-4 text-center bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                <p className="text-xs text-slate-500 dark:text-slate-400">No hay materias que coincidan.</p>
               </div>
             ) : (
               <div className="space-y-1.5 max-h-[480px] overflow-y-auto pr-1">
@@ -613,7 +613,7 @@ const ListaForos = () => {
                     <div
                       key={materia.id}
                       onClick={() => navigate(`/foros/${materia.id}`)}
-                      className="group p-2.5 rounded-2xl hover:bg-indigo-50/60 border border-transparent hover:border-indigo-100 transition-all flex items-center justify-between gap-3 cursor-pointer"
+                      className="group p-2.5 rounded-2xl hover:bg-indigo-50/60 dark:hover:bg-slate-800/80 border border-transparent hover:border-indigo-100 dark:hover:border-slate-700 transition-all flex items-center justify-between gap-3 cursor-pointer"
                     >
                       {/* Avatar Iniciales + Info */}
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -621,10 +621,10 @@ const ListaForos = () => {
                           {iniciales}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-xs font-bold text-slate-800 group-hover:text-indigo-600 truncate transition">
+                          <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 truncate transition">
                             {materia.nombre}
                           </h4>
-                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                             <span className="font-mono">{materia.codigo}</span>
                             <span>•</span>
                             <span>{materia.nivel_anio}° Año</span>
@@ -634,10 +634,10 @@ const ListaForos = () => {
 
                       {/* Contador de Posts + Flecha */}
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-[10px] font-bold bg-slate-100 group-hover:bg-indigo-100 group-hover:text-indigo-700 text-slate-600 px-2 py-0.5 rounded-full transition">
+                        <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-950/80 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full transition">
                           {materia.cantPublicaciones || 0}
                         </span>
-                        <FiChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+                        <FiChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
                       </div>
 
                     </div>

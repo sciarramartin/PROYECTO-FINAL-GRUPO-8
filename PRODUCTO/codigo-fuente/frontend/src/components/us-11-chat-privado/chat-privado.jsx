@@ -171,7 +171,7 @@ const ChatPrivado = () => {
     if (foto.length <= 4) {
       const emojiSize = sizeClass.includes("w-10") ? "text-xl" : "text-sm";
       return (
-        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center shrink-0 ${emojiSize}`}>
+        <div className={`${sizeClass} rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-150 dark:border-indigo-900/50 flex items-center justify-center shrink-0 ${emojiSize} transition-colors duration-200`}>
           {foto}
         </div>
       );
@@ -180,7 +180,7 @@ const ChatPrivado = () => {
       <img
         src={foto}
         alt="Avatar"
-        className={`${sizeClass} rounded-full object-cover border border-gray-250 shrink-0`}
+        className={`${sizeClass} rounded-full object-cover border border-gray-200 dark:border-slate-700 shrink-0 transition-colors duration-200`}
       />
     );
   };
@@ -196,44 +196,44 @@ const ChatPrivado = () => {
       {/* Botón de Retorno */}
       <button
         onClick={() => navigate("/conexiones")}
-        className="mb-4 text-xs font-bold text-gray-500 hover:text-indigo-600 transition flex items-center gap-1.5 cursor-pointer border-none bg-transparent"
+        className="mb-4 text-xs font-bold text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 flex items-center gap-1.5 cursor-pointer border-none bg-transparent"
       >
         ← Volver a Conexiones
       </button>
 
       {/* RENDER CUADRO CHAT PRIVADO */}
       {cargando ? (
-        <div className="flex flex-col items-center justify-center min-h-[400px] bg-white border border-gray-150 rounded-2xl p-6 shadow-sm gap-2">
+        <div className="flex flex-col items-center justify-center min-h-[400px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm gap-2 transition-colors duration-200">
           <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-          <p className="text-xs text-gray-400 font-medium">Sincronizando chat privado...</p>
+          <p className="text-xs text-gray-400 dark:text-slate-400 font-medium">Sincronizando chat privado...</p>
         </div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center min-h-[350px] bg-white border border-gray-150 rounded-2xl p-6 shadow-sm text-center">
+        <div className="flex flex-col items-center justify-center min-h-[350px] bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm text-center transition-colors duration-200">
           <span className="text-4xl mb-3">⚠️</span>
-          <h4 className="text-sm font-bold text-gray-800">No se pudo cargar el chat</h4>
-          <p className="text-xs text-red-500 mt-1 max-w-sm">{error}</p>
+          <h4 className="text-sm font-bold text-gray-800 dark:text-slate-100">No se pudo cargar el chat</h4>
+          <p className="text-xs text-red-500 dark:text-red-400 mt-1 max-w-sm">{error}</p>
           <button
             onClick={() => navigate("/conexiones")}
-            className="mt-5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition border-none cursor-pointer"
+            className="mt-5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 border-none cursor-pointer"
           >
             Volver a Conexiones
           </button>
         </div>
       ) : (
         
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden flex flex-col justify-between h-[580px]">
+        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-md overflow-hidden flex flex-col justify-between h-[580px] transition-colors duration-200">
           
           {/* 1. CABECERA CHAT */}
-          <div className="bg-gray-50 border-b border-gray-150 px-5 py-3 flex items-center justify-between">
+          <div className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-5 py-3 flex items-center justify-between transition-colors duration-200">
             <div className="flex items-center gap-3 min-w-0">
               {/* Avatar */}
               {renderAvatarChico(perfilAmigo?.foto_perfil, inicialesAmigo, "w-10 h-10")}
               {/* Info Amigo */}
               <div className="min-w-0">
-                <h3 className="text-xs font-extrabold text-gray-850 truncate leading-tight">
+                <h3 className="text-xs font-extrabold text-gray-850 dark:text-slate-100 truncate leading-tight transition-colors duration-200">
                   {usuarioAmigo?.nombre} {usuarioAmigo?.apellido}
                 </h3>
-                <p className="text-[9px] text-indigo-600 font-medium mt-0.5 truncate">
+                <p className="text-[9px] text-indigo-600 dark:text-indigo-400 font-medium mt-0.5 truncate transition-colors duration-200">
                   🎓 {CARRERAS[usuarioAmigo?.id_carrera] || "Ingeniería"} • @{usuarioAmigo?.nombre_usuario}
                 </p>
               </div>
@@ -241,17 +241,17 @@ const ChatPrivado = () => {
 
             <div className="flex items-center gap-2">
               <span className="inline-block w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
-              <span className="text-[10px] text-gray-400 font-bold">Chat Directo</span>
+              <span className="text-[10px] text-gray-400 dark:text-slate-400 font-bold">Chat Directo</span>
             </div>
           </div>
 
           {/* 2. AREA DE MENSAJES (Scrollable) */}
-          <div className="flex-1 bg-slate-50 overflow-y-auto px-5 py-4 space-y-4 max-h-[460px]">
+          <div className="flex-1 bg-slate-50 dark:bg-slate-950 overflow-y-auto px-5 py-4 space-y-4 max-h-[460px] transition-colors duration-200">
             {mensajes.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-10 opacity-70">
                 <span className="text-4xl mb-2">💬</span>
-                <h4 className="text-xs font-bold text-gray-700">¡Inicia la conversación!</h4>
-                <p className="text-[10px] text-gray-400 max-w-[240px] mt-0.5">
+                <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300">¡Inicia la conversación!</h4>
+                <p className="text-[10px] text-gray-400 dark:text-slate-400 max-w-[240px] mt-0.5">
                   Mandale un mensaje privado a tu amigo para coordinar y estudiar juntos.
                 </p>
               </div>
@@ -260,7 +260,7 @@ const ChatPrivado = () => {
                 <div key={fechaStr} className="space-y-3.5">
                   {/* Divisor de Fecha */}
                   <div className="flex justify-center my-3">
-                    <span className="bg-gray-200/70 backdrop-blur-xs text-gray-500 text-[8px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                    <span className="bg-gray-200/70 dark:bg-slate-800/80 backdrop-blur-xs text-gray-500 dark:text-slate-400 text-[8px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider">
                       {fechaStr}
                     </span>
                   </div>
@@ -279,17 +279,17 @@ const ChatPrivado = () => {
                         className={`flex ${esMiMensaje ? "justify-end" : "justify-start"} animate-fade-in`}
                       >
                         <div
-                          className={`max-w-[75%] rounded-2xl px-3.5 py-2 shadow-xs leading-normal flex flex-col ${
+                          className={`max-w-[75%] rounded-2xl px-3.5 py-2 shadow-xs leading-normal flex flex-col transition-colors duration-200 ${
                             esMiMensaje
                               ? "bg-indigo-600 text-white rounded-tr-none"
-                              : "bg-white border border-gray-150 text-gray-800 rounded-tl-none"
+                              : "bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-100 rounded-tl-none"
                           }`}
                         >
                           <p className="text-xs font-normal whitespace-pre-wrap break-words">{msg.contenido}</p>
                           
                           <div
                             className={`flex items-center justify-end gap-1 text-[8.5px] mt-1 shrink-0 ${
-                              esMiMensaje ? "text-indigo-200" : "text-gray-400"
+                              esMiMensaje ? "text-indigo-200" : "text-gray-400 dark:text-slate-400"
                             }`}
                           >
                             <span>{horaStr}</span>
@@ -317,7 +317,7 @@ const ChatPrivado = () => {
           {/* 3. INPUT CHAT */}
           <form
             onSubmit={handleEnviarMensaje}
-            className="bg-white border-t border-gray-150 px-5 py-3 flex items-center gap-3"
+            className="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 px-5 py-3 flex items-center gap-3 transition-colors duration-200"
           >
             <input
               type="text"
@@ -325,13 +325,13 @@ const ChatPrivado = () => {
               onChange={(e) => setNuevoMensaje(e.target.value)}
               placeholder="Escribe un mensaje privado..."
               disabled={enviando}
-              className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-850 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+              className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-colors duration-200"
               required
             />
             <button
               type="submit"
               disabled={!nuevoMensaje.trim() || enviando}
-              className="w-9 h-9 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shrink-0 border-none transition cursor-pointer shadow-sm hover:shadow-md disabled:opacity-50"
+              className="w-9 h-9 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shrink-0 border-none transition-colors duration-200 cursor-pointer shadow-sm hover:shadow-md disabled:opacity-50"
               title="Enviar Mensaje"
             >
               <svg

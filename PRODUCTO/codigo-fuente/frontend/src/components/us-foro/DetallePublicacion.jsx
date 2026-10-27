@@ -408,9 +408,9 @@ const DetallePublicacion = () => {
 
       {/* Modal de Confirmación de Eliminación */}
       {mostrarConfirmacionEliminar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95">
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">¿Eliminar publicación?</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 transition-colors duration-200">
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-slate-100 mb-2">¿Eliminar publicación?</h3>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Esta acción es irreversible y eliminará todos los comentarios asociados a la misma.</p>
             <div className="flex items-center justify-end gap-3">
               <button 
@@ -785,10 +785,10 @@ const DetallePublicacion = () => {
 
       {/* Modal de Reportar */}
       {modalReportarAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 transition-colors duration-200">
             <div>
-              <h3 className="text-base font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-zinc-900 dark:text-slate-100 flex items-center gap-2">
                 <FiAlertCircle className="w-5 h-5 text-red-500" />
                 {comentarioIdAReportar ? "Reportar Comentario" : "Reportar Publicación"}
               </h3>

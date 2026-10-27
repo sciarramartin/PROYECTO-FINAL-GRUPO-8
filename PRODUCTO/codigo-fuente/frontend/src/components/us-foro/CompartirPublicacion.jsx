@@ -130,8 +130,8 @@ const CompartirPublicacion = ({ isOpen, onClose, publicacion, nombreMateriaForo 
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-150 animate-duration-150">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-150 animate-duration-150 transition-colors duration-200">
                 
                 {/* Cabecera del Modal */}
                 <div className="flex items-center justify-between mb-4">

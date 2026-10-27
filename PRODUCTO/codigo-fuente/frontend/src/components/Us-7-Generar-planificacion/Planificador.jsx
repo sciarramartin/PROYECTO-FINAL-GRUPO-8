@@ -561,26 +561,26 @@ const Planificador = () => {
             </div>
 
             {/* ===== PASO 2: FILTROS + ACTIVIDADES (ancho completo, layout horizontal interno) ===== */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-sm font-bold text-gray-800 mb-4">2. Configurá tus preferencias y actividades</h2>
+            <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 transition-colors duration-200">
+                <h2 className="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">2. Configurá tus preferencias y actividades</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                     {/* COLUMNA A: Filtros de disponibilidad */}
                     <div className="flex flex-col gap-4">
                         <div>
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Disponibilidad horaria</h3>
-                            <div className="flex flex-col gap-2 text-xs text-gray-700">
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 mb-3">Disponibilidad horaria</h3>
+                            <div className="flex flex-col gap-2 text-xs text-gray-700 dark:text-slate-200">
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input ref={mananaRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
+                                    <input ref={mananaRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
                                     Mañana (08:00 - 12:00)
                                 </label>
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input ref={tardeRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
+                                    <input ref={tardeRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
                                     Tarde (13:00 - 18:00)
                                 </label>
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input ref={nocheRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
+                                    <input ref={nocheRef} type="checkbox" defaultChecked className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45" />
                                     Noche (18:00 - 22:00)
                                 </label>
                             </div>
@@ -588,13 +588,13 @@ const Planificador = () => {
 
                         {/* Actividades cargadas */}
                         <div>
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Actividades cargadas</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 mb-3">Actividades cargadas</h3>
                             <div className="flex flex-col gap-2 max-h-52 overflow-y-auto pr-1">
                                 {actividadesFijas.map(act => (
-                                    <div key={act.id} className="flex justify-between items-center bg-blue-50/70 p-3 rounded-xl text-xs border border-blue-100">
+                                    <div key={act.id} className="flex justify-between items-center bg-blue-50/70 dark:bg-blue-950/30 p-3 rounded-xl text-xs border border-blue-100 dark:border-blue-900/40">
                                         <div>
-                                            <p className="font-semibold text-blue-900">{act.nombre}</p>
-                                            <p className="text-blue-600 text-[11px]">Fija • {act.horaInicio} ({act.duracion} min)</p>
+                                            <p className="font-semibold text-blue-900 dark:text-blue-200">{act.nombre}</p>
+                                            <p className="text-blue-600 dark:text-blue-400 text-[11px]">Fija • {act.horaInicio} ({act.duracion} min)</p>
                                         </div>
                                         <button 
                                             onClick={() => handleEliminarFija(act.id)}
@@ -604,16 +604,16 @@ const Planificador = () => {
                                     </div>
                                 ))}
                                 {actividadesFlexibles.map((act, index) => (
-                                    <div key={index} className="flex justify-between items-center bg-purple-50/70 p-3 rounded-xl text-xs border border-purple-100">
+                                    <div key={index} className="flex justify-between items-center bg-purple-50/70 dark:bg-purple-950/30 p-3 rounded-xl text-xs border border-purple-100 dark:border-purple-900/40">
                                         <div>
-                                            <p className="font-semibold text-purple-900">{act.nombre}</p>
-                                            <p className="text-purple-600 text-[11px]">
+                                            <p className="font-semibold text-purple-900 dark:text-purple-200">{act.nombre}</p>
+                                            <p className="text-purple-600 dark:text-purple-400 text-[11px]">
                                                 Flexible • Prioridad {act.prioridad} • {act.horasSemanales}hs totales ({act.duracion} veces/sem)
                                             </p>
                                             {act.diasPreferidos && act.diasPreferidos.length > 0 && (
                                                 <div className="flex gap-1 mt-1 flex-wrap">
                                                     {act.diasPreferidos.map(dia => (
-                                                        <span key={dia} className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">
+                                                        <span key={dia} className="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded font-medium">
                                                             {dia.substring(0, 3)}
                                                         </span>
                                                     ))}
@@ -628,7 +628,7 @@ const Planificador = () => {
                                     </div>
                                 ))}
                                 {actividadesFijas.length === 0 && actividadesFlexibles.length === 0 && (
-                                    <p className="text-xs text-gray-400 italic text-center py-2">No hay actividades registradas.</p>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500 italic text-center py-2">No hay actividades registradas.</p>
                                 )}
                             </div>
                         </div>
@@ -636,50 +636,50 @@ const Planificador = () => {
 
                     {/* COLUMNA B: Formulario de actividades flexibles */}
                     <div className="lg:col-span-2">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Agregar actividades de mis tiempos libres</h3>
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 mb-3">Agregar actividades de mis tiempos libres</h3>
                         <form onSubmit={handleAgregarFlexible} className="flex flex-col gap-2.5">
                             <input 
                                 type="text" 
                                 placeholder="Nombre (Ej: Gimnasio, Cursillo)" 
                                 value={nuevaFlexible.nombre}
                                 onChange={e => setNuevaFlexible({...nuevaFlexible, nombre: e.target.value})}
-                                className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                                className="w-full p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 transition-colors duration-200"
                                 required
                             />
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label className="text-[10px] text-gray-400 font-medium block mb-1">Horas semanales</label>
+                                    <label className="text-[10px] text-gray-400 dark:text-slate-400 font-medium block mb-1">Horas semanales</label>
                                     <input 
                                         type="number" min="1" placeholder="Ej: 3" 
                                         value={nuevaFlexible.horasSemanales}
                                         onChange={e => setNuevaFlexible({...nuevaFlexible, horasSemanales: e.target.value})}
-                                        className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                                        className="w-full p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 transition-colors duration-200"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] text-gray-400 font-medium block mb-1">Veces a la semana</label>
+                                    <label className="text-[10px] text-gray-400 dark:text-slate-400 font-medium block mb-1">Veces a la semana</label>
                                     <input 
                                         type="number" min="1" placeholder="Ej: 3" 
                                         value={nuevaFlexible.duracion}
                                         onChange={e => setNuevaFlexible({...nuevaFlexible, duracion: e.target.value})}
-                                        className="w-full p-2 border border-gray-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                                        className="w-full p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 transition-colors duration-200"
                                         required
                                     />
                                 </div>
                             </div>
-                            <div className="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1.5">
+                            <div className="bg-gray-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-gray-100 dark:border-slate-700">
+                                <label className="text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide block mb-1.5">
                                     Días de preferencia (Opcional)
                                 </label>
-                                <div className="grid grid-cols-4 gap-1.5 text-[11px] text-gray-600">
+                                <div className="grid grid-cols-4 gap-1.5 text-[11px] text-gray-600 dark:text-slate-300">
                                     {diasSemana.map(dia => (
                                         <label key={dia} className="flex items-center gap-1 cursor-pointer select-none">
                                             <input 
                                                 type="checkbox" 
                                                 checked={nuevaFlexible.diasPreferidos.includes(dia)}
                                                 onChange={() => handleDiaCheck(dia)}
-                                                className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45"
+                                                className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45"
                                             />
                                             {dia.substring(0, 3)}
                                         </label>
@@ -689,7 +689,7 @@ const Planificador = () => {
                             <select 
                                 value={nuevaFlexible.prioridad}
                                 onChange={e => setNuevaFlexible({...nuevaFlexible, prioridad: Number(e.target.value)})}
-                                className="w-full p-2 border border-gray-200 rounded-lg text-xs bg-white outline-none focus:border-indigo-500"
+                                className="w-full p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs text-gray-800 dark:text-slate-100 outline-none focus:border-indigo-500 transition-colors duration-200"
                             >
                                 <option value={1}>Prioridad Alta (1)</option>
                                 <option value={2}>Prioridad Media (2)</option>
@@ -697,7 +697,7 @@ const Planificador = () => {
                             </select>
                             <button 
                                 type="submit" 
-                                className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold py-2 rounded-lg text-xs transition cursor-pointer"
+                                className="w-full bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 font-semibold py-2 rounded-lg text-xs transition cursor-pointer"
                             >
                                 Añadir a la lista
                             </button>
@@ -717,8 +717,8 @@ const Planificador = () => {
 
             {/* ===== PASO 3: CALENDARIO — ancho completo, debajo ===== */}
             {mostrarHorario && (
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <h2 className="text-sm font-bold text-gray-800 mb-4">3. Vista previa de tu planificación semanal</h2>
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 transition-colors duration-200">
+                    <h2 className="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">3. Vista previa de tu planificación semanal</h2>
                     <Horario
                         actividades={[...actividadesPreview, ...actividadesFijas]}
                         onActividadesChange={(lista) => setActividadesPreview(lista)}
@@ -733,7 +733,7 @@ const Planificador = () => {
                         </button>
                         <button 
                             onClick={cancelarPlanificacion}
-                            className="bg-white hover:bg-gray-50 text-gray-600 font-bold py-3 rounded-xl text-xs transition shadow-sm cursor-pointer border border-gray-200 flex items-center justify-center gap-1"
+                            className="bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-200 font-bold py-3 rounded-xl text-xs transition shadow-sm cursor-pointer border border-gray-200 dark:border-slate-700 flex items-center justify-center gap-1"
                         >
                             Cancelar
                         </button>
@@ -746,7 +746,7 @@ const Planificador = () => {
                 id="sticky-summary-planificador"
                 className="fixed bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-4xl z-40 transition-all duration-300"
             >
-                <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/90 dark:border-zinc-800 p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3.5 ring-1 ring-black/5 dark:ring-white/5">
+                <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/90 dark:border-slate-800 p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3.5 ring-1 ring-black/5 dark:ring-white/5 transition-colors duration-200">
                     
                     {/* Resumen: "X materias seleccionadas | Y horas semanales estimadas" */}
                     <div className="flex items-center gap-3 w-full sm:w-auto">

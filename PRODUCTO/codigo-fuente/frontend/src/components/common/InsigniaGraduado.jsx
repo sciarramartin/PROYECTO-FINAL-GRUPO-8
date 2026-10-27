@@ -24,9 +24,9 @@ const InsigniaGraduado = ({ carrera = 'Ingeniería en Sistemas', trayectoria = n
 
       {/* Modal / Pantalla de Felicitaciones y Resumen de Trayectoria Académica (US-MET-11) */}
       {mostrarModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div
-            className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-amber-200 dark:border-amber-900/50 overflow-hidden text-center p-6 sm:p-8 space-y-6"
+            className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-amber-200 dark:border-amber-900/50 overflow-hidden text-center p-6 sm:p-8 space-y-6 transition-colors duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Fondo decorativo con gradiente */}

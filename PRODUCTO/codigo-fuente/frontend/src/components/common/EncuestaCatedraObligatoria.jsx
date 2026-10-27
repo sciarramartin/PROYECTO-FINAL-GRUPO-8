@@ -135,8 +135,8 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
   const todoCompletado = dificultad > 0 && claridadDocente > 0 && disponibilidad > 0;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans">
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col gap-3 sm:gap-4 my-auto max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-zinc-200 dark:border-slate-800 flex flex-col gap-3 sm:gap-4 my-auto max-h-[92vh] overflow-y-auto transition-colors duration-200">
         
         {/* Cabecera */}
         <div className="flex items-start justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3 gap-2">

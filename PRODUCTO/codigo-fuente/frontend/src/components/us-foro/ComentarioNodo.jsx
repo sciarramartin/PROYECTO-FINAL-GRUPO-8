@@ -174,9 +174,9 @@ const ComentarioNodo = ({ comentario, todasLasRespuestas, alResponder, idUsuario
             )}
             {/* Modal de Confirmación de Eliminación de Comentario (Estilo Premium igual al de Publicación) */}
             {confirmandoEliminar && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95">
-                        <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">¿Eliminar comentario?</h3>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+                    <div className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 transition-colors duration-200">
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-slate-100 mb-2">¿Eliminar comentario?</h3>
                         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Esta acción es irreversible y eliminará el comentario y todas sus respuestas asociadas.</p>
                         <div className="flex items-center justify-end gap-3">
                             <button 

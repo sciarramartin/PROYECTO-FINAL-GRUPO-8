@@ -11,14 +11,14 @@ const MuroGrupo = () => {
   const renderAvatarChico = (foto, iniciales, extraClasses = "w-8 h-8 text-[11px]") => {
     if (!foto) {
       return (
-        <div className={`${extraClasses} rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-extrabold shrink-0`}>
+        <div className={`${extraClasses} rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-extrabold shrink-0 transition-colors duration-200`}>
           {iniciales}
         </div>
       );
     }
     if (foto.length <= 4) {
       return (
-        <div className={`${extraClasses} rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0`}>
+        <div className={`${extraClasses} rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center shrink-0 transition-colors duration-200`}>
           <span className="text-sm select-none">{foto}</span>
         </div>
       );
@@ -28,11 +28,11 @@ const MuroGrupo = () => {
       <img
         src={src}
         alt="Avatar"
-        className={`${extraClasses} rounded-full object-cover shrink-0 border border-gray-200`}
+        className={`${extraClasses} rounded-full object-cover shrink-0 border border-gray-200 dark:border-slate-700 transition-colors duration-200`}
         onError={(e) => {
           e.target.onerror = null;
           e.target.src = '';
-          e.target.outerHTML = `<div class="${extraClasses} rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-extrabold shrink-0">${iniciales}</div>`;
+          e.target.outerHTML = `<div class="${extraClasses} rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-extrabold shrink-0 transition-colors duration-200">${iniciales}</div>`;
         }}
       />
     );
@@ -479,19 +479,19 @@ const MuroGrupo = () => {
       {/* Botón de Retorno */}
       <button
         onClick={() => navigate("/grupos")}
-        className="mb-4 text-xs font-bold text-gray-500 hover:text-indigo-600 transition flex items-center gap-1.5 cursor-pointer border-none bg-transparent"
+        className="mb-4 text-xs font-bold text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200 flex items-center gap-1.5 cursor-pointer border-none bg-transparent"
       >
         ← Volver a Grupos de Estudio
       </button>
 
       {/* Alertas */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-500 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
           <span>⚠️</span> {error}
         </div>
       )}
       {mensajeExito && (
-        <div className="bg-green-50 border border-green-200 text-green-600 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
+        <div className="bg-green-50 dark:bg-emerald-950/30 border border-green-200 dark:border-emerald-900/50 text-green-600 dark:text-emerald-400 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
           <span>✓</span> {mensajeExito}
         </div>
       )}
@@ -500,20 +500,20 @@ const MuroGrupo = () => {
       {grupo && !grupo.esMiembro ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Ficha descriptiva en la Izquierda */}
-          <div className="lg:col-span-2 bg-white border border-gray-150 rounded-2xl p-6 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6 transition-colors duration-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-4 transition-colors duration-200">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-lg font-extrabold shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-lg font-extrabold shrink-0 transition-colors duration-200">
                   {inicialesGrupo}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-lg font-bold text-gray-900 leading-snug truncate">{grupo.nombre}</h1>
-                    <span className="text-[9px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full uppercase tracking-wider">
+                    <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 leading-snug truncate transition-colors duration-200">{grupo.nombre}</h1>
+                    <span className="text-[9px] font-bold px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 rounded-full uppercase tracking-wider transition-colors duration-200">
                       Público
                     </span>
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1">
+                  <p className="text-[10px] text-gray-400 dark:text-slate-400 mt-1 transition-colors duration-200">
                     Organizador: {grupo.Creador ? `${grupo.Creador.nombre} ${grupo.Creador.apellido}` : "Estudiante"}
                   </p>
                 </div>
@@ -523,23 +523,22 @@ const MuroGrupo = () => {
               <button
                 onClick={unirseAlGrupo}
                 disabled={uniendose}
-                style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
-                className="px-5 py-2.5 !bg-indigo-600 hover:!bg-indigo-700 !text-white rounded-xl text-xs font-extrabold shadow-sm hover:shadow-md transition duration-200 cursor-pointer border-none disabled:opacity-50 self-start sm:self-auto shrink-0"
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-extrabold shadow-sm hover:shadow-md transition-colors duration-200 cursor-pointer border-none disabled:opacity-50 self-start sm:self-auto shrink-0"
               >
                 {uniendose ? "Ingresando..." : "✓ Unirse al Grupo"}
               </button>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-700">Acerca de este grupo:</h3>
-              <p className="text-xs text-gray-500 leading-relaxed bg-gray-50 border border-gray-100 p-4 rounded-xl">
+              <h3 className="text-xs font-bold text-gray-700 dark:text-slate-300">Acerca de este grupo:</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-800 p-4 rounded-xl transition-colors duration-200">
                 {grupo.descripcion || "Este grupo de estudio no posee una descripción cargada aún."}
               </p>
             </div>
 
             {/* Vista Previa de Roster */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-gray-700">Miembros actuales ({grupo.Miembros.length}):</h3>
+              <h3 className="text-xs font-bold text-gray-700 dark:text-slate-300">Miembros actuales ({grupo.Miembros.length}):</h3>
               <div className="flex flex-wrap gap-2">
                 {grupo.Miembros.map((miembro) => {
                   const iniciales = `${miembro.nombre[0]}${miembro.apellido[0]}`.toUpperCase();
@@ -559,24 +558,23 @@ const MuroGrupo = () => {
           </div>
 
           {/* Panel Flotante a la Derecha para unirse */}
-          <div className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm text-center space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm text-center space-y-4 transition-colors duration-200">
             <div className="flex justify-center mb-1">
-              <EmptyStateIllustration variant="groups" className="w-28 h-24 text-indigo-500" />
+              <EmptyStateIllustration variant="groups" className="w-28 h-24 text-indigo-500 dark:text-indigo-400" />
             </div>
-            <h2 className="text-sm font-bold text-gray-900">¡Sumate al equipo!</h2>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-slate-100 transition-colors duration-200">¡Sumate al equipo!</h2>
+            <p className="text-xs text-gray-400 dark:text-slate-400 leading-relaxed transition-colors duration-200">
               Este es un grupo público. Unite ahora para poder leer los mensajes del muro, conversar con tus compañeros y compartir ideas de estudio.
             </p>
             
             <button
               onClick={unirseAlGrupo}
               disabled={uniendose}
-              style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
-              className="w-full py-3 !bg-indigo-600 hover:!bg-indigo-700 active:scale-95 !text-white rounded-xl text-xs font-extrabold shadow-sm hover:shadow-md transition duration-200 cursor-pointer border-none disabled:opacity-50"
+              className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-extrabold shadow-sm hover:shadow-md transition-colors duration-200 cursor-pointer border-none disabled:opacity-50"
             >
               {uniendose ? "Ingresando..." : "✓ Unirse al Grupo"}
             </button>
-            <div className="text-[10px] text-gray-400 bg-gray-50 border border-gray-100 px-3 py-2 rounded-xl">
+            <div className="text-[10px] text-gray-400 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-800 px-3 py-2 rounded-xl transition-colors duration-200">
               🔒 El chat y los mensajes se mantendrán ocultos hasta que seas miembro.
             </div>
           </div>
@@ -587,17 +585,17 @@ const MuroGrupo = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
           
           {/* Panel Izquierdo (3/4 de ancho): Chat de WhatsApp */}
-          <div className="lg:col-span-3 bg-white border border-gray-200 rounded-2xl shadow-md overflow-hidden flex flex-col justify-between">
+          <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-md overflow-hidden flex flex-col justify-between transition-colors duration-200">
             
             {/* WhatsApp Header (Barra Superior del Chat) */}
-            <div className="bg-[#f0f2f5] border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+            <div className="bg-[#f0f2f5] dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between transition-colors duration-200">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-full bg-indigo-150 border border-indigo-200 flex items-center justify-center text-indigo-700 text-xs font-extrabold shrink-0">
+                <div className="w-10 h-10 rounded-full bg-indigo-150 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-900/50 flex items-center justify-center text-indigo-700 dark:text-indigo-300 text-xs font-extrabold shrink-0 transition-colors duration-200">
                   {inicialesGrupo}
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-xs font-extrabold text-gray-850 truncate">{grupo?.nombre}</h2>
-                  <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+                  <h2 className="text-xs font-extrabold text-gray-850 dark:text-slate-100 truncate transition-colors duration-200">{grupo?.nombre}</h2>
+                  <p className="text-[10px] text-gray-400 dark:text-slate-400 mt-0.5 truncate transition-colors duration-200">
                     {grupo?.Miembros?.length || 0} miembros • {grupo?.estado === 'publico' ? 'Grupo Público' : 'Grupo Privado'}
                   </p>
                 </div>
@@ -606,7 +604,7 @@ const MuroGrupo = () => {
               {soyAdmin && (
                 <button
                   onClick={abrirModalConfiguracion}
-                  className="p-1.5 hover:bg-gray-200 rounded-lg text-gray-500 hover:text-indigo-650 transition cursor-pointer border-none bg-transparent flex items-center justify-center"
+                  className="p-1.5 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:text-indigo-650 dark:hover:text-indigo-300 transition-colors duration-200 cursor-pointer border-none bg-transparent flex items-center justify-center"
                   title="Configurar Grupo"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -620,10 +618,11 @@ const MuroGrupo = () => {
             {/* WhatsApp Scroll Area (Middle Messages Feed) */}
             <div 
               ref={chatContainerRef}
-              className="h-[460px] overflow-y-auto p-4 space-y-3 bg-[#efeae2] relative"
+              className="h-[460px] overflow-y-auto p-4 space-y-3 bg-[#efeae2] dark:bg-slate-950 relative transition-colors duration-200"
               style={{
-                backgroundImage: "radial-gradient(#dfdcd6 1px, transparent 1px)",
-                backgroundSize: "16px 16px"
+                backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)",
+                backgroundSize: "16px 16px",
+                color: "rgba(100, 116, 139, 0.15)"
               }}
             >
               {mensajes.length > 0 ? (
@@ -657,26 +656,26 @@ const MuroGrupo = () => {
                       )}
                       
                       <div 
-                        className={`max-w-md px-3 py-1.5 text-xs shadow-sm rounded-2xl ${
+                        className={`max-w-md px-3 py-1.5 text-xs shadow-sm rounded-2xl transition-colors duration-200 ${
                           esPropio 
-                            ? 'bg-[#d9fdd3] text-gray-800 rounded-tr-none border border-[#d1f8cb]' 
-                            : 'bg-white text-gray-800 rounded-tl-none border border-gray-150'
+                            ? 'bg-[#d9fdd3] dark:bg-emerald-950/70 text-gray-800 dark:text-slate-100 rounded-tr-none border border-[#d1f8cb] dark:border-emerald-800/40' 
+                            : 'bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 rounded-tl-none border border-gray-150 dark:border-slate-700'
                         }`}
                       >
                         {/* Autor de mensaje (Solo para recibidos) */}
                         {!esPropio && (
-                          <span className="text-[9.5px] font-extrabold text-indigo-600 mb-0.5 block truncate">
+                          <span className="text-[9.5px] font-extrabold text-indigo-600 dark:text-indigo-400 mb-0.5 block truncate">
                             {nombreAutor}
                           </span>
                         )}
                         
                         {/* Contenido del Mensaje */}
-                        <p className="whitespace-pre-wrap leading-relaxed break-words text-gray-800">
+                        <p className="whitespace-pre-wrap leading-relaxed break-words text-gray-800 dark:text-slate-100">
                           {msg.contenido}
                         </p>
 
                         {/* Hora al pie derecho */}
-                        <span className="text-[8.5px] text-gray-400 block text-right mt-1 font-sans">
+                        <span className="text-[8.5px] text-gray-400 dark:text-slate-400 block text-right mt-1 font-sans">
                           {horaWhatsApp}
                         </span>
                       </div>
@@ -687,10 +686,10 @@ const MuroGrupo = () => {
                 /* Empty Chat Ilustrado con Acción */
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center select-none">
                   <div className="w-24 h-24 mb-1">
-                    <EmptyStateIllustration variant="groups" className="w-24 h-24 text-indigo-500" />
+                    <EmptyStateIllustration variant="groups" className="w-24 h-24 text-indigo-500 dark:text-indigo-400" />
                   </div>
-                  <h4 className="text-xs font-bold text-gray-850">Comienzo del chat de grupo</h4>
-                  <p className="text-[11px] text-gray-500 mt-1 max-w-[260px] leading-relaxed">
+                  <h4 className="text-xs font-bold text-gray-850 dark:text-slate-100 transition-colors duration-200">Comienzo del chat de grupo</h4>
+                  <p className="text-[11px] text-gray-500 dark:text-slate-400 mt-1 max-w-[260px] leading-relaxed transition-colors duration-200">
                     ¡Saludá al equipo y coordiná horarios de estudio para materias!
                   </p>
                   <button
@@ -700,7 +699,7 @@ const MuroGrupo = () => {
                       const input = document.getElementById("input-chat-grupo");
                       if (input) input.focus();
                     }}
-                    className="mt-3 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer border-none"
+                    className="mt-3 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-colors duration-200 shadow-xs cursor-pointer border-none"
                   >
                     Saludar al equipo 👋
                   </button>
@@ -710,7 +709,7 @@ const MuroGrupo = () => {
             </div>
 
             {/* WhatsApp Send Dock (Barra de Entrada) */}
-            <form onSubmit={publicarMensaje} className="bg-[#f0f2f5] border-t border-gray-200 px-4 py-3 flex items-center gap-3">
+            <form onSubmit={publicarMensaje} className="bg-[#f0f2f5] dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center gap-3 transition-colors duration-200">
               <input
                 id="input-chat-grupo"
                 type="text"
@@ -719,12 +718,12 @@ const MuroGrupo = () => {
                 onChange={(e) => setNuevoMensaje(e.target.value)}
                 maxLength={400}
                 required
-                className="flex-1 bg-white border border-gray-250 rounded-full px-4 py-2 text-xs outline-none text-gray-700 placeholder-gray-450 focus:ring-1 focus:ring-indigo-400 transition"
+                className="flex-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full px-4 py-2 text-xs outline-none text-gray-700 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-400 dark:focus:ring-indigo-500 transition-colors duration-200"
               />
               <button
                 type="submit"
                 disabled={publicando || !nuevoMensaje.trim()}
-                className="w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white flex items-center justify-center shrink-0 cursor-pointer shadow-sm border-none transition"
+                className="w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white flex items-center justify-center shrink-0 cursor-pointer shadow-sm border-none transition-colors duration-200"
               >
                 {publicando ? (
                   <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -739,8 +738,8 @@ const MuroGrupo = () => {
           {/* Panel Derecho (1/4 de ancho): Roster y Miembros */}
           <div className="space-y-6">
             {/* Lista Completa de Miembros */}
-            <div id="card-miembros" className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm space-y-4 relative">
-              <h2 className="text-xs font-bold text-gray-900 border-b border-gray-100 pb-2.5 flex items-center justify-between">
+            <div id="card-miembros" className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4 relative transition-colors duration-200">
+              <h2 className="text-xs font-bold text-gray-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-800 pb-2.5 flex items-center justify-between transition-colors duration-200">
                 <span>Miembros ({grupo?.Miembros?.length || 0})</span>
               </h2>
 
@@ -751,14 +750,14 @@ const MuroGrupo = () => {
                   placeholder="Buscar estudiante..."
                   value={filtroMiembros}
                   onChange={(e) => setFiltroMiembros(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 focus:bg-white focus:border-indigo-400 rounded-xl text-[10.5px] text-gray-800 placeholder-gray-455 outline-none transition duration-200"
+                  className="w-full pl-8 pr-3 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 focus:border-indigo-400 dark:focus:border-indigo-500 rounded-xl text-[10.5px] text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 outline-none transition-colors duration-200"
                 />
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] select-none pointer-events-none">🔍</span>
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 text-[11px] select-none pointer-events-none">🔍</span>
                 {filtroMiembros && (
                   <button 
                     type="button"
                     onClick={() => setFiltroMiembros("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-[10px]"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 text-[10px]"
                   >
                     ❌
                   </button>
@@ -783,16 +782,16 @@ const MuroGrupo = () => {
                             "w-8 h-8 text-[10px]"
                           )}
                           <div className="min-w-0">
-                            <p className="text-[11px] font-bold text-gray-800 truncate">
-                              {miembro.nombre} {miembro.apellido} {miembro.id === miUsuarioId && <span className="text-[9px] text-indigo-500 font-normal">(Tú)</span>}
+                            <p className="text-[11px] font-bold text-gray-800 dark:text-slate-200 truncate transition-colors duration-200">
+                              {miembro.nombre} {miembro.apellido} {miembro.id === miUsuarioId && <span className="text-[9px] text-indigo-500 dark:text-indigo-400 font-normal">(Tú)</span>}
                             </p>
-                            <p className="text-[9px] text-gray-400 truncate">@{miembro.nombre_usuario}</p>
+                            <p className="text-[9px] text-gray-400 dark:text-slate-400 truncate transition-colors duration-200">@{miembro.nombre_usuario}</p>
                           </div>
                         </div>
                         
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={`text-[8.5px] font-bold py-0.5 rounded-full w-16 text-center justify-center flex shrink-0 ${
-                            esAdmin ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-500"
+                          <span className={`text-[8.5px] font-bold py-0.5 rounded-full w-16 text-center justify-center flex shrink-0 transition-colors duration-200 ${
+                            esAdmin ? "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"
                           }`}>
                             {rolTexto}
                           </span>
@@ -802,8 +801,8 @@ const MuroGrupo = () => {
                             <button
                               type="button"
                               onClick={(e) => abrirMenu(e, miembro)}
-                              className={`w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-150 transition duration-150 cursor-pointer border-none bg-transparent ${
-                                menuAbiertoMiembroId === miembro.id ? 'text-indigo-650 font-bold bg-gray-100' : 'text-gray-450 hover:text-gray-755'
+                              className={`w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-150 dark:hover:bg-slate-800 transition duration-150 cursor-pointer border-none bg-transparent ${
+                                menuAbiertoMiembroId === miembro.id ? 'text-indigo-650 dark:text-indigo-400 font-bold bg-gray-100 dark:bg-slate-800' : 'text-gray-400 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
                               }`}
                             >
                               ⋮
@@ -814,7 +813,7 @@ const MuroGrupo = () => {
                     );
                   })
                 ) : (
-                  <p className="text-[10px] text-gray-400 text-center py-4">No se encontraron miembros.</p>
+                  <p className="text-[10px] text-gray-400 dark:text-slate-400 text-center py-4">No se encontraron miembros.</p>
                 )}
               </div>
 
@@ -822,8 +821,7 @@ const MuroGrupo = () => {
               <button
                 onClick={salirDelGrupo}
                 disabled={saliendo}
-                style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}
-                className="w-full mt-4 py-2 !bg-red-100 hover:!bg-red-200 border border-red-200 hover:border-red-300 !text-red-700 hover:!text-red-800 rounded-xl text-xs font-bold transition duration-200 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                className="w-full mt-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-950/40 dark:hover:bg-red-900/50 border border-red-200 hover:border-red-300 dark:border-red-900/60 text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 rounded-xl text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 🚪 {saliendo ? "Saliendo..." : "Salir del Grupo"}
               </button>
@@ -832,28 +830,28 @@ const MuroGrupo = () => {
               {menuAbiertoMiembroId && miembroPopup && (
                 <>
                   <div 
-                    className="fixed inset-0 z-40 cursor-default" 
+                    className="fixed inset-0 z-40 cursor-default bg-black/60 backdrop-blur-sm" 
                     onClick={() => {
                       setMenuAbiertoMiembroId(null);
                       setMiembroPopup(null);
                     }}
                   />
                   <div 
-                    className="absolute z-50 bg-white border border-gray-150 rounded-2xl shadow-xl p-3.5 w-40 md:w-44 animate-fade-in origin-right right-4 md:right-[105%]"
+                    className="absolute z-50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-xl p-3.5 w-40 md:w-44 animate-fade-in origin-right right-4 md:right-[105%] transition-colors duration-200"
                     style={{
                       top: `${posicionPopupY}px`,
                     }}
                   >
                     {/* Arrow indicator pointing to the clicked row */}
-                    <div className="hidden md:block absolute top-3.5 -right-[5.5px] w-2.5 h-2.5 bg-white border-r border-t border-gray-150 rotate-45 z-50"></div>
+                    <div className="hidden md:block absolute top-3.5 -right-[5.5px] w-2.5 h-2.5 bg-white dark:bg-slate-900 border-r border-t border-gray-200 dark:border-slate-800 rotate-45 z-50 transition-colors duration-200"></div>
                     
                     <div className="min-w-0">
-                      <p className="text-[8.5px] font-extrabold text-indigo-750 uppercase tracking-wider select-none">Gestionar</p>
-                      <p className="text-[10px] font-bold text-gray-800 truncate mt-0.5">{miembroPopup.nombre} {miembroPopup.apellido}</p>
-                      <p className="text-[8.5px] text-gray-450 truncate">@{miembroPopup.nombre_usuario}</p>
+                      <p className="text-[8.5px] font-extrabold text-indigo-650 dark:text-indigo-400 uppercase tracking-wider select-none">Gestionar</p>
+                      <p className="text-[10px] font-bold text-gray-800 dark:text-slate-100 truncate mt-0.5">{miembroPopup.nombre} {miembroPopup.apellido}</p>
+                      <p className="text-[8.5px] text-gray-400 dark:text-slate-400 truncate">@{miembroPopup.nombre_usuario}</p>
                     </div>
                     
-                    <div className="h-px bg-gray-100 my-2" />
+                    <div className="h-px bg-gray-100 dark:bg-slate-800 my-2" />
                     
                     <div className="space-y-2 pt-1">
                       <button
@@ -862,7 +860,7 @@ const MuroGrupo = () => {
                           const isCurrentlyAdmin = miembroPopup.GrupoMiembro?.rol === "administrador" || miembroPopup.GrupoMiembro?.rol === "admin";
                           cambiarRolMiembro(miembroPopup.id, isCurrentlyAdmin ? "miembro" : "admin");
                         }}
-                        className="w-full text-left px-3 py-2 text-[10px] text-indigo-700 bg-indigo-50/40 hover:bg-indigo-600 hover:text-white border border-indigo-150 hover:border-indigo-600 rounded-xl font-extrabold transition-all duration-200 flex items-center justify-between gap-1.5 cursor-pointer shadow-sm"
+                        className="w-full text-left px-3 py-2 text-[10px] text-indigo-700 dark:text-indigo-300 bg-indigo-50/40 dark:bg-indigo-950/40 hover:bg-indigo-600 hover:text-white border border-indigo-150 dark:border-indigo-900/50 hover:border-indigo-600 rounded-xl font-extrabold transition-all duration-200 flex items-center justify-between gap-1.5 cursor-pointer shadow-sm"
                       >
                         <span>🛡️ {miembroPopup.GrupoMiembro?.rol === "administrador" || miembroPopup.GrupoMiembro?.rol === "admin" ? "Quitar Admin" : "Hacer Admin"}</span>
                         <span className="text-[9px] opacity-75 font-normal">→</span>
@@ -871,7 +869,7 @@ const MuroGrupo = () => {
                       <button
                         type="button"
                         onClick={() => expulsarMiembro(miembroPopup.id, `${miembroPopup.nombre} ${miembroPopup.apellido}`)}
-                        className="w-full text-left px-3 py-2 text-[10px] text-red-600 bg-red-50/40 hover:bg-red-600 hover:text-white border border-red-150 hover:border-red-600 rounded-xl font-extrabold transition-all duration-200 flex items-center justify-between gap-1.5 cursor-pointer shadow-sm"
+                        className="w-full text-left px-3 py-2 text-[10px] text-red-600 dark:text-red-400 bg-red-50/40 dark:bg-red-950/40 hover:bg-red-600 hover:text-white border border-red-150 dark:border-red-900/50 hover:border-red-600 rounded-xl font-extrabold transition-all duration-200 flex items-center justify-between gap-1.5 cursor-pointer shadow-sm"
                       >
                         <span>❌ Eliminar</span>
                         <span className="text-[9px] opacity-75 font-normal">→</span>
@@ -883,15 +881,15 @@ const MuroGrupo = () => {
             </div>
 
             {/* Invitar Amigos (Sincronizado) */}
-            <div className="bg-white border border-gray-150 rounded-2xl p-5 shadow-sm space-y-4">
-              <div className="border-b border-gray-100 pb-2.5">
-                <h2 className="text-xs font-bold text-gray-900">Invitar Amigos</h2>
-                <p className="text-[9px] text-gray-400 mt-0.5">Suma a tus amigos a este grupo de estudio.</p>
+            <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4 transition-colors duration-200">
+              <div className="border-b border-gray-100 dark:border-slate-800 pb-2.5 transition-colors duration-200">
+                <h2 className="text-xs font-bold text-gray-900 dark:text-slate-100">Invitar Amigos</h2>
+                <p className="text-[9px] text-gray-400 dark:text-slate-400 mt-0.5">Suma a tus amigos a este grupo de estudio.</p>
               </div>
 
               {/* Lupita de búsqueda de amigos */}
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-slate-500">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -901,12 +899,12 @@ const MuroGrupo = () => {
                   placeholder="Buscar amigos por nombre..."
                   value={busquedaAmigos}
                   onChange={(e) => setBusquedaAmigos(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-[10px] text-gray-850 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                  className="w-full pl-8 pr-3 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-[10px] text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-colors duration-200"
                 />
                 {busquedaAmigos && (
                   <button
                     onClick={() => setBusquedaAmigos("")}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-450 hover:text-gray-650 transition cursor-pointer border-none bg-transparent text-[10px]"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors duration-200 cursor-pointer border-none bg-transparent text-[10px]"
                   >
                     ✕
                   </button>
@@ -918,7 +916,7 @@ const MuroGrupo = () => {
                   amigosNoMiembros.map((amigo) => {
                     const iniciales = `${amigo.nombre[0]}${amigo.apellido[0]}`.toUpperCase();
                     return (
-                      <div key={amigo.id} className="flex items-center justify-between gap-2 p-2 bg-gray-50 border border-gray-100 rounded-xl">
+                      <div key={amigo.id} className="flex items-center justify-between gap-2 p-2 bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl transition-colors duration-200">
                         <div className="flex items-center gap-2 min-w-0">
                           {renderAvatarChico(
                             amigo.Perfil?.foto_perfil || amigo.perfil?.foto_perfil,
@@ -926,14 +924,14 @@ const MuroGrupo = () => {
                             "w-8 h-8 text-[10px]"
                           )}
                           <div className="min-w-0">
-                            <p className="text-[10px] font-bold text-gray-805 truncate">{amigo.nombre} {amigo.apellido}</p>
-                            <p className="text-[8.5px] text-gray-450 truncate">@{amigo.nombre_usuario}</p>
+                            <p className="text-[10px] font-bold text-gray-800 dark:text-slate-200 truncate">{amigo.nombre} {amigo.apellido}</p>
+                            <p className="text-[8.5px] text-gray-400 dark:text-slate-400 truncate">@{amigo.nombre_usuario}</p>
                           </div>
                         </div>
                         <button
                           onClick={() => agregarMiembro(amigo.id)}
                           disabled={procesandoId === amigo.id}
-                          className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[9px] font-bold transition shrink-0 disabled:opacity-50 cursor-pointer border-none"
+                          className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[9px] font-bold transition-colors duration-200 shrink-0 disabled:opacity-50 cursor-pointer border-none"
                         >
                           {procesandoId === amigo.id ? "..." : "+ Añadir"}
                         </button>
@@ -942,9 +940,9 @@ const MuroGrupo = () => {
                   })
                 ) : (
                   /* Empty friends roster */
-                  <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-250">
+                  <div className="text-center py-6 bg-gray-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-gray-200 dark:border-slate-700 transition-colors duration-200">
                     <span className="text-2xl block mb-1">👋</span>
-                    <h4 className="text-[10px] font-bold text-gray-700">Sin amigos para invitar</h4>
+                    <h4 className="text-[10px] font-bold text-gray-700 dark:text-slate-300">Sin amigos para invitar</h4>
                   </div>
                 )}
               </div>
@@ -957,18 +955,18 @@ const MuroGrupo = () => {
 
       {/* Modal de Configuración (Solo Administradores) */}
       {modalConfiguracionAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl border border-gray-150 w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 w-full max-w-md shadow-2xl overflow-hidden flex flex-col transition-colors duration-200">
             {/* Cabecera */}
-            <div className="bg-gray-50 border-b border-gray-150 px-5 py-4 flex items-center justify-between">
+            <div className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-5 py-4 flex items-center justify-between transition-colors duration-200">
               <div className="flex items-center gap-2">
                 <span className="text-base">⚙️</span>
-                <h3 className="text-xs font-bold text-gray-800">Configuración del Grupo</h3>
+                <h3 className="text-xs font-bold text-gray-800 dark:text-slate-100">Configuración del Grupo</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setModalConfiguracionAbierto(false)}
-                className="text-gray-400 hover:text-gray-600 transition cursor-pointer border-none bg-transparent text-sm font-bold animate-pulse"
+                className="text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors duration-200 cursor-pointer border-none bg-transparent text-sm font-bold"
               >
                 ✕
               </button>
@@ -977,19 +975,19 @@ const MuroGrupo = () => {
             {/* Formulario */}
             <form onSubmit={handleGuardarConfiguracion} className="p-5 space-y-4">
               {errorConfig && (
-                <div className="bg-red-50 border border-red-200 text-red-500 rounded-xl px-4 py-2.5 text-[10px] animate-fade-in flex items-center gap-2">
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400 rounded-xl px-4 py-2.5 text-[10px] animate-fade-in flex items-center gap-2">
                   <span>⚠️</span> {errorConfig}
                 </div>
               )}
 
               {/* Nombre */}
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-gray-700">Nombre del Grupo</label>
+                <label className="block text-[10px] font-bold text-gray-700 dark:text-slate-300">Nombre del Grupo</label>
                 <input
                   type="text"
                   value={nombreConfig}
                   onChange={(e) => setNombreConfig(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-850 focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-colors duration-200"
                   placeholder="Ej: Grupo de Álgebra I"
                   required
                 />
@@ -997,26 +995,26 @@ const MuroGrupo = () => {
 
               {/* Descripción */}
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-gray-700">Descripción</label>
+                <label className="block text-[10px] font-bold text-gray-700 dark:text-slate-300">Descripción</label>
                 <textarea
                   value={descripcionConfig}
                   onChange={(e) => setDescripcionConfig(e.target.value)}
                   rows="3"
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-850 focus:outline-none focus:border-indigo-500 focus:bg-white transition resize-none"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition-colors duration-200 resize-none"
                   placeholder="Describí los temas o metas del grupo..."
                 />
               </div>
 
               {/* Visibilidad (Estado) */}
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-gray-700 mb-1">Privacidad / Visibilidad</label>
+                <label className="block text-[10px] font-bold text-gray-700 dark:text-slate-300 mb-1">Privacidad / Visibilidad</label>
                 <div className="grid grid-cols-2 gap-3">
                   {/* Opción Público */}
                   <label
-                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition select-none ${
+                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition-colors duration-200 select-none ${
                       estadoConfig === "publico"
-                        ? "border-indigo-500 bg-indigo-50/30 text-indigo-750"
-                        : "border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-650"
+                        ? "border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500"
+                        : "border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -1031,17 +1029,17 @@ const MuroGrupo = () => {
                       <span className="text-xs">🌐</span>
                       <span className="text-[10px] font-bold">Público</span>
                     </div>
-                    <span className="text-[8.5px] text-gray-400 mt-1 leading-tight">
+                    <span className="text-[8.5px] text-gray-400 dark:text-slate-400 mt-1 leading-tight">
                       Cualquier estudiante puede buscarlo e ingresar.
                     </span>
                   </label>
 
                   {/* Opción Privado */}
                   <label
-                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition select-none ${
+                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition-colors duration-200 select-none ${
                       estadoConfig === "privado"
-                        ? "border-indigo-500 bg-indigo-50/30 text-indigo-750"
-                        : "border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-650"
+                        ? "border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500"
+                        : "border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -1056,7 +1054,7 @@ const MuroGrupo = () => {
                       <span className="text-xs">🔒</span>
                       <span className="text-[10px] font-bold">Privado</span>
                     </div>
-                    <span className="text-[8.5px] text-gray-400 mt-1 leading-tight">
+                    <span className="text-[8.5px] text-gray-400 dark:text-slate-400 mt-1 leading-tight">
                       Solo personas invitadas pueden verlo y unirse.
                     </span>
                   </label>
@@ -1064,18 +1062,18 @@ const MuroGrupo = () => {
               </div>
 
               {/* Botones de acción */}
-              <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-slate-800 transition-colors duration-200">
                 <button
                   type="button"
                   onClick={() => setModalConfiguracionAbierto(false)}
-                  className="flex-1 text-center py-2 bg-gray-100 hover:bg-gray-200 text-gray-650 text-xs font-bold rounded-xl transition border-none cursor-pointer"
+                  className="flex-1 text-center py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 text-xs font-bold rounded-xl transition-colors duration-200 border-none cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={guardandoConfig}
-                  className="flex-1 text-center py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition border-none cursor-pointer disabled:opacity-50"
+                  className="flex-1 text-center py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors duration-200 border-none cursor-pointer disabled:opacity-50"
                 >
                   {guardandoConfig ? "Guardando..." : "Guardar Cambios"}
                 </button>

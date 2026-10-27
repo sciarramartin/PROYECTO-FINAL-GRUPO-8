@@ -335,7 +335,7 @@ const MiPerfil = () => {
         ? nombreCompleto.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
         : "US";
       return (
-        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-black shrink-0`}>
+        <div className={`${sizeClass} rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black shrink-0 transition-colors duration-200`}>
           {iniciales}
         </div>
       );
@@ -344,7 +344,7 @@ const MiPerfil = () => {
     if (foto.length <= 4) {
       const emojiSize = sizeClass.includes("w-28") ? "text-5xl" : "text-4xl";
       return (
-        <div className={`${sizeClass} rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 shadow-sm ${emojiSize}`}>
+        <div className={`${sizeClass} rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center shrink-0 shadow-sm ${emojiSize} transition-colors duration-200`}>
           {foto}
         </div>
       );
@@ -354,7 +354,7 @@ const MiPerfil = () => {
       <img
         src={foto}
         alt="Foto de perfil"
-        className={`${sizeClass} rounded-full object-cover border border-gray-200 shadow-sm shrink-0`}
+        className={`${sizeClass} rounded-full object-cover border border-gray-200 dark:border-slate-700 shadow-sm shrink-0 transition-colors duration-200`}
       />
     );
   };
@@ -363,7 +363,7 @@ const MiPerfil = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-2">
         <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-        <p className="text-xs text-gray-400 font-medium">Cargando tus datos académicos...</p>
+        <p className="text-xs text-gray-400 dark:text-slate-400 font-medium">Cargando tus datos académicos...</p>
       </div>
     );
   }
@@ -379,21 +379,21 @@ const MiPerfil = () => {
         
         {/* Grilla Académica */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Año de Cursado</h4>
-            <p className="text-sm font-bold text-gray-800 text-left">
+          <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-4 transition-colors duration-200">
+            <h4 className="text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider mb-2">Año de Cursado</h4>
+            <p className="text-sm font-bold text-gray-800 dark:text-slate-100 text-left">
               {perfilInfo.anio_cursado ? `${perfilInfo.anio_cursado}° Año` : "No definido"}
               {!perfilInfo.mostrar_anio_cursado && (
-                <span className="text-[9px] bg-red-50 text-red-500 font-bold px-1.5 py-0.5 rounded-md ml-2 inline-block">
+                <span className="text-[9px] bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 font-bold px-1.5 py-0.5 rounded-md ml-2 inline-block">
                   Oculto a otros
                 </span>
               )}
             </p>
           </div>
 
-          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Rol Preferido en Equipos</h4>
-            <p className="text-sm font-bold text-indigo-600 text-left">
+          <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-4 transition-colors duration-200">
+            <h4 className="text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider mb-2">Rol Preferido en Equipos</h4>
+            <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 text-left">
               {perfilInfo.rol_equipo || "No definido"}
             </p>
           </div>
@@ -402,26 +402,26 @@ const MiPerfil = () => {
         {/* Biografía */}
         {perfilInfo.biografia ? (
           <div className="space-y-2 text-left">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Biografía</h4>
-            <p className="text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-xl p-4 italic leading-relaxed break-words">
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Biografía</h4>
+            <p className="text-xs text-gray-600 dark:text-slate-300 bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-800 rounded-xl p-4 italic leading-relaxed break-words transition-colors duration-200">
               "{perfilInfo.biografia}"
             </p>
           </div>
         ) : (
-          <div className="text-center py-4 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
-            <p className="text-xs text-gray-400">Aún no redactaste una biografía personal. Hacé clic en "Editar Perfil" para agregarla.</p>
+          <div className="text-center py-4 bg-gray-50 dark:bg-slate-800/40 border border-dashed border-gray-200 dark:border-slate-700 rounded-xl transition-colors duration-200">
+            <p className="text-xs text-gray-400 dark:text-slate-400">Aún no redactaste una biografía personal. Hacé clic en "Editar Perfil" para agregarla.</p>
           </div>
         )}
 
         {/* Áreas de Interés */}
         {perfilInfo.intereses.length > 0 && (
           <div className="space-y-2 text-left">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Áreas de Interés de Estudio</h4>
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Áreas de Interés de Estudio</h4>
             <div className="flex flex-wrap gap-2">
               {perfilInfo.intereses.map((int, idx) => (
                 <span
                   key={idx}
-                  className="text-xs bg-indigo-50 border border-indigo-100 text-indigo-600 px-3 py-1 rounded-full font-bold"
+                  className="text-xs bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-3 py-1 rounded-full font-bold transition-colors duration-200"
                 >
                   {int}
                 </span>
@@ -433,40 +433,40 @@ const MiPerfil = () => {
         {/* Redes y Canales de Contacto */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Canales de Contacto y Redes</h4>
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Canales de Contacto y Redes</h4>
             {!perfilInfo.mostrar_contacto && (
-              <span className="text-[9px] bg-red-50 text-red-500 font-bold px-2 py-0.5 rounded-full">
+              <span className="text-[9px] bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 font-bold px-2 py-0.5 rounded-full">
                 Oculto a otros
               </span>
             )}
           </div>
 
           {(!perfilInfo.link_discord && !perfilInfo.link_telegram && !perfilInfo.link_whatsapp && !perfilInfo.link_github && !perfilInfo.link_linkedin) ? (
-            <p className="text-xs text-gray-400 italic text-left">No agregaste enlaces de contacto todavía.</p>
+            <p className="text-xs text-gray-400 dark:text-slate-400 italic text-left">No agregaste enlaces de contacto todavía.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               
               {/* Discord */}
               {perfilInfo.link_discord && (
-                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center gap-2 text-xs transition-colors duration-200">
                   <span className="text-base">🎮</span>
-                  <span className="text-gray-500 font-semibold truncate">Discord: <strong className="text-gray-800">{perfilInfo.link_discord}</strong></span>
+                  <span className="text-gray-500 dark:text-slate-400 font-semibold truncate">Discord: <strong className="text-gray-800 dark:text-slate-200">{perfilInfo.link_discord}</strong></span>
                 </div>
               )}
 
               {/* Telegram */}
               {perfilInfo.link_telegram && (
-                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center gap-2 text-xs transition-colors duration-200">
                   <span className="text-base">✈️</span>
-                  <span className="text-gray-500 font-semibold truncate">Telegram: <strong className="text-gray-800">{perfilInfo.link_telegram}</strong></span>
+                  <span className="text-gray-500 dark:text-slate-400 font-semibold truncate">Telegram: <strong className="text-gray-800 dark:text-slate-200">{perfilInfo.link_telegram}</strong></span>
                 </div>
               )}
 
               {/* WhatsApp */}
               {perfilInfo.link_whatsapp && (
-                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center gap-2 text-xs transition-colors duration-200">
                   <span className="text-base">💬</span>
-                  <span className="text-gray-500 font-semibold truncate">WhatsApp: <strong className="text-gray-800">{perfilInfo.link_whatsapp}</strong></span>
+                  <span className="text-gray-500 dark:text-slate-400 font-semibold truncate">WhatsApp: <strong className="text-gray-800 dark:text-slate-200">{perfilInfo.link_whatsapp}</strong></span>
                 </div>
               )}
 
@@ -476,12 +476,12 @@ const MiPerfil = () => {
                   href={perfilInfo.link_github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 font-bold transition group"
+                  className="bg-gray-50 dark:bg-slate-800/60 hover:bg-gray-100 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 dark:text-slate-300 font-bold transition-colors duration-200 group"
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-base">🐙</span> GitHub Profesional
                   </span>
-                  <span className="text-gray-400 group-hover:text-gray-700 transition">➔</span>
+                  <span className="text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors duration-200">➔</span>
                 </a>
               )}
 
@@ -491,12 +491,12 @@ const MiPerfil = () => {
                   href={perfilInfo.link_linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 font-bold transition group"
+                  className="bg-gray-50 dark:bg-slate-800/60 hover:bg-gray-100 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 dark:text-slate-300 font-bold transition-colors duration-200 group"
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-base">💼</span> LinkedIn Profesional
                   </span>
-                  <span className="text-gray-400 group-hover:text-gray-700 transition">➔</span>
+                  <span className="text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-300 transition-colors duration-200">➔</span>
                 </a>
               )}
 
@@ -510,16 +510,16 @@ const MiPerfil = () => {
 
   const renderActividadForo = () => {
     return (
-      <div className="p-6 space-y-6 bg-gray-50/20">
+      <div className="p-6 space-y-6 bg-gray-50/20 dark:bg-slate-900/40 transition-colors duration-200">
         {/* Selector de sub-pestañas para publicaciones y comentarios */}
-        <div className="flex bg-white rounded-xl p-1 border border-gray-150 max-w-sm mx-auto shadow-sm">
+        <div className="flex bg-white dark:bg-slate-800 rounded-xl p-1 border border-gray-150 dark:border-slate-700 max-w-sm mx-auto shadow-sm transition-colors duration-200">
           <button
             type="button"
             onClick={() => setTabActiva("publicaciones")}
-            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-colors duration-200 border-none cursor-pointer flex items-center justify-center gap-1.5 ${
               tabActiva === "publicaciones"
                 ? "text-white bg-indigo-600 shadow-sm font-extrabold"
-                : "text-gray-400 hover:text-gray-600"
+                : "text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200"
             }`}
           >
             📝 Publicaciones ({actividadForo.publicaciones.length})
@@ -527,10 +527,10 @@ const MiPerfil = () => {
           <button
             type="button"
             onClick={() => setTabActiva("comentarios")}
-            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-colors duration-200 border-none cursor-pointer flex items-center justify-center gap-1.5 ${
               tabActiva === "comentarios"
                 ? "text-white bg-indigo-600 shadow-sm font-extrabold"
-                : "text-gray-400 hover:text-gray-600"
+                : "text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200"
             }`}
           >
             💬 Comentarios ({actividadForo.comentarios.length})
@@ -542,13 +542,13 @@ const MiPerfil = () => {
           {cargandoActividad ? (
             <div className="flex flex-col items-center justify-center py-8 gap-2">
               <div className="w-6 h-6 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-              <p className="text-[10px] text-gray-400 font-medium">Cargando actividad...</p>
+              <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">Cargando actividad...</p>
             </div>
           ) : tabActiva === "publicaciones" ? (
             actividadForo.publicaciones.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+              <div className="text-center py-8 bg-gray-50 dark:bg-slate-800/40 border border-dashed border-gray-200 dark:border-slate-700 rounded-xl transition-colors duration-200">
                 <span className="text-3xl block mb-2">📬</span>
-                <p className="text-xs text-gray-400 font-medium">Aún no publicó ninguna duda o aporte.</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400 font-medium">Aún no publicó ninguna duda o aporte.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -564,39 +564,39 @@ const MiPerfil = () => {
                     <div
                       key={pub.id}
                       onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
-                      className="group p-4 bg-white hover:bg-indigo-50/30 border border-gray-150 hover:border-indigo-150 rounded-xl transition duration-200 cursor-pointer flex flex-col gap-3 shadow-sm hover:shadow-md text-left"
+                      className="group p-4 bg-white dark:bg-slate-800/90 hover:bg-indigo-50/30 dark:hover:bg-slate-750 border border-gray-150 dark:border-slate-700 hover:border-indigo-150 dark:hover:border-indigo-500/50 rounded-xl transition-colors duration-200 cursor-pointer flex flex-col gap-3 shadow-sm hover:shadow-md text-left"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                          <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">
                             {pub.Materia?.nombre || pub.materium?.nombre || pub.materia?.nombre || "Foro"}
                           </span>
                         </div>
                         <span className={`text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
                           pub.categoria === "Duda"
-                            ? "bg-amber-50 text-amber-600 border border-amber-100"
+                            ? "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40"
                             : pub.categoria === "Recurso"
-                            ? "bg-green-50 text-green-600 border border-green-100"
+                            ? "bg-green-50 dark:bg-emerald-950/40 text-green-600 dark:text-emerald-400 border border-green-100 dark:border-emerald-900/40"
                             : pub.categoria === "Opinión"
-                            ? "bg-purple-50 text-purple-600 border border-purple-100"
-                            : "bg-indigo-50 text-indigo-600 border border-indigo-100"
+                            ? "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-900/40"
+                            : "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40"
                         }`}>
                           {pub.categoria || "General"}
                         </span>
                       </div>
                       
-                      <h4 className="text-xs font-bold text-gray-800 group-hover:text-indigo-600 transition leading-snug">
+                      <h4 className="text-xs font-bold text-gray-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition leading-snug">
                         {pub.titulo}
                       </h4>
 
-                      <p className="text-[11px] text-gray-455 line-clamp-2 leading-relaxed">
+                      <p className="text-[11px] text-gray-455 dark:text-slate-400 line-clamp-2 leading-relaxed">
                         {pub.contenido}
                       </p>
 
-                      <div className="flex items-center justify-between text-[10px] text-gray-400 mt-1 pt-2 border-t border-gray-150/50">
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-slate-500 mt-1 pt-2 border-t border-gray-150/50 dark:border-slate-700/50">
                         <div className="flex items-center gap-1">
                           <span>👍</span>
-                          <span className="font-bold text-gray-500">{pub.votos || 0} {pub.votos === 1 ? "voto" : "votos"}</span>
+                          <span className="font-bold text-gray-500 dark:text-slate-300">{pub.votos || 0} {pub.votos === 1 ? "voto" : "votos"}</span>
                         </div>
                         <span>{fecha}</span>
                       </div>
@@ -607,9 +607,9 @@ const MiPerfil = () => {
             )
           ) : (
             actividadForo.comentarios.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+              <div className="text-center py-8 bg-gray-50 dark:bg-slate-800/40 border border-dashed border-gray-200 dark:border-slate-700 rounded-xl transition-colors duration-200">
                 <span className="text-3xl block mb-2">💬</span>
-                <p className="text-xs text-gray-400 font-medium">Aún no realizó comentarios en los foros.</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400 font-medium">Aún no realizó comentarios en los foros.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -631,27 +631,27 @@ const MiPerfil = () => {
                           navigate(`/foros/${materiaId}/publicacion/${postId}`);
                         }
                       }}
-                      className="group p-4 bg-white hover:bg-indigo-50/30 border border-gray-150 hover:border-indigo-150 rounded-xl transition duration-200 cursor-pointer flex flex-col gap-2.5 shadow-sm hover:shadow-md text-left"
+                      className="group p-4 bg-white dark:bg-slate-800/90 hover:bg-indigo-50/30 dark:hover:bg-slate-750 border border-gray-150 dark:border-slate-700 hover:border-indigo-150 dark:hover:border-indigo-500/50 rounded-xl transition-colors duration-200 cursor-pointer flex flex-col gap-2.5 shadow-sm hover:shadow-md text-left"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                          <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">
                             {com.ForoPublicacion?.Materia?.nombre || com.ForoPublicacion?.materium?.nombre || com.ForoPublicacion?.materia?.nombre || "Foro"}
                           </span>
-                          <span className="text-[10px] text-gray-455 font-semibold truncate max-w-[200px]">
+                          <span className="text-[10px] text-gray-455 dark:text-slate-400 font-semibold truncate max-w-[200px]">
                             En respuesta a: "{com.ForoPublicacion?.titulo || "Publicación"}"
                           </span>
                         </div>
                       </div>
 
-                      <p className="text-[11px] text-gray-605 bg-gray-50/70 p-2.5 rounded-lg border border-gray-150/45 italic leading-relaxed break-words">
+                      <p className="text-[11px] text-gray-605 dark:text-slate-300 bg-gray-50/70 dark:bg-slate-900/60 p-2.5 rounded-lg border border-gray-150/45 dark:border-slate-700/50 italic leading-relaxed break-words">
                         "{com.contenido}"
                       </p>
 
-                      <div className="flex items-center justify-between text-[10px] text-gray-400 mt-1 pt-1">
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-slate-500 mt-1 pt-1">
                         <div className="flex items-center gap-1">
                           <span>👍</span>
-                          <span className="font-bold text-gray-500">{com.votos || 0} {com.votos === 1 ? "voto" : "votos"}</span>
+                          <span className="font-bold text-gray-500 dark:text-slate-300">{com.votos || 0} {com.votos === 1 ? "voto" : "votos"}</span>
                         </div>
                         <span>{fecha}</span>
                       </div>
@@ -673,32 +673,32 @@ const MiPerfil = () => {
         
         {/* Alerta de guardado exitoso */}
         {mensaje && (
-          <div className="bg-green-50 border border-green-200 text-green-600 rounded-xl px-4 py-3 text-xs mb-4 animate-fade-in flex items-center gap-2">
+          <div className="bg-green-50 dark:bg-emerald-950/30 border border-green-200 dark:border-emerald-900/50 text-green-600 dark:text-emerald-400 rounded-xl px-4 py-3 text-xs mb-4 animate-fade-in flex items-center gap-2">
             <span>✓</span> {mensaje}
           </div>
         )}
 
         {/* Tarjeta de Perfil Académico (Estilo Mis Conexiones) */}
-        <div className="bg-white rounded-2xl border border-gray-150 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-150 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition duration-300">
           
           {/* Cabecera de Identidad */}
-          <div className="bg-gray-50 border-b border-gray-150 p-6 flex flex-col md:flex-row items-center gap-5">
+          <div className="bg-gray-50 dark:bg-slate-800/70 border-b border-gray-150 dark:border-slate-800 p-6 flex flex-col md:flex-row items-center gap-5 transition-colors duration-200">
             {renderFoto(perfilInfo.foto_perfil, nombreCompleto, "w-24 h-24 text-3xl")}
             
             <div className="text-center md:text-left min-w-0 flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 leading-tight truncate text-left">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 leading-tight truncate text-left transition-colors duration-200">
                 {nombreCompleto}
               </h2>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-1.5">
-                <span className="text-xs text-gray-400">@{usuarioInfo.nombre_usuario}</span>
+                <span className="text-xs text-gray-400 dark:text-slate-400">@{usuarioInfo.nombre_usuario}</span>
                 {perfilInfo.apodo && (
-                  <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">
                     "{perfilInfo.apodo}"
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-400 mt-2 text-left">
-                🎓 Carrera Oficial: <span className="font-semibold text-gray-700">{CARRERAS[usuarioInfo.id_carrera] || "No seleccionada"}</span>
+              <p className="text-xs text-gray-400 dark:text-slate-400 mt-2 text-left">
+                🎓 Carrera Oficial: <span className="font-semibold text-gray-700 dark:text-slate-200">{CARRERAS[usuarioInfo.id_carrera] || "No seleccionada"}</span>
               </p>
               {/* Insignia o Progreso de Graduación (US-MET-11 / SCRUM-90) */}
               {estadoGraduacion?.esGraduado ? (
@@ -707,10 +707,10 @@ const MiPerfil = () => {
                 </div>
               ) : estadoGraduacion?.porcentaje > 0 ? (
                 <div className="flex items-center gap-2 mt-2">
-                  <div className="w-28 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                  <div className="w-28 bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
                     <div className="bg-indigo-600 h-1.5 rounded-full transition-all" style={{ width: `${estadoGraduacion.porcentaje}%` }}></div>
                   </div>
-                  <span className="text-[10px] font-bold text-gray-500">{estadoGraduacion.porcentaje}% ({estadoGraduacion.materiasAprobadas}/{estadoGraduacion.totalMaterias} materias)</span>
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-slate-400">{estadoGraduacion.porcentaje}% ({estadoGraduacion.materiasAprobadas}/{estadoGraduacion.totalMaterias} materias)</span>
                 </div>
               ) : null}
             </div>
@@ -718,25 +718,25 @@ const MiPerfil = () => {
             {/* Botón Editar en Esquina Superior Derecha */}
             <button
               onClick={() => setEditando(true)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm hover:shadow-md cursor-pointer border-none flex items-center gap-1.5"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 shadow-sm hover:shadow-md cursor-pointer border-none flex items-center gap-1.5"
             >
               ⚙️ Editar Perfil
             </button>
           </div>
 
           {/* Split Content Section: Información Académica a la izquierda, Mi Actividad a la derecha */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-150 bg-white">
+          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-150 dark:divide-slate-800 bg-white dark:bg-slate-900 transition-colors duration-200">
             <div className="flex flex-col">
-              <div className="border-b border-gray-150 px-6 py-3.5 bg-gray-50/40">
-                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="border-b border-gray-150 dark:border-slate-800 px-6 py-3.5 bg-gray-50/40 dark:bg-slate-800/40 transition-colors duration-200">
+                <h3 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                   👤 Información Académica
                 </h3>
               </div>
               {renderInfoAcademica()}
             </div>
             <div className="flex flex-col">
-              <div className="border-b border-gray-150 px-6 py-3.5 bg-gray-50/40">
-                <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="border-b border-gray-150 dark:border-slate-800 px-6 py-3.5 bg-gray-50/40 dark:bg-slate-800/40 transition-colors duration-200">
+                <h3 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                   💬 Mi Actividad en el Foro
                 </h3>
               </div>
@@ -757,14 +757,14 @@ const MiPerfil = () => {
       {/* Cabecera de Página */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 leading-tight">Configurar Perfil Académico</h1>
-          <p className="text-xs text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 leading-tight transition-colors duration-200">Configurar Perfil Académico</h1>
+          <p className="text-xs text-gray-400 dark:text-slate-400 mt-1 transition-colors duration-200">
             Personalizá tu identidad, enlaces académicos y opciones de privacidad.
           </p>
         </div>
         <button
           onClick={handleCancelar}
-          className="px-4 py-2 hover:bg-gray-100 border border-gray-200 text-gray-600 rounded-xl text-xs font-bold transition cursor-pointer"
+          className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors duration-200 cursor-pointer"
         >
           ✕ Cancelar
         </button>
@@ -772,7 +772,7 @@ const MiPerfil = () => {
 
       {/* Alertas */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-500 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-500 dark:text-red-400 rounded-xl px-4 py-3 text-xs mb-4 max-w-xl animate-fade-in flex items-center gap-2">
           <span>⚠️</span> {error}
         </div>
       )}
@@ -781,40 +781,40 @@ const MiPerfil = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
         {/* COLUMNA 1: VISTA PREVIA */}
-        <div className="lg:col-span-1 bg-white border border-gray-150 rounded-2xl p-5 shadow-sm space-y-5 lg:sticky lg:top-20">
-          <div className="text-center pb-4 border-b border-gray-100 flex flex-col items-center">
+        <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-5 lg:sticky lg:top-20 transition-colors duration-200">
+          <div className="text-center pb-4 border-b border-gray-100 dark:border-slate-800 flex flex-col items-center transition-colors duration-200">
             {renderFoto(perfilInfo.foto_perfil, nombreCompleto, "w-20 h-20 text-2xl")}
             
-            <h3 className="text-base font-bold text-gray-900 mt-3 leading-tight">
+            <h3 className="text-base font-bold text-gray-900 dark:text-slate-100 mt-3 leading-tight transition-colors duration-200">
               {nombreCompleto}
             </h3>
             {perfilInfo.apodo && (
-              <p className="text-xs text-indigo-600 font-semibold bg-indigo-50 px-2.5 py-0.5 rounded-full mt-1.5 inline-block">
+              <p className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded-full mt-1.5 inline-block">
                 "{perfilInfo.apodo}"
               </p>
             )}
-            <p className="text-[10px] text-gray-400 mt-1">@{usuarioInfo.nombre_usuario}</p>
+            <p className="text-[10px] text-gray-400 dark:text-slate-400 mt-1">@{usuarioInfo.nombre_usuario}</p>
           </div>
 
           {/* Información Académica en Vista Previa */}
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Académico</h4>
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 space-y-1.5 text-xs text-gray-500">
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Académico</h4>
+            <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 space-y-1.5 text-xs text-gray-500 dark:text-slate-400 transition-colors duration-200">
               <p>
-                <strong className="text-gray-400">Carrera:</strong>{" "}
+                <strong className="text-gray-400 dark:text-slate-500">Carrera:</strong>{" "}
                 {carreras.find((c) => c.id === Number(usuarioInfo.id_carrera))?.nombre || "No seleccionada"}
               </p>
               
-              <p className={`flex items-center gap-1.5 ${!perfilInfo.mostrar_anio_cursado ? "text-gray-300 italic" : ""}`}>
-                <strong className="text-gray-400">Año de cursado:</strong>{" "}
+              <p className={`flex items-center gap-1.5 ${!perfilInfo.mostrar_anio_cursado ? "text-gray-400 dark:text-slate-500 italic" : ""}`}>
+                <strong className="text-gray-400 dark:text-slate-500">Año de cursado:</strong>{" "}
                 {perfilInfo.anio_cursado ? `${perfilInfo.anio_cursado}° Año` : "No definido"}{" "}
-                {!perfilInfo.mostrar_anio_cursado && <span className="text-[9px] bg-gray-100 text-gray-400 px-1.5 rounded-md">Oculto a terceros</span>}
+                {!perfilInfo.mostrar_anio_cursado && <span className="text-[9px] bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-400 px-1.5 rounded-md">Oculto a terceros</span>}
               </p>
 
               {perfilInfo.rol_equipo && (
                 <p>
-                  <strong className="text-gray-400">Rol preferido:</strong>{" "}
-                  <span className="font-semibold text-indigo-600">{perfilInfo.rol_equipo}</span>
+                  <strong className="text-gray-400 dark:text-slate-500">Rol preferido:</strong>{" "}
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">{perfilInfo.rol_equipo}</span>
                 </p>
               )}
             </div>
@@ -823,8 +823,8 @@ const MiPerfil = () => {
           {/* Biografía en Vista Previa */}
           {perfilInfo.biografia && (
             <div className="space-y-1.5">
-              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Biografía</h4>
-              <p className="text-xs text-gray-500 bg-gray-50 border border-gray-100 rounded-xl p-3 italic leading-relaxed break-words">
+              <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Biografía</h4>
+              <p className="text-xs text-gray-500 dark:text-slate-300 bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-800 rounded-xl p-3 italic leading-relaxed break-words transition-colors duration-200">
                 "{perfilInfo.biografia}"
               </p>
             </div>
@@ -833,10 +833,10 @@ const MiPerfil = () => {
           {/* Intereses en Vista Previa */}
           {perfilInfo.intereses.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Áreas de Interés</h4>
+              <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Áreas de Interés</h4>
               <div className="flex flex-wrap gap-1.5">
                 {perfilInfo.intereses.map((int, i) => (
-                  <span key={i} className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                  <span key={i} className="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">
                     {int}
                   </span>
                 ))}
@@ -846,41 +846,41 @@ const MiPerfil = () => {
 
           {/* Canales de Contacto en Vista Previa */}
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Canales de Contacto</h4>
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider">Canales de Contacto</h4>
             
             {!perfilInfo.mostrar_contacto ? (
-              <p className="text-[10px] text-gray-400 italic bg-gray-50 border border-dashed border-gray-200 rounded-xl p-3 text-center">
+              <p className="text-[10px] text-gray-400 dark:text-slate-400 italic bg-gray-50 dark:bg-slate-800/40 border border-dashed border-gray-200 dark:border-slate-700 rounded-xl p-3 text-center">
                 🔒 Tus datos de contacto están configurados como ocultos para otros compañeros.
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-2 text-[10px]">
                 {perfilInfo.link_discord && (
-                  <span className="bg-gray-50 border border-gray-100 rounded-lg p-1.5 truncate text-gray-600">
+                  <span className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-lg p-1.5 truncate text-gray-600 dark:text-slate-300">
                     🎮 Discord: {perfilInfo.link_discord}
                   </span>
                 )}
                 {perfilInfo.link_telegram && (
-                  <span className="bg-gray-50 border border-gray-100 rounded-lg p-1.5 truncate text-gray-600">
+                  <span className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-lg p-1.5 truncate text-gray-600 dark:text-slate-300">
                     ✈️ Telegram: {perfilInfo.link_telegram}
                   </span>
                 )}
                 {perfilInfo.link_whatsapp && (
-                  <span className="bg-gray-50 border border-gray-100 rounded-lg p-1.5 truncate text-gray-600">
+                  <span className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-lg p-1.5 truncate text-gray-600 dark:text-slate-300">
                     💬 WhatsApp: {perfilInfo.link_whatsapp}
                   </span>
                 )}
                 {perfilInfo.link_github && (
-                  <span className="bg-gray-50 border border-gray-100 rounded-lg p-1.5 truncate text-gray-600">
+                  <span className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-lg p-1.5 truncate text-gray-600 dark:text-slate-300">
                     🐙 GitHub
                   </span>
                 )}
                 {perfilInfo.link_linkedin && (
-                  <span className="bg-gray-50 border border-gray-100 rounded-lg p-1.5 truncate text-gray-600">
+                  <span className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-lg p-1.5 truncate text-gray-600 dark:text-slate-300">
                     💼 LinkedIn
                   </span>
                 )}
                 {!perfilInfo.link_discord && !perfilInfo.link_telegram && !perfilInfo.link_whatsapp && !perfilInfo.link_github && !perfilInfo.link_linkedin && (
-                  <p className="col-span-2 text-gray-400 italic">No agregaste canales aún.</p>
+                  <p className="col-span-2 text-gray-400 dark:text-slate-400 italic">No agregaste canales aún.</p>
                 )}
               </div>
             )}
@@ -890,15 +890,15 @@ const MiPerfil = () => {
 
         {/* COLUMNA 2 Y 3: FORMULARIO DE EDICIÓN */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm space-y-6">
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6 transition-colors duration-200">
             
             {/* SECCIÓN 1: IDENTIDAD Y FOTO */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2">1. Identidad y Avatar</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-800 pb-2 transition-colors duration-200">1. Identidad y Avatar</h3>
               
               {/* Selector de Avatar */}
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-gray-700">Seleccioná tu Avatar de la comunidad</label>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300">Seleccioná tu Avatar de la comunidad</label>
                 <div className="flex flex-wrap items-center gap-3">
                   {AVATARES_PREDEFINIDOS.map((avatar, idx) => (
                     <button
@@ -924,7 +924,7 @@ const MiPerfil = () => {
                     />
                     <label
                       htmlFor="upload-file"
-                      className="px-3 py-2 border border-dashed border-gray-300 hover:border-indigo-500 rounded-xl text-xs font-bold text-gray-500 hover:text-indigo-600 cursor-pointer flex items-center gap-1.5 transition"
+                      className="px-3 py-2 border border-dashed border-gray-300 dark:border-slate-700 hover:border-indigo-500 rounded-xl text-xs font-bold text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer flex items-center gap-1.5 transition-colors duration-200"
                     >
                       📷 Subir foto
                     </label>
@@ -935,23 +935,23 @@ const MiPerfil = () => {
               {/* Fila Nombre, Apellido, Apodo */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Nombre Completo</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Nombre Completo</label>
                   <input
                     type="text"
                     value={nombreCompleto}
                     disabled
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-400 cursor-not-allowed outline-none"
+                    className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-400 dark:text-slate-500 cursor-not-allowed outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Apodo (Nombre de visualización)</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Apodo (Nombre de visualización)</label>
                   <input
                     type="text"
                     name="apodo"
                     placeholder="Ej. Fran, Martin"
                     value={perfilInfo.apodo}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200 placeholder-gray-400 dark:placeholder-slate-500"
                   />
                 </div>
               </div>
@@ -959,16 +959,16 @@ const MiPerfil = () => {
 
             {/* SECCIÓN 2: DATOS ACADÉMICOS */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2">2. Datos Académicos</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-800 pb-2 transition-colors duration-200">2. Datos Académicos</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Selector Carrera */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Carrera Oficial</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Carrera Oficial</label>
                   <select
                     value={usuarioInfo.id_carrera}
                     onChange={(e) => setUsuarioInfo(prev => ({ ...prev, id_carrera: e.target.value }))}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200"
                   >
                     <option value="">Selecciona tu carrera...</option>
                     {carreras.map((c) => (
@@ -981,12 +981,12 @@ const MiPerfil = () => {
 
                 {/* Selector Año de Cursado */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Año de cursado actual</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Año de cursado actual</label>
                   <select
                     name="anio_cursado"
                     value={perfilInfo.anio_cursado}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200"
                   >
                     <option value="">Selecciona tu año actual...</option>
                     <option value="1">1° Año (Ingresante)</option>
@@ -1001,9 +1001,9 @@ const MiPerfil = () => {
 
             {/* SECCIÓN 3: BIOGRAFÍA */}
             <div className="space-y-4">
-              <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                <h3 className="text-sm font-bold text-gray-900">3. Biografía Personal</h3>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${caracRestantes < 20 ? "bg-red-50 text-red-500" : "bg-gray-100 text-gray-500"}`}>
+              <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-2 transition-colors duration-200">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100">3. Biografía Personal</h3>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${caracRestantes < 20 ? "bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"}`}>
                   {caracRestantes} / 250 restantes
                 </span>
               </div>
@@ -1016,24 +1016,24 @@ const MiPerfil = () => {
                   onChange={handleInputChange}
                   maxLength={250}
                   rows={4}
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none resize-none transition"
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none resize-none transition-colors duration-200"
                 />
-                <p className="text-[10px] text-gray-400 mt-1">Límite estricto de 250 caracteres.</p>
+                <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">Límite estricto de 250 caracteres.</p>
               </div>
             </div>
 
             {/* SECCIÓN 4: INTERESES Y ROLES */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2">4. Perfil de Colaboración</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-800 pb-2 transition-colors duration-200">4. Perfil de Colaboración</h3>
               
               {/* Rol preferido */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">Rol preferido en trabajos en equipo</label>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Rol preferido en trabajos en equipo</label>
                 <select
                   name="rol_equipo"
                   value={perfilInfo.rol_equipo}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200"
                 >
                   <option value="">Selecciona tu rol habitual...</option>
                   {ROLES_EQUIPO.map((rol, idx) => (
@@ -1046,7 +1046,7 @@ const MiPerfil = () => {
 
               {/* Áreas de interés */}
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-gray-700">Áreas de interés de estudio</label>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300">Áreas de interés de estudio</label>
                 <div className="flex flex-wrap gap-2">
                   {AREAS_INTERES_OPCIONES.map((interes, idx) => {
                     const seleccionado = perfilInfo.intereses.includes(interes);
@@ -1058,7 +1058,7 @@ const MiPerfil = () => {
                         className={`px-3 py-1.5 rounded-full text-xs font-bold transition duration-200 cursor-pointer border ${
                           seleccionado
                             ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                            : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                            : "bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700"
                         }`}
                       >
                         {seleccionado ? "✓ " : "+ "} {interes}
@@ -1071,65 +1071,65 @@ const MiPerfil = () => {
 
             {/* SECCIÓN 5: PLATAFORMAS DE CONTACTO */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2">5. Canales de Contacto y Enlaces</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-800 pb-2 transition-colors duration-200">5. Canales de Contacto y Enlaces</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">🎮 Discord Tag/Usuario</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">🎮 Discord Tag/Usuario</label>
                   <input
                     type="text"
                     name="link_discord"
                     placeholder="Ej. usuario#1234"
                     value={perfilInfo.link_discord}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">✈️ Usuario de Telegram</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">✈️ Usuario de Telegram</label>
                   <input
                     type="text"
                     name="link_telegram"
                     placeholder="Ej. @miusuario"
                     value={perfilInfo.link_telegram}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">💬 Celular / WhatsApp</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">💬 Celular / WhatsApp</label>
                   <input
                     type="text"
                     name="link_whatsapp"
                     placeholder="Ej. +54911223344"
                     value={perfilInfo.link_whatsapp}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">🐙 Perfil de GitHub (URL)</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">🐙 Perfil de GitHub (URL)</label>
                   <input
                     type="url"
                     name="link_github"
                     placeholder="https://github.com/tu-usuario"
                     value={perfilInfo.link_github}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">💼 Perfil de LinkedIn (URL)</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">💼 Perfil de LinkedIn (URL)</label>
                   <input
                     type="url"
                     name="link_linkedin"
                     placeholder="https://linkedin.com/in/tu-perfil"
                     value={perfilInfo.link_linkedin}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 outline-none transition"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-700 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-900 focus:border-indigo-500 outline-none transition-colors duration-200"
                   />
                 </div>
               </div>
@@ -1137,13 +1137,13 @@ const MiPerfil = () => {
 
             {/* SECCIÓN 6: PRIVACIDAD */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2">6. Opciones de Privacidad</h3>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 border-b border-gray-100 dark:border-slate-800 pb-2 transition-colors duration-200">6. Opciones de Privacidad</h3>
               
               <div className="space-y-3">
-                <label className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-150 rounded-xl cursor-pointer hover:bg-gray-100/50 transition">
+                <label className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-150 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-gray-100/50 dark:hover:bg-slate-800 transition-colors duration-200">
                   <div className="pr-4">
-                    <p className="text-xs font-bold text-gray-800">Mostrar Año de Cursado</p>
-                    <p className="text-[10px] text-gray-400">Si lo desactivás, otros alumnos no podrán ver en qué año de la carrera estás cursando.</p>
+                    <p className="text-xs font-bold text-gray-800 dark:text-slate-200">Mostrar Año de Cursado</p>
+                    <p className="text-[10px] text-gray-400 dark:text-slate-400">Si lo desactivás, otros alumnos no podrán ver en qué año de la carrera estás cursando.</p>
                   </div>
                   <input
                     type="checkbox"
@@ -1154,10 +1154,10 @@ const MiPerfil = () => {
                   />
                 </label>
 
-                <label className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-150 rounded-xl cursor-pointer hover:bg-gray-100/50 transition">
+                <label className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-150 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-gray-100/50 dark:hover:bg-slate-800 transition-colors duration-200">
                   <div className="pr-4">
-                    <p className="text-xs font-bold text-gray-800">Mostrar Canales de Contacto</p>
-                    <p className="text-[10px] text-gray-400">Desactivalo si preferís ocultar tus usuarios de Discord, Telegram y WhatsApp a los demás miembros.</p>
+                    <p className="text-xs font-bold text-gray-800 dark:text-slate-200">Mostrar Canales de Contacto</p>
+                    <p className="text-[10px] text-gray-400 dark:text-slate-400">Desactivalo si preferís ocultar tus usuarios de Discord, Telegram y WhatsApp a los demás miembros.</p>
                   </div>
                   <input
                     type="checkbox"
@@ -1171,18 +1171,18 @@ const MiPerfil = () => {
             </div>
 
             {/* BOTONES ACCIÓN FORMULARIO */}
-            <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
+            <div className="pt-4 border-t border-gray-100 dark:border-slate-800 flex justify-end gap-3 transition-colors duration-200">
               <button
                 type="button"
                 onClick={handleCancelar}
-                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-bold transition cursor-pointer border-none"
+                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors duration-200 cursor-pointer border-none"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={guardando}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm hover:shadow-md disabled:opacity-50 flex items-center gap-2 cursor-pointer border-none"
+                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50 flex items-center gap-2 cursor-pointer border-none"
               >
                 {guardando ? (
                   <>

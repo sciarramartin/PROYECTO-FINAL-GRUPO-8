@@ -97,12 +97,12 @@ function TimeSelect({ value, onChange, options, freeInput = false, min = 0, max 
                 onFocus={() => { if (!freeInput) setOpen(true); }}
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className=" py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 w-14 text-center focus:outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-100"
+                className="py-1.5 text-sm border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-100 w-14 text-center focus:outline-none focus:border-indigo-500 transition-colors duration-200"
             />
             {open && !freeInput && (
                 <div
                     ref={listRef}
-                    className="absolute bottom-full mb-1 left-0 w-14 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                    className="absolute bottom-full mb-1 left-0 w-14 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-50 transition-colors duration-200"
                     style={{
                         maxHeight: '160px',
                         overflowY: 'scroll',
@@ -119,10 +119,10 @@ function TimeSelect({ value, onChange, options, freeInput = false, min = 0, max 
                                 type="button"
                                 data-active={opt === value}
                                 onClick={() => { onChange(opt); setInputVal(opt); setOpen(false); }}
-                                className={`w-full py-1.5 text-sm text-center transition
+                                className={`w-full py-1.5 text-sm text-center transition-colors duration-150
                                     ${opt === value
-                                        ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                                        : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-500'
+                                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                                        : 'text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-indigo-500 dark:hover:text-indigo-400'
                                     }`}
                             >
                                 {opt}
