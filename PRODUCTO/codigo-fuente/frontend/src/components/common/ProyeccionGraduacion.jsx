@@ -120,6 +120,25 @@ const ProyeccionGraduacion = () => {
     return () => clearTimeout(timeout);
   }, [ritmoSimulado]);
 
+  // Recálculo dinámico en tiempo real basado en el slider (2 a 5 materias/cuatrimestre)
+  const materiasPendientes = data?.materiasPendientes ?? Math.max(0, (data?.totalMaterias || 40) - (data?.materiasAprobadas || 0));
+  const cuatrimestresSimulados = Math.max(1, Math.ceil(materiasPendientes / ritmoSimulado));
+  const aniosSimulados = Number((cuatrimestresSimulados / 2).toFixed(1));
+
+  const anioActual = new Date().getFullYear();
+  const mesActual = new Date().getMonth() + 1;
+  const cuatrimestreActual = mesActual <= 7 ? 1 : 2;
+
+  const addAnios = Math.floor((cuatrimestreActual + cuatrimestresSimulados - 1) / 2);
+  const finCuat = ((cuatrimestreActual + cuatrimestresSimulados - 1) % 2) + 1;
+  const targetAnio = anioActual + addAnios;
+  const targetMes = finCuat === 1 ? 'Julio' : 'Diciembre';
+
+  // Microanimaciones numéricas reactivas (Regla de Hooks: se llaman siempre incondicionalmente en la raíz)
+  const animatedTargetAnio = useAnimatedNumber(targetAnio, 320, 0);
+  const animatedAnios = useAnimatedNumber(aniosSimulados, 320, 1);
+  const animatedCuatrimestres = useAnimatedNumber(cuatrimestresSimulados, 320, 0);
+
   if (cargando) {
     return (
       <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm animate-pulse space-y-4">
@@ -182,25 +201,6 @@ const ProyeccionGraduacion = () => {
       </div>
     );
   }
-
-  // Recálculo dinámico en tiempo real basado en el slider (2 a 5 materias/cuatrimestre)
-  const materiasPendientes = data.materiasPendientes ?? Math.max(0, (data.totalMaterias || 40) - (data.materiasAprobadas || 0));
-  const cuatrimestresSimulados = Math.max(1, Math.ceil(materiasPendientes / ritmoSimulado));
-  const aniosSimulados = Number((cuatrimestresSimulados / 2).toFixed(1));
-
-  const anioActual = new Date().getFullYear();
-  const mesActual = new Date().getMonth() + 1;
-  const cuatrimestreActual = mesActual <= 7 ? 1 : 2;
-
-  const addAnios = Math.floor((cuatrimestreActual + cuatrimestresSimulados - 1) / 2);
-  const finCuat = ((cuatrimestreActual + cuatrimestresSimulados - 1) % 2) + 1;
-  const targetAnio = anioActual + addAnios;
-  const targetMes = finCuat === 1 ? 'Julio' : 'Diciembre';
-
-  // Microanimaciones numéricas reactivas
-  const animatedTargetAnio = useAnimatedNumber(targetAnio, 320, 0);
-  const animatedAnios = useAnimatedNumber(aniosSimulados, 320, 1);
-  const animatedCuatrimestres = useAnimatedNumber(cuatrimestresSimulados, 320, 0);
 
   // Escenarios de simulación (2 a 5 mat/cuat) para el gráfico de barras comparativo
   const ritmosPosibles = [2, 3, 4, 5];
