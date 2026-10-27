@@ -12,19 +12,19 @@ const StickmanSaltando = () => (
     <svg viewBox="0 0 100 120" className="w-10 h-10 animate-bounce shrink-0 overflow-visible">
         {/* Cabeza redonda simple */}
         <circle cx="50" cy="22" r="12" fill="none" stroke="#ffffff" strokeWidth="4" />
-        
+
         {/* Cuerpo / Torso */}
         <line x1="50" y1="34" x2="50" y2="70" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-        
+
         {/* Brazo Izquierdo levantado festejando */}
         <line x1="50" y1="42" x2="22" y2="18" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-        
+
         {/* Brazo Derecho levantado festejando */}
         <line x1="50" y1="42" x2="78" y2="18" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-        
+
         {/* Pierna Izquierda doblada saltando */}
         <path d="M 50 70 L 32 88 L 22 106" fill="none" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-        
+
         {/* Pierna Derecha en ángulo de salto */}
         <path d="M 50 70 L 68 88 L 82 100" fill="none" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
@@ -97,12 +97,28 @@ const MapaCorrelatividades = () => {
     materiasRef.current = materias;
     progresoRef.current = progreso;
 
-    const colores = {
-        aprobada: { background: '#d1fae5', border: '#10b981' }, 
-        regular: { background: '#fef3c7', border: '#f59e0b' },   
-        cursando: { background: '#f3e8ff', border: '#a855f7' },
-        habilitada: { background: '#dbeafe', border: '#3b82f6' }, 
-        bloqueada: { background: '#ffffff', border: '#cbd5e1' },
+    const [esOscuro, setEsOscuro] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setEsOscuro(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
+
+    const colores = esOscuro ? {
+        aprobada: { background: '#064e3b', border: '#10b981', font: '#ecfdf5' },
+        regular: { background: '#78350f', border: '#f59e0b', font: '#fef3c7' },
+        cursando: { background: '#581c87', border: '#a855f7', font: '#f3e8ff' },
+        habilitada: { background: '#1e3a8a', border: '#3b82f6', font: '#dbeafe' },
+        bloqueada: { background: '#1e293b', border: '#475569', font: '#94a3b8' },
+    } : {
+        aprobada: { background: '#d1fae5', border: '#10b981', font: '#064e3b' },
+        regular: { background: '#fef3c7', border: '#f59e0b', font: '#78350f' },
+        cursando: { background: '#f3e8ff', border: '#a855f7', font: '#581c87' },
+        habilitada: { background: '#dbeafe', border: '#3b82f6', font: '#1e3a8a' },
+        bloqueada: { background: '#ffffff', border: '#cbd5e1', font: '#1e293b' },
     };
 
     const cargarDatos = async () => {
@@ -186,7 +202,7 @@ const MapaCorrelatividades = () => {
 
     const actualizarNodosVisuales = useCallback(() => {
         if (!nodesRef.current || materiasRef.current.length === 0) return;
-        
+
         const mapEstados = {};
         progresoRef.current.forEach(p => { mapEstados[p.id_materia] = p.estado; });
 
@@ -208,14 +224,15 @@ const MapaCorrelatividades = () => {
                     background: palette.background,
                     border: palette.border,
                     highlight: { background: palette.background, border: '#4f46e5' }
-                }
+                },
+                font: { face: 'Inter, sans-serif', size: 14, color: palette.font || (esOscuro ? '#f1f5f9' : '#1e293b') }
             });
         });
 
         if (updates.length > 0) {
             nodesRef.current.update(updates);
         }
-    }, []);
+    }, [colores, esOscuro]);
 
     const actualizarMinimapa = useCallback(() => {
         const minimapCanvas = minimapCanvasRef.current;
@@ -225,7 +242,7 @@ const MapaCorrelatividades = () => {
         const height = minimapCanvas.height;
 
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = esOscuro ? '#090d16' : '#f8fafc';
         ctx.fillRect(0, 0, width, height);
 
         const nodePositions = networkRef.current.getPositions();
@@ -288,7 +305,7 @@ const MapaCorrelatividades = () => {
 
     useEffect(() => {
         if (cargando || error || !containerRef.current || materias.length === 0) return;
-        
+
         if (networkRef.current) {
             networkRef.current.destroy();
             networkRef.current = null;
@@ -315,7 +332,7 @@ const MapaCorrelatividades = () => {
                     border: palette.border,
                     highlight: { background: palette.background, border: '#4f46e5' }
                 },
-                font: { face: 'Inter, sans-serif', size: 14, color: '#1e293b' },
+                font: { face: 'Inter, sans-serif', size: 14, color: palette.font || (esOscuro ? '#f1f5f9' : '#1e293b') },
                 shape: 'box',
                 widthConstraint: { maximum: 200 },
                 borderWidth: 2,
@@ -332,7 +349,7 @@ const MapaCorrelatividades = () => {
                         from: req.id,
                         to: materia.id,
                         arrows: 'to',
-                        color: { color: tipo === 'aprobada' ? 'rgba(79, 70, 229, 0.4)' : 'rgba(203, 213, 225, 0.8)' },
+                        color: { color: tipo === 'aprobada' ? (esOscuro ? 'rgba(129, 140, 248, 0.7)' : 'rgba(79, 70, 229, 0.4)') : (esOscuro ? 'rgba(100, 116, 139, 0.6)' : 'rgba(203, 213, 225, 0.8)') },
                         width: tipo === 'aprobada' ? 2 : 1.5,
                         dashes: tipo === 'regular' ? [5, 5] : false,
                         smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.6 }
@@ -372,11 +389,14 @@ const MapaCorrelatividades = () => {
         });
 
         networkRef.current.on("beforeDrawing", function (ctx) {
-            const colorsBg = ['#f0f9ff', '#faf5ff', '#f0fdf4', '#fff7ed', '#fdf2f8'];
+            const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+            const colorsBg = isDark
+                ? ['#090d16', '#0f172a', '#0b1120', '#090d16', '#0f172a']
+                : ['#f0f9ff', '#faf5ff', '#f0fdf4', '#fff7ed', '#fdf2f8'];
             const yearNames = ['1° Año', '2° Año', '3° Año', '4° Año', '5° Año'];
             const positions = networkRef.current.getPositions();
             const levelX = {};
-            
+
             materiasRef.current.forEach(m => {
                 if (positions[m.id]) {
                     levelX[m.nivel_anio] = positions[m.id].x;
@@ -387,16 +407,16 @@ const MapaCorrelatividades = () => {
                 if (levelX[year] !== undefined) {
                     const x = levelX[year];
                     const bandWidth = levelSeparation;
-                    
+
                     ctx.fillStyle = colorsBg[year - 1];
-                    ctx.fillRect(x - bandWidth/2, -10000, bandWidth, 20000);
+                    ctx.fillRect(x - bandWidth / 2, -10000, bandWidth, 20000);
 
                     const viewPos = networkRef.current.getViewPosition();
                     const scale = networkRef.current.getScale();
                     const textY = viewPos.y - (containerRef.current.clientHeight / 2) / scale + 40 / scale;
-                    
-                    ctx.font = `bold ${Math.max(20, 20/scale)}px Inter, sans-serif`;
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+
+                    ctx.font = `bold ${Math.max(20, 20 / scale)}px Inter, sans-serif`;
+                    ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.15)";
                     ctx.textAlign = "center";
                     ctx.fillText(yearNames[year - 1], x, textY);
                 }
@@ -410,7 +430,7 @@ const MapaCorrelatividades = () => {
             if (params.nodes.length > 0) {
                 const nodeId = params.nodes[0];
                 const materiaSelect = materiasRef.current.find(m => m.id === nodeId);
-                
+
                 const mapEst = {};
                 progresoRef.current.forEach(p => { mapEst[p.id_materia] = p.estado; });
                 const estadoActual = mapEst[nodeId] || 'No Cursada';
@@ -418,7 +438,7 @@ const MapaCorrelatividades = () => {
 
                 const ancestros = new Set();
                 const ancestrosEdges = new Set();
-                
+
                 const encontrarAncestros = (id) => {
                     const incomingEdges = edgesRef.current.get().filter(e => e.to === id);
                     incomingEdges.forEach(e => {
@@ -429,7 +449,7 @@ const MapaCorrelatividades = () => {
                         }
                     });
                 };
-                
+
                 encontrarAncestros(nodeId);
                 ancestros.add(nodeId);
 
@@ -470,8 +490,11 @@ const MapaCorrelatividades = () => {
         if (materias.length > 0) {
             actualizarNodosVisuales();
             actualizarMinimapa();
+            if (networkRef.current) {
+                networkRef.current.redraw();
+            }
         }
-    }, [progreso, materias, actualizarNodosVisuales, actualizarMinimapa]);
+    }, [progreso, materias, esOscuro, actualizarNodosVisuales, actualizarMinimapa]);
 
     const cambiarZoom = (porcentaje) => {
         if (!networkRef.current) return;
@@ -577,7 +600,7 @@ const MapaCorrelatividades = () => {
         try {
             setGuardando(true);
             await actualizarEstadoMateria(nodoSeleccionado.id, nuevoEstado, idCurso);
-            
+
             setProgreso(prev => {
                 const existe = prev.find(p => p.id_materia === nodoSeleccionado.id);
                 if (existe) {
@@ -590,8 +613,8 @@ const MapaCorrelatividades = () => {
             if (nuevoEstado === 'Aprobada' || nuevoEstado === 'Regular') {
                 setNotificacionLogro({
                     tipo: nuevoEstado,
-                    mensaje: nuevoEstado === 'Aprobada' 
-                        ? '¡Felicitaciones! Una materia menos, segui asi!' 
+                    mensaje: nuevoEstado === 'Aprobada'
+                        ? '¡Felicitaciones! Una materia menos, segui asi!'
                         : '¡Muy bienn! Que buen progreso!'
                 });
 
@@ -617,9 +640,8 @@ const MapaCorrelatividades = () => {
     }
 
     return (
-        <div ref={wrapperRef} className={`bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col relative transition-all duration-300 ${
-            isFullscreen ? 'h-screen w-screen p-0 rounded-none fixed inset-0 z-50' : 'h-[88vh] md:h-[82vh] min-h-[520px]'
-        }`}>
+        <div ref={wrapperRef} className={`bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col relative transition-all duration-300 ${isFullscreen ? 'h-screen w-screen p-0 rounded-none fixed inset-0 z-50' : 'h-[88vh] md:h-[82vh] min-h-[520px]'
+            }`}>
             {/* Lluvia de confeti cuando se activa la notificación */}
             {notificacionLogro && <ConfettiRain />}
 
@@ -631,8 +653,8 @@ const MapaCorrelatividades = () => {
                         <p className="text-[10px] font-black tracking-widest uppercase opacity-80">¡EXCELENTE NOTICIA!</p>
                         <p className="text-sm font-extrabold">{notificacionLogro.mensaje}</p>
                     </div>
-                    <button 
-                        onClick={() => setNotificacionLogro(null)} 
+                    <button
+                        onClick={() => setNotificacionLogro(null)}
                         className="ml-2 text-white/70 hover:text-white p-1 rounded-lg text-sm transition cursor-pointer border-none bg-transparent"
                         title="Cerrar"
                     >
@@ -659,10 +681,10 @@ const MapaCorrelatividades = () => {
             `}</style>
 
             {/* Barra superior */}
-            <div className="px-5 py-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white z-20 relative shadow-sm">
+            <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 z-20 relative shadow-sm transition-colors duration-200">
                 <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-slate-800 leading-tight">Mi Progreso Académico</h3>
-                    <p className="text-xs text-slate-500">Haz clic en una materia o utiliza el buscador para analizar su camino crítico.</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100 leading-tight">Mi Progreso Académico</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Haz clic en una materia o utiliza el buscador para analizar su camino crítico.</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5">
@@ -674,10 +696,10 @@ const MapaCorrelatividades = () => {
                             value={busquedaGrafo}
                             onChange={(e) => setBusquedaGrafo(e.target.value)}
                             placeholder="Buscar materia..."
-                            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 outline-none transition text-slate-800 placeholder-slate-400 font-medium"
+                            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-500 outline-none transition text-slate-800 dark:text-slate-100 placeholder-slate-400 font-medium"
                         />
                         {busquedaGrafo && (
-                            <button onClick={() => setBusquedaGrafo('')} className="absolute right-2.5 text-slate-400 hover:text-slate-600 text-xs">✕</button>
+                            <button onClick={() => setBusquedaGrafo('')} className="absolute right-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs">✕</button>
                         )}
                     </div>
 
@@ -686,7 +708,7 @@ const MapaCorrelatividades = () => {
                         <select
                             value={selectedPlanId}
                             onChange={(e) => setSelectedPlanId(e.target.value)}
-                            className="text-xs border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-800 font-medium cursor-pointer"
+                            className="text-xs border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-medium cursor-pointer"
                         >
                             {planes.map(p => (
                                 <option key={p.id} value={p.id}>{p.nombre}</option>
@@ -697,7 +719,7 @@ const MapaCorrelatividades = () => {
                     {/* Botón Pantalla Completa */}
                     <button
                         onClick={toggleFullscreen}
-                        className="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer border-none"
+                        className="p-2 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer border-none"
                     >
                         {isFullscreen ? <FiMinimize className="w-4 h-4" /> : <FiMaximize className="w-4 h-4" />}
                         <span className="hidden md:inline">{isFullscreen ? 'Restaurar' : 'Maximizar'}</span>
@@ -706,51 +728,51 @@ const MapaCorrelatividades = () => {
             </div>
 
             {/* Lienzo del Grafo */}
-            <div className="flex-1 w-full bg-white relative z-0 outline-none flex flex-col min-h-[400px]">
+            <div className="flex-1 w-full bg-slate-50 dark:bg-slate-950 relative z-0 outline-none flex flex-col min-h-[400px] transition-colors duration-200">
                 {cargando && (
-                    <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex flex-col items-center justify-center z-30 transition-all">
+                    <div className="absolute inset-0 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xs flex flex-col items-center justify-center z-30 transition-all">
                         <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                        <p className="text-sm text-slate-600 font-medium">Cargando mapa de correlatividades...</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">Cargando mapa de correlatividades...</p>
                     </div>
                 )}
                 <div ref={containerRef} className="flex-1 w-full h-full" />
 
                 {/* Minimapa Interactivo en esquina inferior derecha */}
-                <div className="absolute bottom-4 right-4 w-40 h-28 bg-white/95 backdrop-blur-md border border-slate-200 rounded-xl shadow-lg overflow-hidden z-10 hidden sm:block pointer-events-none">
-                    <div className="px-2 py-1 bg-slate-100 border-b border-slate-200 text-[9px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                        <FiCompass className="w-3 h-3 text-indigo-500" /> Minimapa
+                <div className="absolute bottom-4 right-4 w-40 h-28 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden z-10 hidden sm:block pointer-events-none transition-colors duration-200">
+                    <div className="px-2 py-1 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        <FiCompass className="w-3 h-3 text-indigo-500 dark:text-indigo-400" /> Minimapa
                     </div>
                     <canvas ref={minimapCanvasRef} width="160" height="90" className="w-full h-[calc(100%-21px)] block" />
                 </div>
             </div>
-            
+
             {/* Leyenda de Colores + CONTROL HORIZONTAL DE ZOOM */}
-            <div className="p-3 border-t border-slate-100 bg-white z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-3 text-xs text-slate-600">
-                    
+            <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-200">
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+
                     {/* Estados de materias */}
                     <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#d1fae5] border border-[#10b981]"></div> Aprobada</div>
-                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#fef3c7] border border-[#f59e0b]"></div> Regular</div>
-                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#f3e8ff] border border-[#a855f7]"></div> Cursando</div>
-                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#dbeafe] border border-[#3b82f6]"></div> Habilitada</div>
-                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#ffffff] border border-[#cbd5e1]"></div> Bloqueada</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#d1fae5] dark:bg-emerald-950 border border-[#10b981]"></div> Aprobada</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#fef3c7] dark:bg-amber-950 border border-[#f59e0b]"></div> Regular</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#f3e8ff] dark:bg-purple-950 border border-[#a855f7]"></div> Cursando</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#dbeafe] dark:bg-blue-950 border border-[#3b82f6]"></div> Habilitada</div>
+                        <div className="flex items-center gap-1.5"><div className="w-3.5 h-3.5 rounded bg-[#ffffff] dark:bg-slate-800 border border-[#cbd5e1] dark:border-slate-600"></div> Bloqueada</div>
                     </div>
 
                     {/* Tipos de Requisito + Control Horizontal de Zoom */}
                     <div className="flex flex-wrap items-center gap-6">
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1.5"><div className="w-5 border-b-2 border-dashed border-slate-400"></div> Req. Regular</div>
+                            <div className="flex items-center gap-1.5"><div className="w-5 border-b-2 border-dashed border-slate-400 dark:border-slate-500"></div> Req. Regular</div>
                             <div className="flex items-center gap-1.5"><div className="w-5 border-b-2 border-solid border-indigo-400"></div> Req. Aprobada</div>
                         </div>
 
-                        <div className="h-4 w-px bg-slate-200 hidden sm:block" />
+                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
                         {/* Control Horizontal Interactivo de Zoom */}
-                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 shadow-2xs">
+                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 shadow-2xs">
                             <button
                                 onClick={() => cambiarZoom(zoomLevel - 15)}
-                                className="p-1 hover:bg-slate-200/60 rounded-lg text-slate-600 transition cursor-pointer border-none bg-transparent"
+                                className="p-1 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer border-none bg-transparent"
                                 title="Alejar zoom"
                             >
                                 <FiMinus className="w-3.5 h-3.5 font-bold" />
@@ -763,22 +785,22 @@ const MapaCorrelatividades = () => {
                                 step="5"
                                 value={zoomLevel}
                                 onChange={(e) => cambiarZoom(Number(e.target.value))}
-                                className="w-24 h-1.5 accent-indigo-600 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                className="w-24 h-1.5 accent-indigo-600 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
                             />
 
                             <button
                                 onClick={() => cambiarZoom(zoomLevel + 15)}
-                                className="p-1 hover:bg-slate-200/60 rounded-lg text-slate-600 transition cursor-pointer border-none bg-transparent"
+                                className="p-1 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer border-none bg-transparent"
                                 title="Acercar zoom"
                             >
                                 <FiPlus className="w-3.5 h-3.5 font-bold" />
                             </button>
 
-                            <div className="h-3 w-px bg-slate-200 mx-1" />
+                            <div className="h-3 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
 
                             <button
                                 onClick={() => cambiarZoom(100)}
-                                className="px-1.5 py-0.5 hover:bg-indigo-50 text-indigo-600 rounded-md text-[10px] font-extrabold transition cursor-pointer border-none bg-transparent flex items-center gap-1"
+                                className="px-1.5 py-0.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-md text-[10px] font-extrabold transition cursor-pointer border-none bg-transparent flex items-center gap-1"
                                 title="Restablecer vista a 100%"
                             >
                                 <FiRotateCcw className="w-3 h-3" />
@@ -786,21 +808,20 @@ const MapaCorrelatividades = () => {
                             </button>
                         </div>
                     </div>
-
                 </div>
             </div>
 
             {/* Panel Flotante de Edición */}
             {nodoSeleccionado && (
                 <div 
-                    className="absolute bottom-0 md:top-20 md:bottom-auto left-0 md:left-auto right-0 md:right-5 w-full md:w-88 lg:w-96 bg-white border border-slate-200 rounded-t-2xl md:rounded-2xl shadow-2xl z-30 max-h-[80vh] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+                    className="absolute bottom-0 md:top-20 md:bottom-auto left-0 md:left-auto right-0 md:right-5 w-full md:w-88 lg:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl md:rounded-2xl shadow-2xl z-30 max-h-[80vh] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200 transition-colors duration-200"
                     onWheel={(e) => e.stopPropagation()}
                     onTouchMove={(e) => e.stopPropagation()}
                 >
-                    <div className="flex justify-between items-start p-4 pb-3 border-b border-slate-100 bg-white shrink-0">
+                    <div className="flex justify-between items-start p-4 pb-3 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 transition-colors duration-200">
                         <div className="pr-2 min-w-0">
-                            <h2 className="text-base font-bold text-slate-800 truncate">{nodoSeleccionado.nombre}</h2>
-                            <span className="text-[11px] text-slate-500 font-mono mt-0.5 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded inline-block">
+                            <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 truncate">{nodoSeleccionado.nombre}</h2>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded inline-block">
                                 Código: {nodoSeleccionado.codigo}
                             </span>
                         </div>
@@ -812,7 +833,7 @@ const MapaCorrelatividades = () => {
                                     networkRef.current.emit('click', { nodes: [] });
                                 }
                             }} 
-                            className="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer border-none bg-transparent"
+                            className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg cursor-pointer border-none bg-transparent"
                         >
                             ✕
                         </button>
@@ -824,13 +845,13 @@ const MapaCorrelatividades = () => {
                                 <div className="space-y-3">
                                     {nodoSeleccionado.correlativas.filter(c => (c.correlativas_x_materia?.tipo_requisito || 'regular') === 'regular').length > 0 && (
                                         <div>
-                                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Para cursar (Regular):</h4>
-                                            <ul className="text-xs text-slate-700 space-y-1">
+                                            <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Para cursar (Regular):</h4>
+                                            <ul className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
                                                 {nodoSeleccionado.correlativas.filter(c => (c.correlativas_x_materia?.tipo_requisito || 'regular') === 'regular').map(c => {
                                                     const estadoCorrelativa = progreso.find(p => p.id_materia === c.id)?.estado || 'No Cursada';
                                                     const cumplido = estadoCorrelativa === 'Aprobada' || estadoCorrelativa === 'Regular';
                                                     return (
-                                                        <li key={c.id} className="flex justify-between items-center bg-slate-50 border border-slate-100 px-2.5 py-1.5 rounded-lg">
+                                                        <li key={c.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-2.5 py-1.5 rounded-lg">
                                                             <span className="truncate pr-2">{c.nombre}</span>
                                                             <span>{cumplido ? '✅' : '❌'}</span>
                                                         </li>
@@ -841,14 +862,14 @@ const MapaCorrelatividades = () => {
                                     )}
                                     {nodoSeleccionado.correlativas.filter(c => c.correlativas_x_materia?.tipo_requisito === 'aprobada').length > 0 && (
                                         <div>
-                                            <h4 className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Para rendir final (Aprobada):</h4>
-                                            <ul className="text-xs text-slate-700 space-y-1">
+                                            <h4 className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">Para rendir final (Aprobada):</h4>
+                                            <ul className="text-xs text-slate-700 dark:text-slate-300 space-y-1">
                                                 {nodoSeleccionado.correlativas.filter(c => c.correlativas_x_materia?.tipo_requisito === 'aprobada').map(c => {
                                                     const estadoCorrelativa = progreso.find(p => p.id_materia === c.id)?.estado || 'No Cursada';
                                                     const cumplido = estadoCorrelativa === 'Aprobada';
                                                     return (
-                                                        <li key={c.id} className="flex justify-between items-center bg-indigo-50/70 border border-indigo-100 px-2.5 py-1.5 rounded-lg">
-                                                            <span className="truncate pr-2 text-indigo-950">{c.nombre}</span>
+                                                        <li key={c.id} className="flex justify-between items-center bg-indigo-50/70 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/60 px-2.5 py-1.5 rounded-lg">
+                                                            <span className="truncate pr-2 text-indigo-950 dark:text-indigo-200">{c.nombre}</span>
                                                             <span>{cumplido ? '✅' : '❌'}</span>
                                                         </li>
                                                     );
@@ -858,17 +879,17 @@ const MapaCorrelatividades = () => {
                                     )}
                                 </div>
                             ) : (
-                                <p className="text-xs text-slate-400 italic bg-slate-50 p-2 rounded-lg border">Sin correlativas previas</p>
+                                <p className="text-xs text-slate-400 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700">Sin correlativas previas</p>
                             )}
                         </div>
 
-                        <div className="pt-3 border-t border-slate-100">
-                            <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2">Cambiar Estado Académico:</h4>
+                        <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                            <h4 className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-2">Cambiar Estado Académico:</h4>
                             <div className="grid grid-cols-2 gap-2">
-                                <button disabled={guardando} onClick={() => handleCambiarEstado('Aprobada')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Aprobada' ? 'bg-[#d1fae5] text-emerald-800 border-emerald-500 font-bold' : 'bg-white hover:bg-emerald-50 border-slate-200 text-slate-700'}`}>🟢 Aprobada</button>
-                                <button disabled={guardando} onClick={() => handleCambiarEstado('Regular')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Regular' ? 'bg-[#fef3c7] text-amber-800 border-amber-500 font-bold' : 'bg-white hover:bg-amber-50 border-slate-200 text-slate-700'}`}>🟡 Regular</button>
-                                <button disabled={guardando} onClick={() => handleCambiarEstado('Cursando')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Cursando' ? 'bg-[#f3e8ff] text-purple-800 border-purple-500 font-bold' : 'bg-white hover:bg-purple-50 border-slate-200 text-slate-700'}`}>🟣 Cursando</button>
-                                <button disabled={guardando} onClick={() => handleCambiarEstado('No Cursada')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'No Cursada' ? 'bg-slate-200 text-slate-900 border-slate-500 font-bold' : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700'}`}>⚪ No Cursada</button>
+                                <button disabled={guardando} onClick={() => handleCambiarEstado('Aprobada')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Aprobada' ? 'bg-[#d1fae5] dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-500 font-bold' : 'bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'}`}>🟢 Aprobada</button>
+                                <button disabled={guardando} onClick={() => handleCambiarEstado('Regular')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Regular' ? 'bg-[#fef3c7] dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-500 font-bold' : 'bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'}`}>🟡 Regular</button>
+                                <button disabled={guardando} onClick={() => handleCambiarEstado('Cursando')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'Cursando' ? 'bg-[#f3e8ff] dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border-purple-500 font-bold' : 'bg-white dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'}`}>🟣 Cursando</button>
+                                <button disabled={guardando} onClick={() => handleCambiarEstado('No Cursada')} className={`py-2 px-3 text-xs rounded-xl border font-semibold transition cursor-pointer flex items-center justify-center gap-1 ${nodoSeleccionado.estadoActual === 'No Cursada' ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-500 font-bold' : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'}`}>⚪ No Cursada</button>
                             </div>
                         </div>
                     </div>

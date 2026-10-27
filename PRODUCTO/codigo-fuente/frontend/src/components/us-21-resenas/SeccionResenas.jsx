@@ -83,12 +83,12 @@ const SeccionResenas = () => {
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 font-sans">
       
       {/* HEADER DE LA SECCIÓN */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4 transition-colors duration-200">
         <div>
-          <h2 className="text-xl md:text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+          <h2 className="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <span>⭐</span> Métricas y Reseñas de Cátedras
           </h2>
-          <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
             Consultá la opinión de tus compañeros sobre profesores, exigencia y claridad docente.
           </p>
         </div>
@@ -104,7 +104,7 @@ const SeccionResenas = () => {
                 setCursos([]);
               }
             }}
-            className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-xl transition border-none cursor-pointer self-start sm:self-auto"
+            className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 px-3 py-2 rounded-xl transition border-none cursor-pointer self-start sm:self-auto"
           >
             <FiArrowLeft className="w-4 h-4" />
             <span>Volver {cursoSeleccionado ? 'a comisiones' : 'a materias'}</span>
@@ -116,7 +116,7 @@ const SeccionResenas = () => {
       {!materiaSeleccionada && (
         <div className="space-y-6">
           {/* Selector de Años (1° a 5° Año) */}
-          <div className="flex flex-wrap items-center gap-2 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80">
+          <div className="flex flex-wrap items-center gap-2 bg-slate-100/80 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 transition-colors duration-200">
             {[1, 2, 3, 4, 5].map((anio) => (
               <button
                 key={anio}
@@ -124,7 +124,7 @@ const SeccionResenas = () => {
                 className={`flex-1 min-w-[90px] py-2.5 px-4 rounded-xl text-xs font-extrabold transition cursor-pointer border-none ${
                   anioSeleccionado === anio
                     ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-transparent hover:bg-slate-200/60 text-slate-600'
+                    : 'bg-transparent hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
                 }`}
               >
                 {anio}° Año
@@ -139,8 +139,8 @@ const SeccionResenas = () => {
               <p className="text-xs text-slate-400 font-medium">Cargando materias...</p>
             </div>
           ) : materiasDelAnio.length === 0 ? (
-            <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
-              <p className="text-sm font-semibold text-slate-600">No hay materias registradas para este año.</p>
+            <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+              <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">No hay materias registradas para este año.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -148,20 +148,20 @@ const SeccionResenas = () => {
                 <div
                   key={materia.id}
                   onClick={() => handleSeleccionarMateria(materia)}
-                  className="p-4 bg-white hover:bg-slate-50/80 border border-slate-200 rounded-2xl shadow-2xs hover:shadow-md transition-all cursor-pointer flex items-center justify-between group"
+                  className="p-4 bg-white dark:bg-slate-800 hover:bg-slate-50/80 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xs hover:shadow-md transition-colors duration-200 cursor-pointer flex items-center justify-between group"
                 >
                   <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
                       {materia.nombre}
                     </h3>
-                    <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
                         {materia.promedio_general && Number(materia.promedio_general) > 0 ? (
                             <span className="flex items-center gap-1 text-amber-500 font-bold">
                                 <FiStar className="fill-amber-400 w-3.5 h-3.5" />
                                 {Number(materia.promedio_general).toFixed(1)}
                             </span>
                         ) : (
-                            <span className="text-slate-400 font-medium text-[11px] italic">
+                            <span className="text-slate-400 dark:text-slate-400 font-medium text-[11px] italic">
                                 Sin reseñas
                             </span>
                         )}
@@ -169,7 +169,7 @@ const SeccionResenas = () => {
                         <span>{materia.codigo || 'MAT'}</span>
                     </div>
                   </div>
-                  <FiChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                  <FiChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
                 </div>
               ))}
             </div>
@@ -219,12 +219,12 @@ const SeccionResenas = () => {
                 onClick={() => setCursoSeleccionado(null)}
                 className={`p-3 rounded-2xl border text-left transition cursor-pointer font-sans ${
                   cursoSeleccionado === null
-                    ? 'bg-indigo-50 border-indigo-500 shadow-xs ring-2 ring-indigo-500/20'
-                    : 'bg-white hover:bg-slate-50 border-slate-200'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 shadow-xs ring-2 ring-indigo-500/20'
+                    : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700'
                 }`}
               >
-                <div className="font-extrabold text-xs text-slate-800">Todas</div>
-                <div className="text-[10px] text-slate-500 font-medium mt-0.5">Ver general</div>
+                <div className="font-extrabold text-xs text-slate-800 dark:text-slate-100">Todas</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">Ver general</div>
               </button>
 
               {cursos.map((c) => {
@@ -235,12 +235,12 @@ const SeccionResenas = () => {
                     onClick={() => setCursoSeleccionado(c)}
                     className={`p-3 rounded-2xl border text-left transition cursor-pointer font-sans ${
                       activo
-                        ? 'bg-indigo-50 border-indigo-500 shadow-xs ring-2 ring-indigo-500/20'
-                        : 'bg-white hover:bg-slate-50 border-slate-200'
+                        ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 shadow-xs ring-2 ring-indigo-500/20'
+                        : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700'
                     }`}
                   >
-                    <div className="font-extrabold text-sm text-slate-800">{c.nombre}</div>
-                    <div className="text-[10px] text-slate-500 font-medium mt-0.5">
+                    <div className="font-extrabold text-sm text-slate-800 dark:text-slate-100">{c.nombre}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                       {c.turno || 'Comisión'}
                     </div>
                   </button>
@@ -254,19 +254,19 @@ const SeccionResenas = () => {
             
             {/* PANEL IZQUIERDO: DESGLOSE DE MÉTRICAS */}
             <div className="space-y-4">
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
-                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <FiInfo className="text-indigo-600 w-4 h-4" /> Desglose de Evaluación
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-4 transition-colors duration-200">
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <FiInfo className="text-indigo-600 dark:text-indigo-400 w-4 h-4" /> Desglose de Evaluación
                 </h4>
 
                 <div className="space-y-3.5 text-xs">
                   {/* Dificultad */}
                   <div className="space-y-1">
-                    <div className="flex justify-between font-bold text-slate-700">
+                    <div className="flex justify-between font-bold text-slate-700 dark:text-slate-200">
                       <span>Dificultad y Exigencia</span>
-                      <span className="text-indigo-600">{datosEncuesta.promedios?.dificultad || 0}/5</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{datosEncuesta.promedios?.dificultad || 0}/5</span>
                     </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                       <div 
                         className="bg-amber-400 h-full rounded-full transition-all duration-500"
                         style={{ width: `${((datosEncuesta.promedios?.dificultad || 0) / 5) * 100}%` }}
@@ -276,11 +276,11 @@ const SeccionResenas = () => {
 
                   {/* Claridad Docente */}
                   <div className="space-y-1">
-                    <div className="flex justify-between font-bold text-slate-700">
+                    <div className="flex justify-between font-bold text-slate-700 dark:text-slate-200">
                       <span>Claridad Pedagógica</span>
-                      <span className="text-indigo-600">{datosEncuesta.promedios?.claridad_docente || 0}/5</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{datosEncuesta.promedios?.claridad_docente || 0}/5</span>
                     </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                       <div 
                         className="bg-indigo-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${((datosEncuesta.promedios?.claridad_docente || 0) / 5) * 100}%` }}
@@ -290,11 +290,11 @@ const SeccionResenas = () => {
 
                   {/* Disponibilidad */}
                   <div className="space-y-1">
-                    <div className="flex justify-between font-bold text-slate-700">
+                    <div className="flex justify-between font-bold text-slate-700 dark:text-slate-200">
                       <span>Disponibilidad Consultas</span>
-                      <span className="text-indigo-600">{datosEncuesta.promedios?.disponibilidad || 0}/5</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{datosEncuesta.promedios?.disponibilidad || 0}/5</span>
                     </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                       <div 
                         className="bg-emerald-500 h-full rounded-full transition-all duration-500"
                         style={{ width: `${((datosEncuesta.promedios?.disponibilidad || 0) / 5) * 100}%` }}
@@ -307,41 +307,41 @@ const SeccionResenas = () => {
 
             {/* PANEL DERECHO: TARJETAS DE OPINIONES / RESEÑAS */}
             <div className="lg:col-span-2 space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <FiMessageSquare className="text-indigo-600 w-4 h-4" /> Opiniones de Estudiantes ({encuestasFiltradas.length})
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <FiMessageSquare className="text-indigo-600 dark:text-indigo-400 w-4 h-4" /> Opiniones de Estudiantes ({encuestasFiltradas.length})
               </h4>
 
               {encuestasFiltradas.length === 0 ? (
-                <div className="p-8 text-center bg-white border border-slate-200 rounded-2xl space-y-2">
-                  <p className="text-sm font-bold text-slate-700">Aún no hay reseñas registradas para esta selección.</p>
-                  <p className="text-xs text-slate-400">Las opiniones se registran al cambiar el estado académico en el Mapa de Correlatividades.</p>
+                <div className="p-8 text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-2 transition-colors duration-200">
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Aún no hay reseñas registradas para esta selección.</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-400">Las opiniones se registran al cambiar el estado académico en el Mapa de Correlatividades.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {encuestasFiltradas.map((resena) => (
                     <div 
                       key={resena.id} 
-                      className="p-4 bg-white border border-slate-200 rounded-2xl shadow-2xs space-y-3"
+                      className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xs space-y-3 transition-colors duration-200"
                     >
                       {/* Cabecera de la opinión */}
-                      <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5">
+                      <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-2.5">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 shrink-0 overflow-hidden">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0 overflow-hidden">
                             {resena.autor?.foto_perfil ? (
                               <img src={resena.autor.foto_perfil} alt="Perfil" className="w-full h-full object-cover" />
                             ) : resena.es_anonima ? (
-                              <FiShield className="w-4 h-4 text-slate-400" />
+                              <FiShield className="w-4 h-4 text-slate-400 dark:text-slate-400" />
                             ) : (
-                              <FiUser className="w-4 h-4 text-slate-500" />
+                              <FiUser className="w-4 h-4 text-slate-500 dark:text-slate-300" />
                             )}
                           </div>
                           <div>
-                            <span className="text-xs font-extrabold text-slate-800 block leading-tight">
+                            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 block leading-tight">
                               {resena.autor?.nombre}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-medium">
+                            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">
                               {resena.curso ? `Comisión ${resena.curso}` : 'General'} • Cursó como{' '}
-                              <strong className={resena.estado_academico === 'Aprobada' ? 'text-emerald-600' : 'text-amber-600'}>
+                              <strong className={resena.estado_academico === 'Aprobada' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
                                 {resena.estado_academico || 'Alumno'}
                               </strong>
                             </span>
@@ -349,7 +349,7 @@ const SeccionResenas = () => {
                         </div>
 
                         {/* Puntuación Promedio de la reseña */}
-                        <div className="flex items-center gap-1 text-amber-500 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-lg text-xs font-bold">
+                        <div className="flex items-center gap-1 text-amber-500 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60 px-2 py-0.5 rounded-lg text-xs font-bold">
                           <FiStar className="fill-amber-400 w-3 h-3" />
                           <span>{((resena.dificultad + resena.claridad_docente + resena.disponibilidad) / 3).toFixed(1)}</span>
                         </div>
@@ -357,11 +357,11 @@ const SeccionResenas = () => {
 
                       {/* Comentario / Consejo */}
                       {resena.comentario ? (
-                        <p className="text-xs text-slate-700 leading-relaxed font-normal bg-slate-50/60 p-3 rounded-xl border border-slate-100">
+                        <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-normal bg-slate-50/60 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
                           "{resena.comentario}"
                         </p>
                       ) : (
-                        <p className="text-[11px] text-slate-400 italic">Sin comentario escrito.</p>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-400 italic">Sin comentario escrito.</p>
                       )}
                     </div>
                   ))}

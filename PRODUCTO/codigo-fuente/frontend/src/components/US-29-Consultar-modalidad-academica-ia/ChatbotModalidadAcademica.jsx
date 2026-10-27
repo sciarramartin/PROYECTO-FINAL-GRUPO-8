@@ -376,8 +376,8 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
           const dataRows = tableLines.slice(2).map(parseRow);
 
           elementos.push(
-            <div key={`table-${i}`} className="overflow-x-auto my-3 rounded-xl border border-slate-200 dark:border-gray-700 shadow-xs">
-              <table className="min-w-full text-xs divide-y divide-slate-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+            <div key={`table-${i}`} className="overflow-x-auto my-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+              <table className="min-w-full text-xs divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                 <thead className="bg-blue-50/90 dark:bg-blue-950/40 text-blue-950 dark:text-blue-200 font-bold uppercase tracking-wider">
                   <tr>
                     {headers.map((h, hIdx) => (
@@ -387,9 +387,9 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-gray-700/60 text-slate-700 dark:text-gray-200">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-700 dark:text-slate-200">
                   {dataRows.map((row, rIdx) => (
-                    <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-transparent' : 'bg-slate-50/70 dark:bg-gray-750/30'}>
+                    <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-transparent' : 'bg-slate-50/70 dark:bg-slate-800/40'}>
                       {row.map((cell, cIdx) => (
                         <td key={cIdx} className="px-3.5 py-2.5 align-top leading-relaxed">
                           <span dangerouslySetInnerHTML={{ __html: parsearFormatoInline(cell) }} />
@@ -542,12 +542,12 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
           value={busquedaGuia}
           onChange={(e) => setBusquedaGuia(e.target.value)}
           placeholder="Buscar pregunta (ej. 'IA', 'PPS', 'Promoción')..."
-          className="w-full bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl text-xs pl-8 pr-8 py-2 text-slate-800 dark:text-gray-200 placeholder-slate-400 dark:placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs pl-8 pr-8 py-2 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-colors duration-200"
         />
         {busquedaGuia && (
           <button
             onClick={() => setBusquedaGuia('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded cursor-pointer border-none bg-transparent"
           >
             <FiX className="text-xs" />
           </button>
@@ -561,15 +561,15 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
             <button
               key={cat.id}
               onClick={() => setCategoriaActiva(cat.id)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-colors duration-200 cursor-pointer ${
                 categoriaActiva === cat.id
                   ? 'bg-blue-600 text-white shadow-xs shadow-blue-600/20'
-                  : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-750 border border-slate-200 dark:border-gray-700'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
               }`}
             >
               {cat.icono}
               <span>{cat.titulo}</span>
-              <span className={`text-[10px] px-1 py-0.2 rounded-full ${categoriaActiva === cat.id ? 'bg-blue-700 text-blue-100' : 'bg-slate-200/80 dark:bg-gray-700 text-slate-600 dark:text-gray-300'}`}>
+              <span className={`text-[10px] px-1 py-0.2 rounded-full ${categoriaActiva === cat.id ? 'bg-blue-700 text-blue-100' : 'bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
                 {cat.preguntas.length}
               </span>
             </button>
@@ -579,7 +579,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
 
       {/* Indicador de Búsqueda Activa */}
       {busquedaGuia && (
-        <div className="mb-2 text-[11px] font-bold text-slate-500 dark:text-gray-400 flex items-center justify-between px-1">
+        <div className="mb-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between px-1">
           <span>Resultados encontrados:</span>
           <span className="bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded-full text-[10px]">
             {preguntasFiltradas.length} preguntas
@@ -599,7 +599,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                   setMostrarGuia(false);
                 }
               }}
-              className="w-full text-left text-xs bg-slate-50/90 dark:bg-gray-850 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-gray-700/80 hover:border-blue-400 dark:hover:border-blue-500 p-2.5 rounded-xl text-slate-800 dark:text-gray-200 transition-all hover:shadow-xs group flex items-start justify-between gap-2 active:scale-98 cursor-pointer"
+              className="w-full text-left text-xs bg-slate-50/90 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 p-2.5 rounded-xl text-slate-800 dark:text-slate-100 transition-colors duration-200 hover:shadow-xs group flex items-start justify-between gap-2 active:scale-98 cursor-pointer"
             >
               <div className="flex-1">
                 {busquedaGuia && (
@@ -615,14 +615,14 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
             </button>
           ))
         ) : (
-          <div className="text-center py-8 text-slate-400 dark:text-gray-500 text-xs">
+          <div className="text-center py-8 text-slate-400 dark:text-slate-500 text-xs">
             No se encontraron preguntas que coincidan con "<strong>{busquedaGuia}</strong>".
           </div>
         )}
       </div>
 
       {/* Pie Informativo */}
-      <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-gray-800 text-[11px] text-slate-500 dark:text-gray-400 text-center shrink-0">
+      <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 text-center shrink-0">
         📚 Hacé clic en cualquier tarjeta para consultar automáticamente.
       </div>
     </div>
@@ -631,14 +631,14 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
   return (
     <div className="w-full h-full flex flex-col gap-2 sm:gap-3 min-h-0 font-sans">
       {/* Encabezado Superior Compacto e Integrado */}
-      <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-2.5 sm:p-3.5 shadow-sm flex items-center justify-between gap-3 shrink-0">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3.5 shadow-sm flex items-center justify-between gap-3 shrink-0 transition-colors duration-200">
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
             <FiCpu className="text-lg sm:text-xl" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
                 Asistente Académico IA
               </h1>
 
@@ -650,28 +650,28 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                 </span>
 
                 {/* Globito / Popover Flotante */}
-                <div className="absolute left-0 top-full mt-2.5 w-80 sm:w-[410px] p-4 rounded-2xl bg-white dark:bg-gray-900 text-slate-800 dark:text-gray-100 border border-amber-200/80 dark:border-amber-900/60 shadow-2xl shadow-slate-900/15 dark:shadow-black/60 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform group-hover:translate-y-0 translate-y-1 z-50 pointer-events-none">
-                  <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-100 dark:border-gray-800">
+                <div className="absolute left-0 top-full mt-2.5 w-80 sm:w-[410px] p-4 rounded-2xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-amber-200/80 dark:border-amber-900/60 shadow-2xl shadow-slate-900/15 dark:shadow-black/60 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out transform group-hover:translate-y-0 translate-y-1 z-50 pointer-events-none">
+                  <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-800">
                     <span className="flex h-2 w-2 relative">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                     </span>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                       Estado del Asistente • Versión Beta
                     </h4>
                   </div>
 
-                  <div className="space-y-2.5 text-xs leading-relaxed text-slate-600 dark:text-gray-300">
+                  <div className="space-y-2.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                     {/* Bloque 1: Fuente y Alcance */}
-                    <div className="bg-slate-50 dark:bg-gray-800/60 border border-slate-200/70 dark:border-gray-700/60 rounded-xl p-2.5">
+                    <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl p-2.5">
                       <p className="font-semibold text-slate-900 dark:text-slate-200 mb-1 flex items-center gap-1.5">
                         <span>🏛️</span> Fuente de Datos y Alcance Actual:
                       </p>
-                      <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-normal">
+                      <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-normal">
                         Los documentos y normativas oficiales que alimentan este chatbot fueron extraídos directamente de{' '}
                         <span className="font-semibold text-blue-600 dark:text-blue-400">https://www.frc.utn.edu.ar/</span>.
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-1 leading-normal">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-normal">
                         ⚠️ <em>Nota:</em> La información está sujeta a cambios continuos y actualmente comprende una muestra representativa (no la totalidad absoluta de modalidades y trámites de todas las carreras).
                       </p>
                     </div>
@@ -700,7 +700,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                   </div>
 
                   {/* Flechita / Triángulo decorativo superior */}
-                  <div className="absolute -top-2 left-6 w-3.5 h-3.5 bg-white dark:bg-gray-900 border-t border-l border-amber-200/80 dark:border-amber-900/60 transform rotate-45" />
+                  <div className="absolute -top-2 left-6 w-3.5 h-3.5 bg-white dark:bg-slate-900 border-t border-l border-amber-200/80 dark:border-amber-900/60 transform rotate-45" />
                 </div>
               </div>
 
@@ -708,7 +708,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                 UTN FRC • Sistemas
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 mt-0.5 truncate">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               Consultá sobre aprobación directa, regularidad, correlatividades, exámenes y trámites oficiales.
             </p>
           </div>
@@ -717,10 +717,10 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setMostrarGuia((prev) => !prev)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-xl border transition-colors duration-200 cursor-pointer ${
               mostrarGuia
                 ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'
-                : 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-750 border border-slate-200 dark:border-gray-700'
+                : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
             }`}
             title={mostrarGuia ? 'Ocultar guía lateral' : 'Ver preguntas sugeridas'}
           >
@@ -734,7 +734,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
           <button
             onClick={limpiarChat}
             title="Reiniciar chat"
-            className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-semibold text-slate-600 dark:text-gray-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl border border-slate-200 dark:border-gray-700 transition-all active:scale-95 shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors duration-200 active:scale-95 shadow-xs cursor-pointer"
           >
             <FiTrash2 className="text-sm text-slate-500 hover:text-rose-600" />
             <span className="hidden sm:inline">Reiniciar</span>
@@ -747,7 +747,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
         {/* Columna Principal del Chat: 100% de alto y ancho adaptable */}
         <div className="flex-1 flex flex-col h-full gap-2.5 sm:gap-3 min-h-0 w-full">
           {/* Canvas de Conversación con Fondo Diferenciado y Borde Marcado */}
-          <div className="flex-1 bg-slate-100/75 dark:bg-gray-950/70 border border-slate-300/80 dark:border-gray-800 rounded-2xl p-3 sm:p-5 overflow-y-auto flex flex-col gap-3.5 shadow-inner min-h-0">
+          <div className="flex-1 bg-slate-100/75 dark:bg-slate-950 border border-slate-300/80 dark:border-slate-800 rounded-2xl p-3 sm:p-5 overflow-y-auto flex flex-col gap-3.5 shadow-inner min-h-0 transition-colors duration-200">
             {mensajes.map((m) => (
               <div
                 key={m.id}
@@ -757,7 +757,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                   className={`flex gap-3 max-w-[98%] sm:max-w-[95%] xl:max-w-[92%] rounded-2xl p-4 sm:p-5 transition-all shadow-sm ${
                     m.rol === 'usuario'
                       ? 'bg-blue-600 text-white rounded-br-xs shadow-md shadow-blue-600/20'
-                      : 'bg-white dark:bg-gray-850 text-slate-900 dark:text-gray-100 border border-slate-200 dark:border-gray-700 rounded-bl-xs'
+                      : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-bl-xs'
                   }`}
                 >
                   {m.rol === 'asistente' && (
@@ -767,32 +767,32 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                   )}
 
                   <div className="flex-1 overflow-hidden">
-                    <div className={`flex items-center justify-between gap-4 mb-1.5 pb-1 ${m.rol === 'usuario' ? 'border-b border-blue-500/50 text-white' : 'border-b border-slate-100 dark:border-gray-700/60'}`}>
+                    <div className={`flex items-center justify-between gap-4 mb-1.5 pb-1 ${m.rol === 'usuario' ? 'border-b border-blue-500/50 text-white' : 'border-b border-slate-100 dark:border-slate-700/60'}`}>
                       <span className={`text-[11px] font-bold uppercase tracking-wider ${m.rol === 'usuario' ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`}>
                         {m.rol === 'usuario' ? 'Vos' : 'Asistente Académico UTN'}
                       </span>
-                      <div className={`flex items-center gap-2 text-[10px] ${m.rol === 'usuario' ? 'text-blue-100' : 'text-slate-400'}`}>
+                      <div className={`flex items-center gap-2 text-[10px] ${m.rol === 'usuario' ? 'text-blue-100' : 'text-slate-400 dark:text-slate-400'}`}>
                         <span>{m.fecha}</span>
                         {m.rol === 'asistente' && (
                           <button
                             onClick={() => handleCopiarTexto(m.id, m.contenido)}
                             title="Copiar texto"
-                            className="p-1 hover:bg-slate-100 dark:hover:bg-gray-700 rounded transition-colors cursor-pointer"
+                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors cursor-pointer border-none bg-transparent"
                           >
-                            {copiadoId === m.id ? <FiCheck className="text-emerald-500 text-xs" /> : <FiCopy className="text-xs" />}
+                            {copiadoId === m.id ? <FiCheck className="text-emerald-500 text-xs" /> : <FiCopy className="text-xs text-slate-400 dark:text-slate-300" />}
                           </button>
                         )}
                       </div>
                     </div>
 
-                    <div className={m.rol === 'usuario' ? 'text-white' : 'prose dark:prose-invert max-w-none text-sm leading-relaxed space-y-2'}>
+                    <div className={m.rol === 'usuario' ? 'text-white' : 'prose dark:prose-invert max-w-none text-sm leading-relaxed space-y-2 text-slate-800 dark:text-slate-100'}>
                       {renderizarMarkdown(m.contenido, m.rol === 'usuario')}
                     </div>
 
                     {/* Acordeón de Fuentes Oficiales Citadas con Descarga y Hover Dinámico */}
                     {m.fuentes && m.fuentes.length > 0 && (
-                      <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-gray-700/80">
-                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-gray-400 mb-1.5">
+                      <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-700/80">
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
                           <FiFileText className="text-blue-500 text-xs" />
                           <span>Documentos Oficiales Citados (hacé clic para descargar):</span>
                         </div>
@@ -802,7 +802,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                               key={fIdx}
                               onClick={() => handleDescargarDocumento(f.documento)}
                               title={`Hacé clic para descargar "${f.documento}" en tu computadora`}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-slate-100/90 dark:bg-gray-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-gray-700 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white hover:border-blue-600 dark:hover:border-blue-600 hover:shadow-md shadow-2xs transition-all group active:scale-95 cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-slate-100/90 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white hover:border-blue-600 dark:hover:border-blue-600 hover:shadow-md shadow-2xs transition-all group active:scale-95 cursor-pointer"
                             >
                               <FiFileText className="text-blue-500 group-hover:text-white text-xs transition-colors" />
                               <span>{f.documento}</span>
@@ -820,8 +820,8 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
 
             {/* Sugerencias Rápidas al inicio cuando hay solo el mensaje de bienvenida */}
             {mensajes.length === 1 && (
-              <div className="mt-1 pt-3 border-t border-slate-200/70 dark:border-gray-800">
-                <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-500 dark:text-gray-400">
+              <div className="mt-1 pt-3 border-t border-slate-200/70 dark:border-slate-800">
+                <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-500 dark:text-slate-400">
                   <FiHelpCircle className="text-blue-500 text-sm" />
                   <span>Consultas frecuentes directas (hacé clic para probar):</span>
                 </div>
@@ -837,7 +837,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                     <button
                       key={sIdx}
                       onClick={() => enviarMensaje(sug)}
-                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-gray-850 border border-slate-200 dark:border-gray-700 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 shadow-2xs hover:shadow-xs transition-all text-left text-slate-700 dark:text-gray-200 cursor-pointer active:scale-95"
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 shadow-2xs hover:shadow-xs transition-colors duration-200 text-left text-slate-700 dark:text-slate-200 cursor-pointer active:scale-95"
                     >
                       {sug}
                     </button>
@@ -848,7 +848,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
 
             {/* Estado de Carga / Inferencia */}
             {cargando && (
-              <div className="flex items-center gap-3 text-slate-600 dark:text-gray-300 text-xs py-2 animate-pulse bg-white dark:bg-gray-850 p-3 rounded-2xl border border-slate-200 dark:border-gray-700 max-w-md shadow-xs">
+              <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300 text-xs py-2 animate-pulse bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 max-w-md shadow-xs transition-colors duration-200">
                 <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 border border-blue-200 dark:border-blue-800 shadow-xs">
                   <FiCpu className="animate-spin text-base" />
                 </div>
@@ -860,7 +860,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
           </div>
 
           {/* Dock de Entrada con Alto Contraste y Borde Resaltado */}
-          <div className="bg-white dark:bg-gray-900 border-2 border-slate-300 dark:border-gray-700 rounded-2xl p-2.5 sm:p-3 shadow-md shadow-slate-200/50 dark:shadow-none focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shrink-0">
+          <div className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 sm:p-3 shadow-md shadow-slate-200/50 dark:shadow-none focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shrink-0">
             <div className="flex items-end gap-2">
               <div className="p-2 text-blue-600 dark:text-blue-400 hidden sm:block">
                 <FiMessageSquare className="text-lg" />
@@ -873,7 +873,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                 placeholder="Escribí tu consulta académica acá (ej. '¿Cómo promocionar Paradigmas?' o '¿Cuáles son las correlativas de IA?')..."
                 rows={1}
                 disabled={cargando}
-                className="flex-1 bg-transparent border-0 focus:ring-0 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 resize-none py-1.5 px-2 outline-none font-medium leading-relaxed max-h-32"
+                className="flex-1 bg-transparent border-0 focus:ring-0 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-400 resize-none py-1.5 px-2 outline-none font-medium leading-relaxed max-h-32"
               />
               <button
                 onClick={() => enviarMensaje()}
@@ -881,14 +881,14 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
                 className={`px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shrink-0 ${
                   inputPrompt.trim() && !cargando
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 hover:bg-blue-700 active:scale-95 cursor-pointer'
-                    : 'bg-slate-100 dark:bg-gray-800 text-slate-400 dark:text-gray-600 cursor-not-allowed border border-slate-200 dark:border-gray-700'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700'
                 }`}
               >
                 <span>Enviar</span>
                 <FiSend className="text-xs" />
               </button>
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-gray-500 px-2 pt-1 border-t border-slate-100 dark:border-gray-800 mt-1">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400 px-2 pt-1 border-t border-slate-100 dark:border-slate-800 mt-1">
               <span>💡 Presioná <strong>Enter</strong> para enviar • <strong>Shift + Enter</strong> para salto de línea</span>
               <span className="hidden sm:inline">RAG 300+ PDFs UTN FRC</span>
             </div>
@@ -897,7 +897,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
 
         {/* Panel Lateral de Preguntas Sugeridas (Visible en Desktop xl+ cuando mostrarGuia es true) */}
         {mostrarGuia && (
-          <aside className="hidden xl:flex w-84 2xl:w-96 flex-col h-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-3.5 sm:p-4 shadow-sm min-h-0 overflow-hidden shrink-0">
+          <aside className="hidden xl:flex w-84 2xl:w-96 flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-sm min-h-0 overflow-hidden shrink-0 transition-colors duration-200">
             {renderContenidoGuia(false)}
           </aside>
         )}
@@ -910,7 +910,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMostrarGuia(false)}
           />
-          <aside className="relative z-50 w-full sm:w-[420px] max-w-full h-full bg-white dark:bg-gray-900 border-l border-slate-200 dark:border-gray-800 shadow-2xl p-4 flex flex-col min-h-0">
+          <aside className="relative z-50 w-full sm:w-[420px] max-w-full h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl p-4 flex flex-col min-h-0 transition-colors duration-200">
             {renderContenidoGuia(true)}
           </aside>
         </div>

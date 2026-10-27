@@ -564,7 +564,7 @@ const MiPerfil = () => {
                     <div
                       key={pub.id}
                       onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
-                      className="group p-4 bg-white dark:bg-slate-800/90 hover:bg-indigo-50/30 dark:hover:bg-slate-750 border border-gray-150 dark:border-slate-700 hover:border-indigo-150 dark:hover:border-indigo-500/50 rounded-xl transition-colors duration-200 cursor-pointer flex flex-col gap-3 shadow-sm hover:shadow-md text-left"
+                      className="group p-4 bg-white dark:bg-slate-800/90 hover:bg-indigo-50/30 dark:hover:bg-slate-700 border border-gray-150 dark:border-slate-700 hover:border-indigo-150 dark:hover:border-indigo-500/50 rounded-xl transition-colors duration-200 cursor-pointer flex flex-col gap-3 shadow-sm hover:shadow-md text-left"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">
@@ -631,7 +631,7 @@ const MiPerfil = () => {
                           navigate(`/foros/${materiaId}/publicacion/${postId}`);
                         }
                       }}
-                      className="group p-4 bg-white dark:bg-slate-800/90 hover:bg-indigo-50/30 dark:hover:bg-slate-750 border border-gray-150 dark:border-slate-700 hover:border-indigo-150 dark:hover:border-indigo-500/50 rounded-xl transition-colors duration-200 cursor-pointer flex flex-col gap-2.5 shadow-sm hover:shadow-md text-left"
+                      className="group p-4 bg-white dark:bg-slate-800/90 hover:bg-indigo-50/30 dark:hover:bg-slate-700 border border-gray-150 dark:border-slate-700 hover:border-indigo-150 dark:hover:border-indigo-500/50 rounded-xl transition-colors duration-200 cursor-pointer flex flex-col gap-2.5 shadow-sm hover:shadow-md text-left"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">

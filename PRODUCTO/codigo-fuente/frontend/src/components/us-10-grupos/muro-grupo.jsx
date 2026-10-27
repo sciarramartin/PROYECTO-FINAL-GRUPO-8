@@ -37,21 +37,21 @@ const MuroGrupo = () => {
       />
     );
   };
-  
+
   const [grupo, setGrupo] = useState(null);
   const [mensajes, setMensajes] = useState([]);
   const [amigos, setAmigos] = useState([]);
-  
+
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
-  
+
   // Estado para nuevo mensaje en el chat
   const [nuevoMensaje, setNuevoMensaje] = useState("");
   const [publicando, setPublicando] = useState(false);
   const [uniendose, setUniendose] = useState(false);
   const [saliendo, setSaliendo] = useState(false);
-  
+
   // Estado para añadir miembros
   const [procesandoId, setProcesandoId] = useState(null);
 
@@ -122,7 +122,7 @@ const MuroGrupo = () => {
             return { data: [] };
           })
         ]);
-        
+
         // WhatsApp style: ordenar los mensajes de más viejos a más nuevos (abajo del todo)
         // en el controlador vienen ORDER BY createdAt DESC, por lo que los invertimos
         const msgs = mensajesRes.data.reverse();
@@ -232,11 +232,11 @@ const MuroGrupo = () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
       const headers = { Authorization: `Bearer ${token}` };
-      
+
       await axios.put(`${apiUrl}/grupos/${id}/miembros/${miembroId}/rol`, {
         rol: nuevoRol
       }, { headers });
-      
+
       // Actualizar el estado local de forma reactiva e instantánea
       setGrupo((prev) => {
         if (!prev) return prev;
@@ -254,7 +254,7 @@ const MuroGrupo = () => {
         });
         return { ...prev, Miembros: miembrosActualizados };
       });
-      
+
       setMensajeExito(`Estudiante ${nuevoRol === 'admin' ? 'promovido a Administrador' : 'degradado a Miembro'} correctamente.`);
       setTimeout(() => setMensajeExito(""), 3000);
     } catch (err) {
@@ -271,16 +271,16 @@ const MuroGrupo = () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
       const headers = { Authorization: `Bearer ${token}` };
-      
+
       await axios.delete(`${apiUrl}/grupos/${id}/miembros/${miembroId}`, { headers });
-      
+
       // Actualizar el estado local de forma reactiva e instantánea
       setGrupo((prev) => {
         if (!prev) return prev;
         const miembrosActualizados = prev.Miembros.filter((m) => m.id !== miembroId);
         return { ...prev, Miembros: miembrosActualizados };
       });
-      
+
       setMensajeExito(`Estudiante ${nombre} eliminado del grupo correctamente.`);
       setTimeout(() => setMensajeExito(""), 3000);
     } catch (err) {
@@ -302,7 +302,7 @@ const MuroGrupo = () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
       const headers = { Authorization: `Bearer ${token}` };
-      
+
       const response = await axios.put(`${apiUrl}/grupos/${id}`, {
         nombre: nombreConfig.trim(),
         descripcion: descripcionConfig.trim(),
@@ -342,7 +342,7 @@ const MuroGrupo = () => {
       });
 
       setMensajeExito(response.data.mensaje || "¡Te has unido con éxito!");
-      
+
       // Recargar datos para desbloquear el chat
       await cargarDatosGrupo();
     } catch (err) {
@@ -391,7 +391,7 @@ const MuroGrupo = () => {
       });
 
       setMensajeExito("¡Invitación enviada con éxito!");
-      
+
       // Actualizar localmente la lista de pendientes
       if (grupo && response.data.miembro) {
         setGrupo({
@@ -438,7 +438,7 @@ const MuroGrupo = () => {
   const amigosNoMiembros = amigos.filter(amigo => {
     const yaMiembro = miembroIds.includes(amigo.id) || pendienteIds.includes(amigo.id);
     if (yaMiembro) return false;
-    
+
     const nombreCompleto = `${amigo.nombre} ${amigo.apellido}`.toLowerCase();
     const usuario = amigo.nombre_usuario.toLowerCase();
     const query = busquedaAmigos.toLowerCase();
@@ -465,7 +465,7 @@ const MuroGrupo = () => {
     if (cardElement) {
       const cardRect = cardElement.getBoundingClientRect();
       const relativeY = btnRect.top - cardRect.top;
-      setPosicionPopupY(relativeY - 14); 
+      setPosicionPopupY(relativeY - 14);
       setMiembroPopup(miembro);
       setMenuAbiertoMiembroId(miembro.id);
     }
@@ -475,7 +475,7 @@ const MuroGrupo = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-2">
-      
+
       {/* Botón de Retorno */}
       <button
         onClick={() => navigate("/grupos")}
@@ -544,7 +544,7 @@ const MuroGrupo = () => {
                   const iniciales = `${miembro.nombre[0]}${miembro.apellido[0]}`.toUpperCase();
                   const foto = miembro.Perfil?.foto_perfil || miembro.perfil?.foto_perfil;
                   return (
-                    <div 
+                    <div
                       key={miembro.id}
                       title={`${miembro.nombre} ${miembro.apellido} (@${miembro.nombre_usuario})`}
                       className="shrink-0"
@@ -566,7 +566,7 @@ const MuroGrupo = () => {
             <p className="text-xs text-gray-400 dark:text-slate-400 leading-relaxed transition-colors duration-200">
               Este es un grupo público. Unite ahora para poder leer los mensajes del muro, conversar con tus compañeros y compartir ideas de estudio.
             </p>
-            
+
             <button
               onClick={unirseAlGrupo}
               disabled={uniendose}
@@ -583,10 +583,10 @@ const MuroGrupo = () => {
 
         /* --- RENDER 2: VISTA DESBLOQUEADA CON CHAT ESTILO WHATSAPP (Miembros) --- */
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-          
+
           {/* Panel Izquierdo (3/4 de ancho): Chat de WhatsApp */}
           <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-md overflow-hidden flex flex-col justify-between transition-colors duration-200">
-            
+
             {/* WhatsApp Header (Barra Superior del Chat) */}
             <div className="bg-[#f0f2f5] dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between transition-colors duration-200">
               <div className="flex items-center gap-3 min-w-0">
@@ -616,7 +616,7 @@ const MuroGrupo = () => {
             </div>
 
             {/* WhatsApp Scroll Area (Middle Messages Feed) */}
-            <div 
+            <div
               ref={chatContainerRef}
               className="h-[460px] overflow-y-auto p-4 space-y-3 bg-[#efeae2] dark:bg-slate-950 relative transition-colors duration-200"
               style={{
@@ -630,7 +630,7 @@ const MuroGrupo = () => {
                   const autor = msg.Autor;
                   const esPropio = msg.id_usuario === miUsuarioId;
                   const nombreAutor = autor ? `${autor.nombre} ${autor.apellido}` : "Compañero";
-                  
+
                   // Formatear hora estilo WhatsApp (12:45)
                   const fechaObjeto = new Date(msg.createdAt);
                   const horaWhatsApp = fechaObjeto.toLocaleTimeString(undefined, {
@@ -640,27 +640,26 @@ const MuroGrupo = () => {
                   });
 
                   return (
-                    <div 
-                      key={msg.id} 
+                    <div
+                      key={msg.id}
                       className={`flex ${esPropio ? 'justify-end' : 'justify-start'} items-start w-full gap-2 animate-fade-in`}
                     >
                       {/* Avatar del autor para mensajes ajenos */}
                       {!esPropio && (
                         <div className="mt-0.5 shrink-0" title={nombreAutor}>
                           {renderAvatarChico(
-                            autor?.Perfil?.foto_perfil || autor?.perfil?.foto_perfil, 
+                            autor?.Perfil?.foto_perfil || autor?.perfil?.foto_perfil,
                             `${autor?.nombre?.[0] || 'U'}${autor?.apellido?.[0] || 'S'}`.toUpperCase(),
                             "w-7 h-7 text-[9px]"
                           )}
                         </div>
                       )}
-                      
-                      <div 
-                        className={`max-w-md px-3 py-1.5 text-xs shadow-sm rounded-2xl transition-colors duration-200 ${
-                          esPropio 
-                            ? 'bg-[#d9fdd3] dark:bg-emerald-950/70 text-gray-800 dark:text-slate-100 rounded-tr-none border border-[#d1f8cb] dark:border-emerald-800/40' 
+
+                      <div
+                        className={`max-w-md px-3 py-1.5 text-xs shadow-sm rounded-2xl transition-colors duration-200 ${esPropio
+                            ? 'bg-[#d9fdd3] dark:bg-emerald-950/70 text-gray-800 dark:text-slate-100 rounded-tr-none border border-[#d1f8cb] dark:border-emerald-800/40'
                             : 'bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-100 rounded-tl-none border border-gray-150 dark:border-slate-700'
-                        }`}
+                          }`}
                       >
                         {/* Autor de mensaje (Solo para recibidos) */}
                         {!esPropio && (
@@ -668,7 +667,7 @@ const MuroGrupo = () => {
                             {nombreAutor}
                           </span>
                         )}
-                        
+
                         {/* Contenido del Mensaje */}
                         <p className="whitespace-pre-wrap leading-relaxed break-words text-gray-800 dark:text-slate-100">
                           {msg.contenido}
@@ -754,7 +753,7 @@ const MuroGrupo = () => {
                 />
                 <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 text-[11px] select-none pointer-events-none">🔍</span>
                 {filtroMiembros && (
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setFiltroMiembros("")}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 text-[10px]"
@@ -772,7 +771,7 @@ const MuroGrupo = () => {
                     const rolOriginal = miembro.GrupoMiembro?.rol;
                     const esAdmin = rolOriginal === "administrador" || rolOriginal === "admin";
                     const rolTexto = esAdmin ? "Admin" : "Miembro";
-                    
+
                     return (
                       <div key={miembro.id} className="flex items-center justify-between gap-2 relative min-h-[38px]">
                         <div className="flex items-center gap-2 min-w-0">
@@ -788,11 +787,10 @@ const MuroGrupo = () => {
                             <p className="text-[9px] text-gray-400 dark:text-slate-400 truncate transition-colors duration-200">@{miembro.nombre_usuario}</p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={`text-[8.5px] font-bold py-0.5 rounded-full w-16 text-center justify-center flex shrink-0 transition-colors duration-200 ${
-                            esAdmin ? "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"
-                          }`}>
+                          <span className={`text-[8.5px] font-bold py-0.5 rounded-full w-16 text-center justify-center flex shrink-0 transition-colors duration-200 ${esAdmin ? "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300" : "bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400"
+                            }`}>
                             {rolTexto}
                           </span>
 
@@ -801,9 +799,8 @@ const MuroGrupo = () => {
                             <button
                               type="button"
                               onClick={(e) => abrirMenu(e, miembro)}
-                              className={`w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-150 dark:hover:bg-slate-800 transition duration-150 cursor-pointer border-none bg-transparent ${
-                                menuAbiertoMiembroId === miembro.id ? 'text-indigo-650 dark:text-indigo-400 font-bold bg-gray-100 dark:bg-slate-800' : 'text-gray-400 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
-                              }`}
+                              className={`w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-150 dark:hover:bg-slate-800 transition duration-150 cursor-pointer border-none bg-transparent ${menuAbiertoMiembroId === miembro.id ? 'text-indigo-650 dark:text-indigo-400 font-bold bg-gray-100 dark:bg-slate-800' : 'text-gray-400 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
+                                }`}
                             >
                               ⋮
                             </button>
@@ -829,14 +826,14 @@ const MuroGrupo = () => {
               {/* Popover Absoluto Flotante (Fuera del Scroll, Dentro de la Tarjeta Relativa) */}
               {menuAbiertoMiembroId && miembroPopup && (
                 <>
-                  <div 
-                    className="fixed inset-0 z-40 cursor-default bg-black/60 backdrop-blur-sm" 
+                  <div
+                    className="fixed inset-0 z-40 cursor-default bg-black/60 backdrop-blur-sm"
                     onClick={() => {
                       setMenuAbiertoMiembroId(null);
                       setMiembroPopup(null);
                     }}
                   />
-                  <div 
+                  <div
                     className="absolute z-50 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-xl p-3.5 w-40 md:w-44 animate-fade-in origin-right right-4 md:right-[105%] transition-colors duration-200"
                     style={{
                       top: `${posicionPopupY}px`,
@@ -844,15 +841,15 @@ const MuroGrupo = () => {
                   >
                     {/* Arrow indicator pointing to the clicked row */}
                     <div className="hidden md:block absolute top-3.5 -right-[5.5px] w-2.5 h-2.5 bg-white dark:bg-slate-900 border-r border-t border-gray-200 dark:border-slate-800 rotate-45 z-50 transition-colors duration-200"></div>
-                    
+
                     <div className="min-w-0">
                       <p className="text-[8.5px] font-extrabold text-indigo-650 dark:text-indigo-400 uppercase tracking-wider select-none">Gestionar</p>
                       <p className="text-[10px] font-bold text-gray-800 dark:text-slate-100 truncate mt-0.5">{miembroPopup.nombre} {miembroPopup.apellido}</p>
                       <p className="text-[8.5px] text-gray-400 dark:text-slate-400 truncate">@{miembroPopup.nombre_usuario}</p>
                     </div>
-                    
+
                     <div className="h-px bg-gray-100 dark:bg-slate-800 my-2" />
-                    
+
                     <div className="space-y-2 pt-1">
                       <button
                         type="button"
@@ -865,7 +862,7 @@ const MuroGrupo = () => {
                         <span>🛡️ {miembroPopup.GrupoMiembro?.rol === "administrador" || miembroPopup.GrupoMiembro?.rol === "admin" ? "Quitar Admin" : "Hacer Admin"}</span>
                         <span className="text-[9px] opacity-75 font-normal">→</span>
                       </button>
-                      
+
                       <button
                         type="button"
                         onClick={() => expulsarMiembro(miembroPopup.id, `${miembroPopup.nombre} ${miembroPopup.apellido}`)}
@@ -910,7 +907,7 @@ const MuroGrupo = () => {
                   </button>
                 )}
               </div>
-              
+
               <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
                 {amigosNoMiembros.length > 0 ? (
                   amigosNoMiembros.map((amigo) => {
@@ -1011,11 +1008,10 @@ const MuroGrupo = () => {
                 <div className="grid grid-cols-2 gap-3">
                   {/* Opción Público */}
                   <label
-                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition-colors duration-200 select-none ${
-                      estadoConfig === "publico"
+                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition-colors duration-200 select-none ${estadoConfig === "publico"
                         ? "border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500"
                         : "border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <input
@@ -1036,11 +1032,10 @@ const MuroGrupo = () => {
 
                   {/* Opción Privado */}
                   <label
-                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition-colors duration-200 select-none ${
-                      estadoConfig === "privado"
+                    className={`flex flex-col p-3 border rounded-xl cursor-pointer transition-colors duration-200 select-none ${estadoConfig === "privado"
                         ? "border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500"
                         : "border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2">
                       <input
