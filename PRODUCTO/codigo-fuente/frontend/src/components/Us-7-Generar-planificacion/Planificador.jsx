@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef  } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Horario from '../Us-8-Actividades-Personales/Horario';
 import { 
     getActividades as getActividadesFijas, 
@@ -23,6 +23,93 @@ const VALORES_DIAS = {
     'Domingo': 64
 };
 
+// ⏱️ Horas cátedra semanales estimadas por materia o por régimen/código
+export const estimarHorasSemanales = (materia) => {
+    if (!materia) return 0;
+    if (materia.horas_semanales && Number(materia.horas_semanales) > 0) {
+        return Number(materia.horas_semanales);
+    }
+    if (materia.carga_horaria && Number(materia.carga_horaria) > 0) {
+        return Number(materia.carga_horaria);
+    }
+
+    const horasPorCodigo = {
+        'MAT1': 5,
+        'ALG1': 5,
+        'FIS1': 5,
+        'ING1': 3,
+        'LOG1': 4,
+        'AED1': 5,
+        'ARQ1': 4,
+        'SYS1': 4,
+        'MAT2': 5,
+        'FIS2': 5,
+        'ISO2': 3,
+        'ING2': 3,
+        'SSL2': 4,
+        'PPR2': 4,
+        'SOP2': 4,
+        'ASI2': 6,
+        'PRO2': 4,
+        'ECO3': 3,
+        'BDA3': 4,
+        'DSO3': 4,
+        'CDA3': 4,
+        'ANU3': 4,
+        'DSI3': 6,
+        'SEM3': 4,
+        'LEG4': 3,
+        'ICS4': 4,
+        'RDA4': 4,
+        'IOP4': 4,
+        'SIM4': 4,
+        'AUT4': 4,
+        'ADM4': 4,
+        'INT5': 4,
+        'CDA5': 4,
+        'SGE5': 4,
+        'GGE5': 4,
+        'SSI5': 4,
+        'PFI5': 6,
+    };
+
+    const codigo = (materia.codigo || '').toUpperCase();
+    if (codigo && horasPorCodigo[codigo]) {
+        return horasPorCodigo[codigo];
+    }
+
+    if (materia.puntos && Number(materia.puntos) > 0) {
+        return Math.max(3, Number(materia.puntos));
+    }
+
+    const cuat = Number(materia.cuatrimestre);
+    return cuat === 3 || cuat === 0 ? 5 : 4;
+};
+
+// 📅 Helper para etiqueta y estilos según cuatrimestre
+const getEtiquetaCuatrimestre = (cuatrimestre) => {
+    const cuat = Number(cuatrimestre);
+    if (cuat === 1) {
+        return {
+            texto: '1° Cuatrimestre',
+            corto: '1C',
+            bg: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/40'
+        };
+    }
+    if (cuat === 2) {
+        return {
+            texto: '2° Cuatrimestre',
+            corto: '2C',
+            bg: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/40'
+        };
+    }
+    return {
+        texto: 'Anual',
+        corto: 'Anual',
+        bg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/40'
+    };
+};
+
 const Planificador = () => {
     const [refresh, setRefresh] = useState(0);
     const [materias, setMaterias] = useState([]);
@@ -32,9 +119,87 @@ const Planificador = () => {
     const [actividadesFlexibles, setActividadesFlexibles] = useState([]);
     const [mostrarHorario, setMostrarHorario] = useState(false);
     
+    // US-V07: Pestañas de filtrado rápido y búsqueda opcional
+    const [filtroCuatrimestre, setFiltroCuatrimestre] = useState('todas'); // 'todas' | '1c' | '2c' | 'anual'
+    const [busquedaMateria, setBusquedaMateria] = useState('');
+
     const mananaRef = useRef(null);
     const tardeRef = useRef(null);
     const nocheRef = useRef(null);
+
+    // Contadores de materias disponibles por cuatrimestre
+    const countsCuatrimestre = useMemo(() => {
+        return {
+            todas: materias.length,
+            '1c': materias.filter(m => Number(m.cuatrimestre) === 1).length,
+            '2c': materias.filter(m => Number(m.cuatrimestre) === 2).length,
+            anual: materias.filter(m => Number(m.cuatrimestre) === 3 || Number(m.cuatrimestre) === 0 || Number(m.cuatrimestre) > 2).length,
+        };
+    }, [materias]);
+
+    // Materias filtradas según cuatrimestre y búsqueda
+    const materiasFiltradas = useMemo(() => {
+        return materias.filter(materia => {
+            const cuat = Number(materia.cuatrimestre);
+            if (filtroCuatrimestre === '1c' && cuat !== 1) return false;
+            if (filtroCuatrimestre === '2c' && cuat !== 2) return false;
+            if (filtroCuatrimestre === 'anual' && cuat !== 3 && cuat !== 0 && cuat <= 2) return false;
+
+            if (busquedaMateria.trim()) {
+                const q = busquedaMateria.toLowerCase().trim();
+                const nombre = (materia.nombre || '').toLowerCase();
+                const codigo = (materia.codigo || '').toLowerCase();
+                if (!nombre.includes(q) && !codigo.includes(q)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }, [materias, filtroCuatrimestre, busquedaMateria]);
+
+    // Total de horas semanales estimadas de las materias seleccionadas
+    const totalHorasSemanales = useMemo(() => {
+        return materias
+            .filter(m => materiasSeleccionadas.includes(m.id))
+            .reduce((total, m) => total + estimarHorasSemanales(m), 0);
+    }, [materias, materiasSeleccionadas]);
+
+    const cantidadSeleccionadas = materiasSeleccionadas.length;
+
+    // Indicador semafórico: verde: < 20h, amarillo: 20-30h, rojo: > 30h (US-V07)
+    const semaforo = useMemo(() => {
+        if (totalHorasSemanales < 20) {
+            return {
+                estado: 'verde',
+                colorPill: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+                dotColor: 'bg-emerald-500',
+                titulo: 'Carga Liviana / Óptima',
+                rango: '< 20h',
+                badgeText: '< 20h (Equilibrado)',
+                icono: '🟢'
+            };
+        }
+        if (totalHorasSemanales <= 30) {
+            return {
+                estado: 'amarillo',
+                colorPill: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+                dotColor: 'bg-amber-500',
+                titulo: 'Carga Moderada',
+                rango: '20-30h',
+                badgeText: '20-30h (Moderado)',
+                icono: '🟡'
+            };
+        }
+        return {
+            estado: 'rojo',
+            colorPill: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
+            dotColor: 'bg-rose-500',
+            titulo: 'Carga Alta / Sobrecarga',
+            rango: '> 30h',
+            badgeText: '> 30h (Sobrecarga)',
+            icono: '🔴'
+        };
+    }, [totalHorasSemanales]);
 
     // Formulario para tus actividades flexibles (Sector Derecho)
     const [nuevaFlexible, setNuevaFlexible] = useState({
@@ -220,50 +385,179 @@ const Planificador = () => {
 
         console.log(actividadesPreview);
         setMostrarHorario(false);
-        setactividadesPreview([]);
+        setActividadesPreview([]);
     };
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen flex flex-col gap-6 font-sans">
+        <div className="p-6 pb-28 md:pb-32 bg-gray-50 dark:bg-zinc-950 min-h-screen flex flex-col gap-6 font-sans">
             
-            {/* ===== PASO 1: SELECCIÓN DE MATERIAS ===== */}
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-sm font-bold text-gray-800 mb-1">1. Seleccioná las materias que querés cursar (mínimo una)</h2>
-                <p className="text-xs text-gray-400 mb-4">Módulos disponibles para tu carrera</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {materias.map((materia) => (
-                        <label 
-                            key={materia.id} 
-                            htmlFor={`materia-${materia.id}`}
-                            className={`p-4 border rounded-xl flex items-start gap-3 transition hover:shadow-sm bg-white cursor-pointer select-none ${
-                                materiasSeleccionadas.includes(materia.id) ? 'border-indigo-500 bg-indigo-50/10' : 'border-gray-200'
-                            }`}
-                        >
-                            <input 
-                                type="checkbox" 
-                                id={`materia-${materia.id}`}
-                                checked={materiasSeleccionadas.includes(materia.id)}
-                                onChange={() => handleMateriaCheck(materia.id)}
-                                className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45 shrink-0 mt-0.5"
-                            />
-                            <div className="flex-1">
-                                <span className="text-[10px] font-mono font-bold bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">
-                                    Code: {materia.id}
-                                </span>
-                                <p className="text-sm font-semibold text-gray-800 mt-1">{materia.nombre}</p>
-                                <div className="flex gap-2 mt-2">
-                                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                                        Recomendada
-                                    </span>
-                                </div>
-                            </div>
-                        </label>
-                    ))}
-                    {materias.length === 0 && (
-                        <p className="text-xs text-gray-400 italic">No hay materias disponibles para mostrar.</p>
+            {/* ===== PASO 1: SELECCIÓN DE MATERIAS CON FILTROS Y BADGES (US-V07) ===== */}
+            <div className="bg-white dark:bg-zinc-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div>
+                        <h2 className="text-sm font-bold text-gray-800 dark:text-zinc-100">
+                            1. Seleccioná las materias que querés cursar (mínimo una)
+                        </h2>
+                        <p className="text-xs text-gray-400 dark:text-zinc-400">
+                            Módulos habilitados para tu plan académico según correlativas cumplidas
+                        </p>
+                    </div>
+
+                    {cantidadSeleccionadas > 0 && (
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 rounded-lg">
+                                {cantidadSeleccionadas} seleccionada{cantidadSeleccionadas > 1 ? 's' : ''} ({totalHorasSemanales} hs)
+                            </span>
+                        </div>
                     )}
                 </div>
+
+                {/* Criterio de Aceptación US-V07: Pestañas de filtrado rápido [Todas], [1° Cuatrimestre], [2° Cuatrimestre], [Anuales] */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-100 dark:border-zinc-800">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        {[
+                            { id: 'todas', label: 'Todas', count: countsCuatrimestre.todas },
+                            { id: '1c', label: '1° Cuatrimestre', count: countsCuatrimestre['1c'] },
+                            { id: '2c', label: '2° Cuatrimestre', count: countsCuatrimestre['2c'] },
+                            { id: 'anual', label: 'Anuales', count: countsCuatrimestre.anual },
+                        ].map((tab) => {
+                            const isActive = filtroCuatrimestre === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    id={`tab-filtro-${tab.id}`}
+                                    type="button"
+                                    onClick={() => setFiltroCuatrimestre(tab.id)}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+                                        isActive
+                                            ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-600/20'
+                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
+                                    }`}
+                                >
+                                    <span>{tab.label}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                                        isActive
+                                            ? 'bg-indigo-700/80 text-white'
+                                            : 'bg-white/80 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300'
+                                    }`}>
+                                        {tab.count}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Buscador rápido por nombre o código */}
+                    <div className="relative min-w-[200px] md:w-64">
+                        <input
+                            type="text"
+                            id="busqueda-materias-planificador"
+                            placeholder="Buscar materia o código..."
+                            value={busquedaMateria}
+                            onChange={(e) => setBusquedaMateria(e.target.value)}
+                            className="w-full pl-8 pr-7 py-1.5 bg-gray-50 dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs text-gray-800 dark:text-zinc-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                        />
+                        <svg className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        {busquedaMateria && (
+                            <button
+                                type="button"
+                                onClick={() => setBusquedaMateria('')}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200 text-xs cursor-pointer"
+                                title="Limpiar búsqueda"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+                </div>
+                
+                {/* Listado de materias con badges de horas y cuatrimestre */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {materiasFiltradas.map((materia) => {
+                        const isSelected = materiasSeleccionadas.includes(materia.id);
+                        const horasEstimadas = estimarHorasSemanales(materia);
+                        const cuatInfo = getEtiquetaCuatrimestre(materia.cuatrimestre);
+
+                        return (
+                            <label 
+                                key={materia.id} 
+                                htmlFor={`materia-${materia.id}`}
+                                className={`p-4 border rounded-xl flex items-start gap-3 transition-all hover:shadow-sm cursor-pointer select-none relative ${
+                                    isSelected 
+                                        ? 'border-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/20 shadow-xs ring-1 ring-indigo-500/30' 
+                                        : 'border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-gray-300 dark:hover:border-zinc-700'
+                                }`}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id={`materia-${materia.id}`}
+                                    checked={isSelected}
+                                    onChange={() => handleMateriaCheck(materia.id)}
+                                    className="appearance-none w-5 h-5 rounded-md border-2 border-slate-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 checked:bg-indigo-600 checked:border-indigo-600 focus:outline-none transition-all cursor-pointer relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[6px] after:top-[2px] after:w-[5px] after:h-[10px] after:border-white after:border-r-2 after:border-b-2 after:rotate-45 shrink-0 mt-0.5"
+                                />
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-[10px] font-mono font-bold bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-gray-500 dark:text-zinc-400">
+                                            {materia.codigo || `ID: ${materia.id}`}
+                                        </span>
+                                        <span className={`text-[10px] border px-2 py-0.5 rounded-full font-medium ${cuatInfo.bg}`}>
+                                            {cuatInfo.texto}
+                                        </span>
+                                    </div>
+
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-zinc-100 mt-1.5 leading-snug line-clamp-2">
+                                        {materia.nombre}
+                                    </p>
+
+                                    <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                                        {/* Criterio de Aceptación US-V07: Badge con horas cátedra semanales estimadas (ej. 4 hs/sem) */}
+                                        <span 
+                                            id={`badge-horas-${materia.id}`}
+                                            className="inline-flex items-center gap-1 text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60 px-2 py-0.5 rounded-md shadow-2xs"
+                                            title={`Carga horaria semanal estimada: ${horasEstimadas} horas cátedra`}
+                                        >
+                                            <svg className="w-3 h-3 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{horasEstimadas} hs/sem</span>
+                                        </span>
+
+                                        <span className="text-[10px] bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full font-medium">
+                                            Habilitada
+                                        </span>
+
+                                        {materia.nivel_anio && (
+                                            <span className="text-[10px] bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 px-2 py-0.5 rounded-full font-medium">
+                                                Nivel {materia.nivel_anio}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </label>
+                        );
+                    })}
+                </div>
+
+                {materiasFiltradas.length === 0 && (
+                    <div className="text-center py-10 px-4 bg-gray-50/60 dark:bg-zinc-800/30 rounded-xl border border-dashed border-gray-200 dark:border-zinc-800 mt-2">
+                        <p className="text-sm font-medium text-gray-600 dark:text-zinc-400">
+                            {materias.length === 0 
+                                ? 'No hay materias habilitadas disponibles para mostrar.' 
+                                : 'No se encontraron materias con el filtro actual.'}
+                        </p>
+                        {materias.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => { setFiltroCuatrimestre('todas'); setBusquedaMateria(''); }}
+                                className="mt-3 text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold cursor-pointer"
+                            >
+                                Ver todas las materias habilitadas
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* ===== PASO 2: FILTROS + ACTIVIDADES (ancho completo, layout horizontal interno) ===== */}
@@ -446,6 +740,62 @@ const Planificador = () => {
                     </div>
                 </div>
             )}
+
+            {/* ===== STICKY SUMMARY: BARRA FLOTANTE INFERIOR (Criterio de Aceptación US-V07) ===== */}
+            <div 
+                id="sticky-summary-planificador"
+                className="fixed bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-4xl z-40 transition-all duration-300"
+            >
+                <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/90 dark:border-zinc-800 p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3.5 ring-1 ring-black/5 dark:ring-white/5">
+                    
+                    {/* Resumen: "X materias seleccionadas | Y horas semanales estimadas" */}
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-800/40">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p className="text-[11px] text-gray-500 dark:text-zinc-400 font-medium uppercase tracking-wide">
+                                Resumen del Plan
+                            </p>
+                            <p className="text-sm font-bold text-gray-900 dark:text-zinc-100 flex items-center gap-2 flex-wrap">
+                                <span>{cantidadSeleccionadas} materias seleccionadas</span>
+                                <span className="text-gray-300 dark:text-zinc-600">|</span>
+                                <span className="text-indigo-600 dark:text-indigo-400">{totalHorasSemanales} horas semanales estimadas</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Indicador Semafórico (verde: < 20h, amarillo: 20-30h, rojo: > 30h) */}
+                    <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end">
+                        <div 
+                            id="indicador-semaforo-carga"
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-xs ${semaforo.colorPill}`}
+                            title={`Semáforo: ${semaforo.rango} - ${semaforo.titulo}`}
+                        >
+                            <span className="relative flex h-2.5 w-2.5">
+                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${semaforo.dotColor}`}></span>
+                                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${semaforo.dotColor}`}></span>
+                            </span>
+                            <span>{semaforo.icono} {semaforo.titulo} ({semaforo.badgeText})</span>
+                        </div>
+
+                        {cantidadSeleccionadas > 0 && (
+                            <button
+                                type="button"
+                                id="btn-limpiar-seleccion-planificador"
+                                onClick={() => setMateriasSeleccionadas([])}
+                                className="text-xs text-gray-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 font-medium underline px-2 py-1 transition cursor-pointer shrink-0"
+                                title="Desmarcar todas las materias seleccionadas"
+                            >
+                                Limpiar
+                            </button>
+                        )}
+                    </div>
+
+                </div>
+            </div>
 
         </div>
     );
