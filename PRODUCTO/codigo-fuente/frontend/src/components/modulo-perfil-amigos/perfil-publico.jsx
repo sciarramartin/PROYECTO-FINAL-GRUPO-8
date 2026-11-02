@@ -146,20 +146,20 @@ const PerfilPublico = () => {
   if (cargando) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
-        <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-        <p className="text-sm text-gray-400 font-medium">Cargando perfil del estudiante...</p>
+        <div className="w-12 h-12 border-4 border-indigo-200 dark:border-indigo-900/60 border-t-indigo-600 rounded-full animate-spin"></div>
+        <p className="text-sm text-gray-400 dark:text-slate-400 font-medium">Cargando perfil del estudiante...</p>
       </div>
     );
   }
 
   if (error && !estudiante) {
     return (
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-2xl shadow-md border border-gray-150 text-center">
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-slate-900 rounded-2xl shadow-md border border-gray-150 dark:border-slate-800 text-center transition-colors duration-200">
         <span className="text-5xl block mb-3">⚠️</span>
-        <p className="text-base font-bold text-gray-800 mb-4">{error}</p>
+        <p className="text-base font-bold text-gray-800 dark:text-slate-100 mb-4">{error}</p>
         <button
           onClick={() => navigate("/dashboard")}
-          className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition border-none cursor-pointer"
+          className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 border-none cursor-pointer"
         >
           Volver al Dashboard
         </button>
@@ -174,7 +174,7 @@ const PerfilPublico = () => {
     if (!foto) {
       const iniciales = `${nombreCompleto[0]}${nombreCompleto.split(" ")[1]?.[0] || ""}`.toUpperCase();
       return (
-        <div className="w-20 h-20 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center text-indigo-700 text-2xl font-black shrink-0 shadow-sm">
+        <div className="w-20 h-20 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-150 dark:border-indigo-800/80 flex items-center justify-center text-indigo-700 dark:text-indigo-400 text-2xl font-black shrink-0 shadow-sm transition-colors duration-200">
           {iniciales}
         </div>
       );
@@ -182,7 +182,7 @@ const PerfilPublico = () => {
 
     if (foto.length <= 4) {
       return (
-        <div className="w-20 h-20 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center text-4xl shrink-0 shadow-sm">
+        <div className="w-20 h-20 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-150 dark:border-indigo-800/80 flex items-center justify-center text-4xl shrink-0 shadow-sm transition-colors duration-200">
           {foto}
         </div>
       );
@@ -192,7 +192,7 @@ const PerfilPublico = () => {
       <img
         src={foto}
         alt="Avatar estudiante"
-        className="w-20 h-20 rounded-full object-cover border border-gray-150 shadow-sm shrink-0"
+        className="w-20 h-20 rounded-full object-cover border border-gray-150 dark:border-slate-700 shadow-sm shrink-0"
       />
     );
   };
@@ -214,18 +214,18 @@ const PerfilPublico = () => {
         {/* Ficha Académica & Rol Preferido */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Año de Cursado</h4>
-            <p className="text-sm font-bold text-gray-800 text-left">
+          <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-4 transition-colors duration-200">
+            <h4 className="text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider mb-2">Año de Cursado</h4>
+            <p className="text-sm font-bold text-gray-800 dark:text-slate-100 text-left">
               {perfil?.anio_cursado 
                 ? `${perfil.anio_cursado}° Año` 
                 : "🔒 Oculto / No configurado"}
             </p>
           </div>
 
-          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Rol preferido en equipos</h4>
-            <p className="text-sm font-bold text-indigo-600 text-left">
+          <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-4 transition-colors duration-200">
+            <h4 className="text-[10px] font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider mb-2">Rol preferido en equipos</h4>
+            <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 text-left">
               {perfil?.rol_equipo || "No especificado"}
             </p>
           </div>
@@ -235,8 +235,8 @@ const PerfilPublico = () => {
         {/* Biografía */}
         {perfil?.biografia && (
           <div className="space-y-2 text-left">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Sobre mí</h4>
-            <p className="text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-xl p-4 italic leading-relaxed break-words">
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider">Sobre mí</h4>
+            <p className="text-xs text-gray-600 dark:text-slate-300 bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-4 italic leading-relaxed break-words transition-colors duration-200">
               "{perfil.biografia}"
             </p>
           </div>
@@ -245,12 +245,12 @@ const PerfilPublico = () => {
         {/* Áreas de Interés */}
         {interesesList.length > 0 && (
           <div className="space-y-2 text-left">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Áreas de Interés</h4>
+            <h4 className="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider">Áreas de Interés</h4>
             <div className="flex flex-wrap gap-2">
               {interesesList.map((interes, idx) => (
                 <span
                   key={idx}
-                  className="text-xs bg-indigo-50 border border-indigo-100 text-indigo-600 px-3 py-1 rounded-full font-bold"
+                  className="text-xs bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/70 text-indigo-600 dark:text-indigo-400 px-3 py-1 rounded-full font-bold transition-colors duration-200"
                 >
                   {interes}
                 </span>
@@ -261,33 +261,33 @@ const PerfilPublico = () => {
 
         {/* Canales de Contacto */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Canales de Contacto</h4>
+          <h4 className="text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider">Canales de Contacto</h4>
           
           {(!perfil?.link_discord && !perfil?.link_telegram && !perfil?.link_whatsapp && !perfil?.link_github && !perfil?.link_linkedin) ? (
-            <p className="text-xs text-gray-400 italic text-left">Este compañero no ha cargado redes de contacto todavía.</p>
+            <p className="text-xs text-gray-400 dark:text-slate-400 italic text-left">Este compañero no ha cargado redes de contacto todavía.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Discord */}
               {perfil?.link_discord && (
-                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center gap-2 text-xs transition-colors duration-200">
                   <span className="text-base">🎮</span>
-                  <span className="text-gray-500 font-semibold truncate">Discord: <strong className="text-gray-800">{perfil.link_discord}</strong></span>
+                  <span className="text-gray-500 dark:text-slate-400 font-semibold truncate">Discord: <strong className="text-gray-800 dark:text-slate-100">{perfil.link_discord}</strong></span>
                 </div>
               )}
               
               {/* Telegram */}
               {perfil?.link_telegram && (
-                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center gap-2 text-xs transition-colors duration-200">
                   <span className="text-base">✈️</span>
-                  <span className="text-gray-500 font-semibold truncate">Telegram: <strong className="text-gray-800">{perfil.link_telegram}</strong></span>
+                  <span className="text-gray-500 dark:text-slate-400 font-semibold truncate">Telegram: <strong className="text-gray-800 dark:text-slate-100">{perfil.link_telegram}</strong></span>
                 </div>
               )}
 
               {/* WhatsApp */}
               {perfil?.link_whatsapp && (
-                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-2 text-xs">
+                <div className="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center gap-2 text-xs transition-colors duration-200">
                   <span className="text-base">💬</span>
-                  <span className="text-gray-500 font-semibold truncate">WhatsApp: <strong className="text-gray-800">{perfil.link_whatsapp}</strong></span>
+                  <span className="text-gray-500 dark:text-slate-400 font-semibold truncate">WhatsApp: <strong className="text-gray-800 dark:text-slate-100">{perfil.link_whatsapp}</strong></span>
                 </div>
               )}
 
@@ -297,12 +297,12 @@ const PerfilPublico = () => {
                   href={perfil.link_github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 font-bold transition group"
+                  className="bg-gray-50 hover:bg-gray-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 dark:text-slate-200 font-bold transition-colors duration-200 group"
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-base">🐙</span> Ver Perfil de GitHub
                   </span>
-                  <span className="text-gray-400 group-hover:text-gray-700 transition">➔</span>
+                  <span className="text-gray-400 dark:text-slate-400 group-hover:text-gray-700 dark:group-hover:text-slate-100 transition-colors">➔</span>
                 </a>
               )}
 
@@ -312,12 +312,12 @@ const PerfilPublico = () => {
                   href={perfil.link_linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 font-bold transition group"
+                  className="bg-gray-50 hover:bg-gray-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-gray-100 dark:border-slate-700/60 rounded-xl p-3 flex items-center justify-between text-xs text-gray-600 dark:text-slate-200 font-bold transition-colors duration-200 group"
                 >
                   <span className="flex items-center gap-2">
                     <span className="text-base">💼</span> Ver LinkedIn Profesional
                   </span>
-                  <span className="text-gray-400 group-hover:text-gray-700 transition">➔</span>
+                  <span className="text-gray-400 dark:text-slate-400 group-hover:text-gray-700 dark:group-hover:text-slate-100 transition-colors">➔</span>
                 </a>
               )}
             </div>
@@ -330,16 +330,16 @@ const PerfilPublico = () => {
 
   const renderActividadForo = () => {
     return (
-      <div className="p-6 space-y-6 bg-gray-50/20">
+      <div className="p-6 space-y-6 bg-gray-50/20 dark:bg-slate-900/40 transition-colors duration-200">
         {/* Selector de sub-pestañas para publicaciones y comentarios */}
-        <div className="flex bg-white rounded-xl p-1 border border-gray-150 max-w-sm mx-auto shadow-sm">
+        <div className="flex bg-white dark:bg-slate-800/90 rounded-xl p-1 border border-gray-150 dark:border-slate-700 max-w-sm mx-auto shadow-sm transition-colors duration-200">
           <button
             type="button"
             onClick={() => setTabActiva("publicaciones")}
-            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-colors duration-200 border-none cursor-pointer flex items-center justify-center gap-1.5 ${
               tabActiva === "publicaciones"
                 ? "text-white bg-indigo-600 shadow-sm font-extrabold"
-                : "text-gray-400 hover:text-gray-600"
+                : "text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200"
             }`}
           >
             📝 Publicaciones ({actividadForo.publicaciones.length})
@@ -347,10 +347,10 @@ const PerfilPublico = () => {
           <button
             type="button"
             onClick={() => setTabActiva("comentarios")}
-            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all border-none cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-colors duration-200 border-none cursor-pointer flex items-center justify-center gap-1.5 ${
               tabActiva === "comentarios"
                 ? "text-white bg-indigo-600 shadow-sm font-extrabold"
-                : "text-gray-400 hover:text-gray-600"
+                : "text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200"
             }`}
           >
             💬 Comentarios ({actividadForo.comentarios.length})
@@ -361,14 +361,14 @@ const PerfilPublico = () => {
         <div className="max-h-[400px] overflow-y-auto pr-1.5">
           {cargandoActividad ? (
             <div className="flex flex-col items-center justify-center py-8 gap-2">
-              <div className="w-6 h-6 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-              <p className="text-[10px] text-gray-400 font-medium">Cargando actividad...</p>
+              <div className="w-6 h-6 border-2 border-indigo-200 dark:border-indigo-900/60 border-t-indigo-600 rounded-full animate-spin"></div>
+              <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">Cargando actividad...</p>
             </div>
           ) : tabActiva === "publicaciones" ? (
             actividadForo.publicaciones.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+              <div className="text-center py-8 bg-gray-50 dark:bg-slate-800/40 border border-dashed border-gray-200 dark:border-slate-700 rounded-xl transition-colors duration-200">
                 <span className="text-3xl block mb-2">📬</span>
-                <p className="text-xs text-gray-400 font-medium">Aún no publicó ninguna duda o aporte.</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400 font-medium">Aún no publicó ninguna duda o aporte.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -384,39 +384,39 @@ const PerfilPublico = () => {
                     <div
                       key={pub.id}
                       onClick={() => navigate(`/foros/${pub.id_materia}/publicacion/${pub.id}`)}
-                      className="group p-4 bg-white hover:bg-indigo-50/30 border border-gray-150 hover:border-indigo-150 rounded-xl transition duration-200 cursor-pointer flex flex-col gap-3 shadow-sm hover:shadow-md text-left"
+                      className="group p-4 bg-white hover:bg-indigo-50/30 dark:bg-slate-800/90 dark:hover:bg-slate-800 border border-gray-150 dark:border-slate-700 hover:border-indigo-150 dark:hover:border-slate-600 rounded-xl transition-colors duration-200 cursor-pointer flex flex-col gap-3 shadow-sm hover:shadow-md text-left"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                          <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/70 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold transition-colors duration-200">
                             {pub.Materia?.nombre || pub.materium?.nombre || pub.materia?.nombre || "Foro"}
                           </span>
                         </div>
                         <span className={`text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${
                           pub.categoria === "Duda"
-                            ? "bg-amber-50 text-amber-600 border border-amber-100"
+                            ? "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800/60"
                             : pub.categoria === "Recurso"
-                            ? "bg-green-50 text-green-600 border border-green-100"
+                            ? "bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800/60"
                             : pub.categoria === "Opinión"
-                            ? "bg-purple-50 text-purple-600 border border-purple-100"
-                            : "bg-indigo-50 text-indigo-600 border border-indigo-100"
+                            ? "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800/60"
+                            : "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/60"
                         }`}>
                           {pub.categoria || "General"}
                         </span>
                       </div>
                       
-                      <h4 className="text-xs font-bold text-gray-800 group-hover:text-indigo-600 transition leading-snug">
+                      <h4 className="text-xs font-bold text-gray-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 leading-snug">
                         {pub.titulo}
                       </h4>
 
-                      <p className="text-[11px] text-gray-455 line-clamp-2 leading-relaxed">
+                      <p className="text-[11px] text-gray-500 dark:text-slate-300 line-clamp-2 leading-relaxed">
                         {pub.contenido}
                       </p>
 
-                      <div className="flex items-center justify-between text-[10px] text-gray-400 mt-1 pt-2 border-t border-gray-150/50">
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-slate-400 mt-1 pt-2 border-t border-gray-150/50 dark:border-slate-700/60">
                         <div className="flex items-center gap-1">
                           <span>👍</span>
-                          <span className="font-bold text-gray-500">{pub.votos || 0} {pub.votos === 1 ? "voto" : "votos"}</span>
+                          <span className="font-bold text-gray-500 dark:text-slate-300">{pub.votos || 0} {pub.votos === 1 ? "voto" : "votos"}</span>
                         </div>
                         <span>{fecha}</span>
                       </div>
@@ -427,9 +427,9 @@ const PerfilPublico = () => {
             )
           ) : (
             actividadForo.comentarios.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
+              <div className="text-center py-8 bg-gray-50 dark:bg-slate-800/40 border border-dashed border-gray-200 dark:border-slate-700 rounded-xl transition-colors duration-200">
                 <span className="text-3xl block mb-2">💬</span>
-                <p className="text-xs text-gray-400 font-medium">Aún no realizó comentarios en los foros.</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400 font-medium">Aún no realizó comentarios en los foros.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -451,27 +451,27 @@ const PerfilPublico = () => {
                           navigate(`/foros/${materiaId}/publicacion/${postId}`);
                         }
                       }}
-                      className="group p-4 bg-white hover:bg-indigo-50/30 border border-gray-150 hover:border-indigo-150 rounded-xl transition duration-200 cursor-pointer flex flex-col gap-2.5 shadow-sm hover:shadow-md text-left"
+                      className="group p-4 bg-white hover:bg-indigo-50/30 dark:bg-slate-800/90 dark:hover:bg-slate-800 border border-gray-150 dark:border-slate-700 hover:border-indigo-150 dark:hover:border-slate-600 rounded-xl transition-colors duration-200 cursor-pointer flex flex-col gap-2.5 shadow-sm hover:shadow-md text-left"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                          <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/70 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold transition-colors duration-200">
                             {com.ForoPublicacion?.Materia?.nombre || com.ForoPublicacion?.materium?.nombre || com.ForoPublicacion?.materia?.nombre || "Foro"}
                           </span>
-                          <span className="text-[10px] text-gray-455 font-semibold truncate max-w-[200px]">
+                          <span className="text-[10px] text-gray-500 dark:text-slate-400 font-semibold truncate max-w-[200px]">
                             En respuesta a: "{com.ForoPublicacion?.titulo || "Publicación"}"
                           </span>
                         </div>
                       </div>
 
-                      <p className="text-[11px] text-gray-605 bg-gray-50/70 p-2.5 rounded-lg border border-gray-150/45 italic leading-relaxed break-words">
+                      <p className="text-[11px] text-gray-600 dark:text-slate-300 bg-gray-50/70 dark:bg-slate-900/60 p-2.5 rounded-lg border border-gray-150/45 dark:border-slate-700/60 italic leading-relaxed break-words transition-colors duration-200">
                         "{com.contenido}"
                       </p>
 
-                      <div className="flex items-center justify-between text-[10px] text-gray-400 mt-1 pt-1">
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-slate-400 mt-1 pt-1">
                         <div className="flex items-center gap-1">
                           <span>👍</span>
-                          <span className="font-bold text-gray-500">{com.votos || 0} {com.votos === 1 ? "voto" : "votos"}</span>
+                          <span className="font-bold text-gray-500 dark:text-slate-300">{com.votos || 0} {com.votos === 1 ? "voto" : "votos"}</span>
                         </div>
                         <span>{fecha}</span>
                       </div>
@@ -490,26 +490,26 @@ const PerfilPublico = () => {
     <div className="max-w-3xl mx-auto mt-6 px-4">
       
       {/* Contenedor Principal (Estilo Premium y Limpio de Mis Conexiones) */}
-      <div className="bg-white rounded-2xl border border-gray-150 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-150 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
         
         {/* Cabecera Estética Simplificada */}
-        <div className="bg-gray-50 border-b border-gray-150 p-6 flex flex-col md:flex-row items-center gap-5">
+        <div className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-150 dark:border-slate-800 p-6 flex flex-col md:flex-row items-center gap-5 transition-colors duration-200">
           {renderAvatar(perfil?.foto_perfil, nombreCompleto)}
           
           <div className="text-center md:text-left min-w-0 flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 leading-tight truncate text-left">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 leading-tight truncate text-left">
               {nombreCompleto}
             </h2>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-1.5">
-              <span className="text-xs text-gray-400">@{estudiante.nombre_usuario}</span>
+              <span className="text-xs text-gray-400 dark:text-slate-400">@{estudiante.nombre_usuario}</span>
               {perfil?.apodo && (
-                <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/70 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold transition-colors duration-200">
                   "{perfil.apodo}"
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-2 text-left">
-              🎓 Carrera: <span className="font-semibold text-gray-700">{CARRERAS[estudiante.id_carrera] || "Ingeniería"}</span>
+            <p className="text-xs text-gray-400 dark:text-slate-400 mt-2 text-left">
+              🎓 Carrera: <span className="font-semibold text-gray-700 dark:text-slate-300">{CARRERAS[estudiante.id_carrera] || "Ingeniería"}</span>
             </p>
 
             {/* Insignia de Graduado/a (US-MET-11) */}
@@ -522,14 +522,14 @@ const PerfilPublico = () => {
         </div>
 
         {/* Selector de Sección Principal (Tabs) */}
-        <div className="flex border-b border-gray-150 bg-white">
+        <div className="flex border-b border-gray-150 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors duration-200">
           <button
             type="button"
             onClick={() => setSeccionActiva("info")}
-            className={`flex-1 py-3 text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 text-xs font-bold transition-colors duration-200 border-none cursor-pointer flex items-center justify-center gap-2 ${
               seccionActiva === "info"
-                ? "text-indigo-600 border-b-2 border-indigo-600 font-extrabold"
-                : "text-gray-400 hover:text-gray-600 hover:bg-gray-50/10"
+                ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 font-extrabold bg-indigo-50/20 dark:bg-indigo-950/20"
+                : "text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-50/10 dark:hover:bg-slate-800/40"
             }`}
           >
             👤 Información Académica
@@ -537,10 +537,10 @@ const PerfilPublico = () => {
           <button
             type="button"
             onClick={() => setSeccionActiva("foro")}
-            className={`flex-1 py-3 text-xs font-bold transition-all border-none cursor-pointer flex items-center justify-center gap-2 ${
+            className={`flex-1 py-3 text-xs font-bold transition-colors duration-200 border-none cursor-pointer flex items-center justify-center gap-2 ${
               seccionActiva === "foro"
-                ? "text-indigo-600 border-b-2 border-indigo-600 font-extrabold"
-                : "text-gray-400 hover:text-gray-600 hover:bg-gray-50/10"
+                ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 font-extrabold bg-indigo-50/20 dark:bg-indigo-950/20"
+                : "text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-50/10 dark:hover:bg-slate-800/40"
             }`}
           >
             💬 Actividad del Foro
@@ -553,21 +553,21 @@ const PerfilPublico = () => {
         {/* Panel de Acciones y Alertas de Amistad (Siempre visible al pie) */}
         <div className="p-6 pt-0 space-y-4">
           {error && (
-            <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-center">
+            <p className="text-xs text-red-500 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 rounded-xl px-4 py-3 text-center transition-colors duration-200">
               ⚠️ {error}
             </p>
           )}
           {mensaje && (
-            <p className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-center">
+            <p className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900/60 rounded-xl px-4 py-3 text-center transition-colors duration-200">
               ✓ {mensaje}
             </p>
           )}
 
-          <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="pt-4 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-3 transition-colors duration-200">
             {relacion === "mismo_usuario" ? (
               <button
                 onClick={() => navigate("/ajustes")}
-                className="w-full sm:w-auto px-6 py-2.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-600 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-2.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2"
               >
                 ⚙️ Editar mi Perfil Académico
               </button>
@@ -575,7 +575,7 @@ const PerfilPublico = () => {
               <button
                 onClick={enviarSolicitud}
                 disabled={procesandoAccion}
-                className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm hover:shadow-md disabled:opacity-50 border-none cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50 border-none cursor-pointer flex items-center justify-center gap-1.5"
               >
                 {procesandoAccion ? "Enviando..." : "Conectar / Agregar Amigo"} 👤➕
               </button>
@@ -583,35 +583,35 @@ const PerfilPublico = () => {
               <div className="flex flex-col items-center gap-2 w-full sm:w-auto">
                 <button
                   disabled
-                  className="w-full px-6 py-2.5 bg-gray-100 text-gray-400 rounded-xl text-xs font-semibold cursor-not-allowed flex items-center justify-center gap-1.5"
+                  className="w-full px-6 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-400 rounded-xl text-xs font-semibold cursor-not-allowed flex items-center justify-center gap-1.5 transition-colors duration-200"
                 >
                   Solicitud Pendiente ⏳
                 </button>
                 <button
                   onClick={rechazarOEliminar}
                   disabled={procesandoAccion}
-                  className="text-xs text-red-500 hover:text-red-700 font-bold transition cursor-pointer bg-transparent border-none"
+                  className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-bold transition-colors duration-200 cursor-pointer bg-transparent border-none"
                 >
                   {procesandoAccion ? "Cancelando..." : "Cancelar Solicitud"}
                 </button>
               </div>
             ) : relacion === "pendiente_recibida" ? (
               <div className="flex flex-col gap-2 w-full sm:w-auto">
-                <p className="text-[10px] text-indigo-600 font-bold text-center">
+                <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold text-center">
                   ¡Te envió una solicitud de amistad!
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={aceptarSolicitud}
                     disabled={procesandoAccion}
-                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50 border-none cursor-pointer"
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 shadow-sm disabled:opacity-50 border-none cursor-pointer"
                   >
                     {procesandoAccion ? "..." : "Aceptar"} ✓
                   </button>
                   <button
                     onClick={rechazarOEliminar}
                     disabled={procesandoAccion}
-                    className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-bold transition disabled:opacity-50 border-none cursor-pointer"
+                    className="px-6 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-200 rounded-xl text-xs font-bold transition-colors duration-200 disabled:opacity-50 border-none cursor-pointer"
                   >
                     {procesandoAccion ? "..." : "Rechazar"}
                   </button>
@@ -621,14 +621,14 @@ const PerfilPublico = () => {
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
                 <button
                   onClick={() => navigate(`/chat-privado/${id}`)}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm hover:shadow-md border-none cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors duration-200 shadow-sm hover:shadow-md border-none cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   💬 Iniciar Chat Privado
                 </button>
                 <button
                   onClick={rechazarOEliminar}
                   disabled={procesandoAccion}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-red-50 hover:bg-red-100 border border-red-100 text-red-500 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 border border-red-100 dark:border-red-900 text-red-500 dark:text-red-400 rounded-xl text-xs font-bold transition-colors duration-200 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   {procesandoAccion ? "Eliminando..." : "Eliminar de mis amigos"}
                 </button>
@@ -642,7 +642,7 @@ const PerfilPublico = () => {
       {/* Botón de Retorno */}
       <button
         onClick={() => navigate(-1)}
-        className="mt-6 flex items-center justify-center gap-2 text-xs font-bold text-gray-400 hover:text-gray-650 transition mx-auto border-none bg-transparent cursor-pointer"
+        className="mt-6 flex items-center justify-center gap-2 text-xs font-bold text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors duration-200 mx-auto border-none bg-transparent cursor-pointer"
       >
         ← Volver atrás
       </button>

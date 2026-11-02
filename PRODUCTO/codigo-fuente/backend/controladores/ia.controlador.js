@@ -3,6 +3,13 @@ const express = require('express');
 const router = express.Router();
 const ragService = require('../servicios/rag.servicio');
 
+let ConsultaIA;
+try {
+  ConsultaIA = require('../modelos/ConsultaIA').ConsultaIA;
+} catch (e) {
+  // Ignorar en entornos de test si no está instanciado
+}
+
 /**
  * POST /api/ia/consulta-modalidad
  * Consulta al chatbot de modalidad académica y normativas con RAG
@@ -22,6 +29,16 @@ router.post('/consulta-modalidad', async (req, res) => {
       prompt: prompt.trim(),
       historial: Array.isArray(historial) ? historial : []
     });
+
+    if (ConsultaIA && typeof ConsultaIA.create === 'function') {
+      ConsultaIA.create({
+        id_usuario: req.usuario?.id || null,
+        prompt: prompt.trim(),
+        respuesta: resultado?.respuesta ? resultado.respuesta.substring(0, 1000) : null,
+        total_fuentes: (resultado?.fuentes || []).length,
+        satisfactoria: true
+      }).catch(err => console.warn('⚠️ No se pudo registrar consulta IA en auditoría:', err.message));
+    }
 
     return res.status(200).json({
       success: true,
@@ -60,7 +77,7 @@ router.post('/consulta-modalidad-stream', async (req, res) => {
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders?.();
 
-    await ragService.consultarChatbotStream({
+    const resultadoStream = await ragService.consultarChatbotStream({
       prompt: prompt.trim(),
       historial: Array.isArray(historial) ? historial : [],
       onContext: ({ fuentes }) => {
@@ -70,6 +87,16 @@ router.post('/consulta-modalidad-stream', async (req, res) => {
         res.write(`event: chunk\ndata: ${JSON.stringify({ content: chunk })}\n\n`);
       }
     });
+
+    if (ConsultaIA && typeof ConsultaIA.create === 'function') {
+      ConsultaIA.create({
+        id_usuario: req.usuario?.id || null,
+        prompt: prompt.trim(),
+        respuesta: resultadoStream?.respuesta ? resultadoStream.respuesta.substring(0, 1000) : null,
+        total_fuentes: (resultadoStream?.fuentes || []).length,
+        satisfactoria: true
+      }).catch(err => console.warn('⚠️ No se pudo registrar consulta IA en auditoría:', err.message));
+    }
 
     res.write(`event: done\ndata: ${JSON.stringify({ final: true })}\n\n`);
     res.end();

@@ -4,6 +4,7 @@ import axios from "axios";
 
 import  SeccionComentarios from './SeccionComentarios';
 import CompartirPublicacion from "./CompartirPublicacion";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 import { 
   FiArrowUp, 
@@ -46,6 +47,7 @@ const DetallePublicacion = () => {
   const [editContenido, setEditContenido] = useState("");
   const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
   const [reaccionUsuario, setReaccionUsuario] = useState(null); // 'positivo' o 'negativo'
+  const [animandoVotoPost, setAnimandoVotoPost] = useState(false);
 
   // Estados para compartir publicaciones
   const [compartirAbierto, setCompartirAbierto] = useState(false);
@@ -63,6 +65,8 @@ const DetallePublicacion = () => {
     document.addEventListener("mousedown", handleClickAfuera);
     return () => document.removeEventListener("mousedown", handleClickAfuera);
   }, []);
+
+  const focusTrapEliminarRef = useFocusTrap(mostrarConfirmacionEliminar, () => setMostrarConfirmacionEliminar(false));
 
   const editorRef = useRef(null);
 
@@ -176,6 +180,34 @@ const DetallePublicacion = () => {
   };
 
   const handleReaccionar = async (tipo) => {
+    // 🚀 Feedback optimista inmediato y microanimación de escala
+    setAnimandoVotoPost(true);
+    setTimeout(() => setAnimandoVotoPost(false), 250);
+
+    const votosPrevios = datosHilo.publicacion?.votos || 0;
+    const reaccionPrevia = reaccionUsuario;
+
+    let delta = 0;
+    let nuevaReaccion = null;
+
+    if (reaccionPrevia === tipo) {
+      delta = tipo === 'positivo' ? -1 : 1;
+      nuevaReaccion = null;
+    } else if (reaccionPrevia) {
+      delta = tipo === 'positivo' ? 2 : -2;
+      nuevaReaccion = tipo;
+    } else {
+      delta = tipo === 'positivo' ? 1 : -1;
+      nuevaReaccion = tipo;
+    }
+
+    // Actualización inmediata (0ms)
+    setReaccionUsuario(nuevaReaccion);
+    setDatosHilo(prev => ({
+      ...prev,
+      publicacion: { ...prev.publicacion, votos: votosPrevios + delta }
+    }));
+
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -195,6 +227,12 @@ const DetallePublicacion = () => {
       }
     } catch (error) {
       console.error("Error al reaccionar:", error);
+      // Rollback en caso de error
+      setReaccionUsuario(reaccionPrevia);
+      setDatosHilo(prev => ({
+        ...prev,
+        publicacion: { ...prev.publicacion, votos: votosPrevios }
+      }));
       mostrarMensajeTeammate(error.response?.data?.error || "Error al registrar voto.");
     }
   };
@@ -278,6 +316,8 @@ const DetallePublicacion = () => {
     setDescripcionReporte("");
     setErrorReporte("");
   };
+
+  const focusTrapReportarRef = useFocusTrap(modalReportarAbierto, cerrarModalReportar);
 
   const enviarReporte = async () => {
     if (!descripcionReporte.trim()) {
@@ -387,20 +427,29 @@ const DetallePublicacion = () => {
 
       {/* Modal de Confirmación de Eliminación */}
       {mostrarConfirmacionEliminar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95">
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">¿Eliminar publicación?</h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">Esta acción es irreversible y eliminará todos los comentarios asociados a la misma.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div
+            ref={focusTrapEliminarRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="¿Eliminar publicación?"
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 transition-colors duration-200 outline-none"
+          >
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-slate-100 mb-2">¿Eliminar publicación?</h3>
+            <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-6">Esta acción es irreversible y eliminará todos los comentarios asociados a la misma.</p>
             <div className="flex items-center justify-end gap-3">
               <button 
+                type="button"
                 onClick={() => setMostrarConfirmacionEliminar(false)}
-                className="px-4 py-2 text-sm font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition"
+                className="px-4 py-2 text-sm font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition border border-zinc-300 dark:border-zinc-700 bg-transparent cursor-pointer"
               >
                 Cancelar
               </button>
               <button 
+                type="button"
                 onClick={handleEliminar}
-                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition shadow-sm shadow-red-500/20"
+                className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition shadow-sm shadow-red-500/20 border-none cursor-pointer"
               >
                 Sí, eliminar
               </button>
@@ -444,7 +493,9 @@ const DetallePublicacion = () => {
                 >
                   <FiArrowUp className="w-4 h-4" />
                 </button>
-                <span className={`text-xs font-bold ${
+                <span className={`text-xs font-bold inline-block transition-transform duration-200 ease-out transform select-none ${
+                  animandoVotoPost ? 'scale-110 font-black text-amber-600 dark:text-amber-500' : 'scale-100'
+                } ${
                   reaccionUsuario === 'positivo' ? 'text-amber-600 dark:text-amber-500' :
                   reaccionUsuario === 'negativo' ? 'text-indigo-600 dark:text-indigo-500' : ''
                 }`}>
@@ -834,14 +885,21 @@ const DetallePublicacion = () => {
 
       {/* Modal de Reportar */}
       {modalReportarAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div
+            ref={focusTrapReportarRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={comentarioIdAReportar ? "Reportar Comentario" : "Reportar Publicación"}
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 transition-colors duration-200 outline-none"
+          >
             <div>
-              <h3 className="text-base font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
-                <FiAlertCircle className="w-5 h-5 text-red-500" />
+              <h3 className="text-base font-extrabold text-zinc-900 dark:text-slate-100 flex items-center gap-2">
+                <FiAlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 {comentarioIdAReportar ? "Reportar Comentario" : "Reportar Publicación"}
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-1">
                 Por favor, describe detalladamente el motivo por el cual estás reportando {comentarioIdAReportar ? "este comentario" : "esta publicación"}. Un administrador revisará tu reporte.
               </p>
             </div>
@@ -854,11 +912,11 @@ const DetallePublicacion = () => {
               }}
               placeholder="Escribe el motivo del reporte aquí (obligatorio)..."
               rows={4}
-              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100"
+              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400"
             />
             
             {errorReporte && (
-              <p className="text-[11px] font-bold text-red-500 flex items-center gap-1">
+              <p className="text-[11px] font-bold text-red-700 dark:text-red-400 flex items-center gap-1">
                 <FiAlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {errorReporte}
               </p>
@@ -866,12 +924,14 @@ const DetallePublicacion = () => {
             
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
+                type="button"
                 onClick={cerrarModalReportar}
-                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold border-none cursor-pointer transition"
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold border border-zinc-300 dark:border-zinc-700 cursor-pointer transition"
               >
                 Cancelar
               </button>
               <button
+                type="button"
                 onClick={enviarReporte}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition shadow-md shadow-red-500/10"
               >

@@ -1,7 +1,8 @@
-//componente/SeccionComentarios.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FiMessageSquare } from 'react-icons/fi';
 import ComentarioNodo from './ComentarioNodo';
+import EmptyState from '../common/EmptyState';
 
 const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor, alReportar }) => {
     const [comentarios, setComentarios] = useState([]);
@@ -81,6 +82,36 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor
     };
 
     const manejarVotoComentario = async (comId, tipo) => {
+        // Encontrar el comentario actual para calcular la actualización optimista
+        const comActual = comentarios.find(c => c.id === comId);
+        const votosPrevios = comActual ? (comActual.votos || 0) : 0;
+        const miReaccionPrevia = comActual?.miReaccion || null;
+
+        // Calcular ajuste optimista según la reacción actual
+        let deltaVotos = 0;
+        let nuevaReaccion = null;
+
+        if (miReaccionPrevia === tipo) {
+            // Quitar el voto si presiona el mismo
+            deltaVotos = tipo === 'positivo' ? -1 : 1;
+            nuevaReaccion = null;
+        } else if (miReaccionPrevia) {
+            // Cambiar de positivo a negativo o viceversa
+            deltaVotos = tipo === 'positivo' ? 2 : -2;
+            nuevaReaccion = tipo;
+        } else {
+            // Voto nuevo
+            deltaVotos = tipo === 'positivo' ? 1 : -1;
+            nuevaReaccion = tipo;
+        }
+
+        const votosOptimistas = votosPrevios + deltaVotos;
+
+        // 🚀 1. Actualización optimista INMEDIATA (0ms de retraso, feedback reactivo)
+        setComentarios(prev => prev.map(c => 
+            c.id === comId ? { ...c, votos: votosOptimistas, miReaccion: nuevaReaccion } : c
+        ));
+
         try {
             const token = localStorage.getItem("token") || sessionStorage.getItem("token");
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -95,12 +126,17 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor
                 }
             );
 
+            // 🎯 2. Sincronizar con el valor consolidado del backend
             setComentarios(prev => prev.map(c => 
-                c.id === comId ? { ...c, votos: res.data.votos } : c
+                c.id === comId ? { ...c, votos: res.data.votos, miReaccion: res.data.reaccion?.tipo || null } : c
             ));
 
         } catch (err) {
             console.error("Error al votar comentario:", err);
+            // ↩️ Rollback en caso de falla de red
+            setComentarios(prev => prev.map(c => 
+                c.id === comId ? { ...c, votos: votosPrevios, miReaccion: miReaccionPrevia } : c
+            ));
             setError(err.response?.data?.error || "Error al registrar voto en comentario.");
         }
     };
@@ -166,6 +202,7 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor
                 className="mb-6 flex gap-2"
             >
                 <input
+                    id="input-nuevo-comentario"
                     type="text"
                     placeholder="Escribe un comentario académico o duda..."
                     value={nuevoComentarioRaiz}
@@ -175,7 +212,7 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor
                 <button 
                     type="submit" 
                     disabled={!nuevoComentarioRaiz.trim()}
-                    className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-opacity"
+                    className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-opacity cursor-pointer border-none"
                 >
                     Comentar
                 </button>
@@ -184,7 +221,21 @@ const SeccionComentarios = ({ idPublicacion, idUsuarioActual, idPublicacionAutor
             {/* Listado de hilos */}
             <div className="space-y-2">
                 {comentariosRaiz.length === 0 ? (
-                    <p className="text-sm text-gray-400 dark:text-zinc-500 text-center py-4">No hay comentarios aún. ¡Sé el primero en participar!</p>
+                    <EmptyState
+                        variant="comentarios"
+                        titulo="Aún no hay respuestas en este debate"
+                        mensaje="Sé el primero en responder la consulta o compartir tu perspectiva con la comunidad."
+                        accionTexto="Sé el primero en comentar"
+                        iconoAccion={<FiMessageSquare className="w-4 h-4" />}
+                        alHacerClic={() => {
+                            const input = document.getElementById("input-nuevo-comentario");
+                            if (input) {
+                                input.focus();
+                                input.scrollIntoView({ behavior: "smooth", block: "center" });
+                            }
+                        }}
+                        className="my-3 py-8"
+                    />
                 ) : (
                     comentariosRaiz.map(comentario => (
                         <ComentarioNodo
