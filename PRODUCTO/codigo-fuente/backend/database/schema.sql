@@ -457,5 +457,43 @@ CREATE TABLE IF NOT EXISTS consultas_ia (
 
 CREATE INDEX IF NOT EXISTS idx_consultas_ia_createdAt ON consultas_ia(createdAt);
 
+CREATE TABLE IF NOT EXISTS matriculas_referencia (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  anio INTEGER NOT NULL CHECK (anio BETWEEN 2000 AND 2100),
+  semestre INTEGER NOT NULL CHECK (semestre IN (1, 2)),
+  matricula_total INTEGER NOT NULL CHECK (matricula_total > 0),
+  fuente VARCHAR(300),
+  registrado_por INTEGER NOT NULL,
+  registrados_snapshot INTEGER NOT NULL CHECK (registrados_snapshot >= 0),
+  criterio_conteo VARCHAR(20) NOT NULL CHECK (criterio_conteo IN ('activos', 'registrados')),
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (anio, semestre)
+);
+
+CREATE TABLE IF NOT EXISTS matriculas_referencia_carrera (
+  id_matricula_referencia INTEGER NOT NULL,
+  id_carrera INTEGER NOT NULL,
+  matricula_estimada INTEGER NOT NULL CHECK (matricula_estimada > 0),
+  registrados_snapshot INTEGER NOT NULL CHECK (registrados_snapshot >= 0),
+  PRIMARY KEY (id_matricula_referencia, id_carrera),
+  FOREIGN KEY (id_matricula_referencia) REFERENCES matriculas_referencia(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_matriculas_periodo ON matriculas_referencia (anio DESC, semestre DESC);
 
 
+CREATE TABLE IF NOT EXISTS captacion_cohortes_snapshot (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id_matricula_referencia INTEGER NOT NULL,
+  anio_ingreso INTEGER NULL,
+  usuarios_snapshot INTEGER NOT NULL CHECK (usuarios_snapshot >= 0),
+  FOREIGN KEY (id_matricula_referencia)
+    REFERENCES matriculas_referencia(id) ON DELETE CASCADE,
+  UNIQUE (id_matricula_referencia, anio_ingreso)
+);
+
+CREATE INDEX IF NOT EXISTS idx_captacion_cohortes_referencia
+  ON captacion_cohortes_snapshot (id_matricula_referencia, anio_ingreso);
+
+-- Optimiza la consulta agregada sin crear/modificar columnas de usuarios.
+CREATE INDEX IF NOT EXISTS idx_usuarios_captacion
+  ON usuarios (id_tipo_usuario, anio_ingreso, id_carrera);

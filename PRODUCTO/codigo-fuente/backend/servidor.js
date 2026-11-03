@@ -53,7 +53,7 @@ const ragService = require('./servicios/rag.servicio.js');
 const rutasReputacion = require('./controladores/reputacion.controller.js');
 const rutasMetricasMaterialEstudio = require('./controladores/metricasMaterialEstudio.controlador.js');
 const rutasMetricasGlobales = require('./controladores/metricasGlobales.controlador.js');
-
+const rutasMetricasCaptacion = require('./controladores/captacion.controlador.js');
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -137,7 +137,7 @@ app.use('/api/encuestas-catedra', rutasEncuestasCatedra);
 app.use('/api/ia', rutasIA);
 app.use('/api/metricas-material-estudio', rutasMetricasMaterialEstudio);
 app.use('/api/metricas-globales', rutasMetricasGlobales);
-
+app.use('/api/captacion', rutasMetricasCaptacion);
 // Ruta base
 app.get('/', (req, res) => {
     res.json({ mensaje: 'Bienvenido a la API del Sistema Académico' });
