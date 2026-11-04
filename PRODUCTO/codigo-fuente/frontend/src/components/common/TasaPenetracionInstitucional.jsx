@@ -488,13 +488,13 @@ export default function TasaPenetracionInstitucional() {
                   <tr>
                     <th className="px-3 py-2">Año</th>
                     <th className="px-3 py-2 text-right">Semestre de referencia
-                      <TooltipInfo texto="Para cada año se utiliza la última estimación de matrícula activa disponible, priorizando S2 sobre S1." />
+                      
                     </th>
                     <th className="px-3 py-2 text-right">Matrícula activa estimada
-                      <TooltipInfo texto="Total de estudiantes activos durante el semestre elegido. Nunca se suma con otras estimaciones." />
+                      
                     </th>
                     <th className="px-3 py-2 text-right">Cuentas de esa cohorte
-                      <TooltipInfo texto="Cuentas actuales con Usuario.anio_ingreso igual al año de la fila. No son altas realizadas necesariamente en ese año." />
+
                     </th>
                     <th className="px-3 py-2 text-right">Proporción</th>
                   </tr>
