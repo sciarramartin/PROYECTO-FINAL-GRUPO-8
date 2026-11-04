@@ -423,8 +423,7 @@ export default function TasaPenetracionInstitucional() {
                 Cada referencia semestral representa un total independiente.
               </p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                El numerador incluye cuentas sin actividad reciente y posiblemente de estudiantes que ya no cursan;
-                por eso este porcentaje es una aproximación de penetración, no una tasa de alumnos activos verificada.
+                El numerador incluye cuentas sin actividad reciente y posiblemente de estudiantes que ya no cursan.
               </p>
               {superaTotal && <p className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400">
                 <FiAlertTriangle className="mt-0.5 shrink-0" />
@@ -483,10 +482,6 @@ export default function TasaPenetracionInstitucional() {
                 Se necesitan al menos dos años con una estimación de matrícula activa válida para mostrar la evolución.
               </p>
             )}
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Estos puntos no son capturas históricas: usan las cuentas que existen hoy, agrupadas por año de ingreso académico.
-              Comparar una cohorte con toda la matrícula activa del año ofrece una medida descriptiva, no una tasa histórica estrictamente comparable.
-            </p>
             <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
               <table className="w-full min-w-[640px] text-left text-xs">
                 <thead className="bg-zinc-50 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-300">
