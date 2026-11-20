@@ -588,14 +588,6 @@ const CrearMaterialEstudio = () => {
                         </div>
                     </div>
 
-                    <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/10 border border-indigo-100/50 dark:border-indigo-900/25 rounded-2xl text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
-                        <p className="font-bold mb-1">💡 Consejos para un buen material</p>
-                        <ul className="list-disc list-inside space-y-1 text-[11px] text-indigo-600/80 dark:text-indigo-400/80">
-                            <li>Usá un título descriptivo y claro.</li>
-                            <li>Agregá etiquetas para facilitar la búsqueda.</li>
-                            <li>Subí archivos legibles en PDF, Word, PowerPoint o Imágenes.</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>

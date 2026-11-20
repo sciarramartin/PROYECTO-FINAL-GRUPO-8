@@ -128,9 +128,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
 * **Correlatividades y planes** (Ordenanzas 1877, 1878 y Título de Analista 1910).
 * **Reglamentos y trámites** (Norma ALU01-02 de PPS 200 hs, Formulario F0035-P de cursado, Labsis).
 * **Calendario Académico 2026** (Mesas de examen, receso invernal, turnos especiales e inscripciones).
-* **Boleto Educativo (BEG), Becas y Pasantías** (Ley 26.427, Becas Manuel Belgrano, SAE y SEU).
-
-*Podés elegir cualquier pregunta sugerida de la **Guía Lateral** o escribir tu consulta abajo.*`,
+* **Boleto Educativo (BEG), Becas y Pasantías** (Ley 26.427, Becas Manuel Belgrano, SAE y SEU).`,
       fuentes: [],
       fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
@@ -621,10 +619,6 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
         )}
       </div>
 
-      {/* Pie Informativo */}
-      <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 text-center shrink-0">
-        📚 Hacé clic en cualquier tarjeta para consultar automáticamente.
-      </div>
     </div>
   );
 
@@ -823,7 +817,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
               <div className="mt-1 pt-3 border-t border-slate-200/70 dark:border-slate-800">
                 <div className="flex items-center gap-2 mb-2 text-xs font-bold text-slate-500 dark:text-slate-400">
                   <FiHelpCircle className="text-blue-500 text-sm" />
-                  <span>Consultas frecuentes directas (hacé clic para probar):</span>
+                  <span>Consultas frecuentes</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {[
@@ -889,7 +883,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
               </button>
             </div>
             <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400 px-2 pt-1 border-t border-slate-100 dark:border-slate-800 mt-1">
-              <span>💡 Presioná <strong>Enter</strong> para enviar • <strong>Shift + Enter</strong> para salto de línea</span>
+              <span></span>
               <span className="hidden sm:inline">RAG 300+ PDFs UTN FRC</span>
             </div>
           </div>

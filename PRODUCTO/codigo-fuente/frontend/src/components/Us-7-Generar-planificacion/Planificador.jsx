@@ -396,11 +396,8 @@ const Planificador = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div>
                         <h2 className="text-sm font-bold text-gray-800 dark:text-zinc-100">
-                            1. Seleccioná las materias que querés cursar (mínimo una)
+                            Materias a cursar
                         </h2>
-                        <p className="text-xs text-gray-400 dark:text-zinc-400">
-                            Módulos habilitados para tu plan académico según correlativas cumplidas
-                        </p>
                     </div>
 
                     {cantidadSeleccionadas > 0 && (
@@ -562,7 +559,7 @@ const Planificador = () => {
 
             {/* ===== PASO 2: FILTROS + ACTIVIDADES (ancho completo, layout horizontal interno) ===== */}
             <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 transition-colors duration-200">
-                <h2 className="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">2. Configurá tus preferencias y actividades</h2>
+                <h2 className="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">Preferencias y actividades</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -718,7 +715,7 @@ const Planificador = () => {
             {/* ===== PASO 3: CALENDARIO — ancho completo, debajo ===== */}
             {mostrarHorario && (
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 transition-colors duration-200">
-                    <h2 className="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">3. Vista previa de tu planificación semanal</h2>
+                    <h2 className="text-sm font-bold text-gray-800 dark:text-slate-100 mb-4">Vista previa semanal</h2>
                     <Horario
                         actividades={[...actividadesPreview, ...actividadesFijas]}
                         onActividadesChange={(lista) => setActividadesPreview(lista)}

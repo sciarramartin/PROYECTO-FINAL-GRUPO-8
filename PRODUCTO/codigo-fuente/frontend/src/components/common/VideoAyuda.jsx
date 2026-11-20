@@ -69,6 +69,68 @@ const VIDEOS_POR_RUTA = {
   },
 };
 
+// ──────────────────────────────────────────────────────────────
+// MANUAL ESCRITO POR SECCIÓN (versión resumida del video)
+// Mantenelo breve: 3 a 4 pasos cortos por sección.
+// ──────────────────────────────────────────────────────────────
+const MANUAL_POR_RUTA = {
+  "/dashboard": [
+    "Revisá tu progreso curricular y la proyección de graduación.",
+    "Ajustá el simulador para estimar cuándo te recibís.",
+    "Usá los accesos directos para ir a cada sección.",
+  ],
+  "/asistente-ia": [
+    "Escribí tu consulta académica y presioná Enter.",
+    "Usá las preguntas sugeridas de la guía lateral para empezar rápido.",
+    "Descargá los documentos oficiales citados en cada respuesta.",
+  ],
+  "/planificador": [
+    "Elegí las materias que querés cursar.",
+    "Indicá tu disponibilidad horaria y tus actividades.",
+    "Generá la planificación, revisá la vista previa y guardala.",
+  ],
+  "/materias": [
+    "Buscá la materia en tu plan de estudios.",
+    "Cambiá su estado (Cursando, Regular, Aprobada).",
+    "Consultá el historial de cursadas desde cada materia.",
+  ],
+  "/Horario": [
+    "Consultá tus clases y actividades de la semana.",
+    "Agregá actividades personales con el botón correspondiente.",
+    "Hacé clic en una actividad para editarla o eliminarla.",
+  ],
+  "/conexiones": [
+    "Buscá estudiantes y enviales una solicitud.",
+    "Aceptá o rechazá solicitudes recibidas.",
+    "Entrá al perfil o al chat de tus conexiones.",
+  ],
+  "/grupos": [
+    "Creá un grupo o unite a uno existente.",
+    "Entrá al muro del grupo para ver sus miembros.",
+    "Coordiná con tu equipo desde el chat grupal.",
+  ],
+  "/foros": [
+    "Elegí una materia o explorá el feed general.",
+    "Creá una publicación con tu duda o aporte.",
+    "Comentá, votá y guardá las publicaciones que te sirvan.",
+  ],
+  "/repositorio": [
+    "Buscá apuntes por materia o etiqueta.",
+    "Descargá, calificá y dale like al material.",
+    "Compartí el tuyo con el botón de agregar.",
+  ],
+  "/mapa-correlatividades": [
+    "Explorá el mapa de materias y sus correlatividades.",
+    "Hacé clic en una materia para ver sus requisitos.",
+    "Actualizá su estado para desbloquear las siguientes.",
+  ],
+  "/resenas": [
+    "Buscá la materia o cátedra que te interesa.",
+    "Leé las valoraciones y comentarios de otros alumnos.",
+    "Dejá tu propia reseña al terminar de cursar.",
+  ],
+};
+
 const VideoAyuda = () => {
   const location = useLocation();
   const [abierto, setAbierto] = useState(false);
@@ -97,6 +159,7 @@ const VideoAyuda = () => {
   if (!videoConfig) return null;
 
   const tienVideo = !!videoConfig.youtubeId;
+  const pasos = MANUAL_POR_RUTA[location.pathname] || [];
 
   return (
     <>
@@ -124,7 +187,7 @@ const VideoAyuda = () => {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
           onClick={(e) => { if (e.target === e.currentTarget) setAbierto(false); }}
         >
-          <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+          <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
 
             {/* Cabecera */}
             <div className="flex items-start justify-between p-5 border-b border-slate-100 dark:border-slate-800">
@@ -150,36 +213,45 @@ const VideoAyuda = () => {
               </button>
             </div>
 
-            {/* Contenido: video o placeholder */}
-            <div className="p-5">
-              {tienVideo ? (
-                /* ── VIDEO DE YOUTUBE ── */
-                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                  <iframe
-                    className="absolute inset-0 w-full h-full rounded-xl"
-                    src={`https://www.youtube.com/embed/${videoConfig.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-                    title={videoConfig.titulo}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              ) : (
-                /* ── PLACEHOLDER (mientras no hay video cargado) ── */
-                <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-3 py-14 px-6 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-3xl">
-                    🎬
+            {/* Contenido: video (izquierda) + manual escrito (derecha) */}
+            <div className="p-5 grid grid-cols-1 lg:grid-cols-5 gap-5">
+              <div className="lg:col-span-3">
+                {tienVideo ? (
+                  <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                    <iframe
+                      className="absolute inset-0 w-full h-full rounded-xl"
+                      src={`https://www.youtube.com/embed/${videoConfig.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+                      title={videoConfig.titulo}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
-                      Video tutorial próximamente
-                    </p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-xs">
-                      El video explicativo de esta sección aún no fue cargado.
-                      Podés cerrar esta ventana y continuar navegando.
-                    </p>
+                ) : (
+                  <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-3 py-14 px-6 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-3xl">🎬</div>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Video tutorial próximamente</p>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+
+              <aside
+                aria-label="Manual de usuario escrito"
+                className="lg:col-span-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4"
+              >
+                <h4 className="text-xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 mb-3">
+                  Manual rápido
+                </h4>
+                <ol className="space-y-2.5">
+                  {pasos.map((paso, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-200 leading-snug">
+                      <span className="w-5 h-5 mt-0.5 rounded-full bg-indigo-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </span>
+                      <span>{paso}</span>
+                    </li>
+                  ))}
+                </ol>
+              </aside>
             </div>
 
             {/* Pie */}

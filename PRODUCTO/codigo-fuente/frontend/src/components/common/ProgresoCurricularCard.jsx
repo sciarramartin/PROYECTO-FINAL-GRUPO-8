@@ -308,11 +308,7 @@ const ProgresoCurricularCard = () => {
                   </div>
                 )}
               </div>
-            ) : (
-              <p className="text-[10px] text-amber-800/80 dark:text-amber-400/80">
-                ℹ️ Las materias electivas aprobadas sumarán puntos automáticamente al registrar su estado en el sistema.
-              </p>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
