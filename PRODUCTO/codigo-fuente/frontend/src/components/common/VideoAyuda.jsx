@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { FiHelpCircle, FiX } from "react-icons/fi";
 import { useLocation } from "react-router-dom";
 
@@ -81,7 +81,7 @@ const MANUAL_POR_RUTA = {
   ],
   "/asistente-ia": [
     "Escribí tu consulta académica y presioná Enter.",
-    "Usá las preguntas sugeridas de la guía lateral para empezar rápido.",
+    "Usá las preguntas sugeridas de la guía lateral para empezar.",
     "Descargá los documentos oficiales citados en cada respuesta.",
   ],
   "/planificador": [
