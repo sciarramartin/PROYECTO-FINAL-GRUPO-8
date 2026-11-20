@@ -260,16 +260,16 @@ const SeccionResenas = () => {
                 </h4>
 
                 <div className="space-y-3.5 text-xs">
-                  {/* Dificultad */}
+                  {/* Facilidad */}
                   <div className="space-y-1">
                     <div className="flex justify-between font-bold text-slate-700 dark:text-slate-200">
-                      <span>Dificultad y Exigencia</span>
-                      <span className="text-indigo-600 dark:text-indigo-400">{datosEncuesta.promedios?.dificultad || 0}/5</span>
+                      <span>Facilidad</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{datosEncuesta.promedios?.facilidad || 0}/5</span>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                       <div 
                         className="bg-amber-400 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${((datosEncuesta.promedios?.dificultad || 0) / 5) * 100}%` }}
+                        style={{ width: `${((datosEncuesta.promedios?.facilidad || 0) / 5) * 100}%` }}
                       />
                     </div>
                   </div>
@@ -351,7 +351,7 @@ const SeccionResenas = () => {
                         {/* Puntuación Promedio de la reseña */}
                         <div className="flex items-center gap-1 text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 px-2 py-0.5 rounded-lg text-xs font-extrabold">
                           <FiStar className="fill-amber-500 w-3 h-3 text-amber-600 dark:text-amber-400" />
-                          <span>{((resena.dificultad + resena.claridad_docente + resena.disponibilidad) / 3).toFixed(1)}</span>
+                          <span>{((resena.facilidad + resena.claridad_docente + resena.disponibilidad) / 3).toFixed(1)}</span>
                         </div>
                       </div>
 

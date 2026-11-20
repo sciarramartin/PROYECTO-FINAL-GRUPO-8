@@ -37,7 +37,7 @@ const EncuestaCatedra = baseDeDatos.define('EncuestaCatedra', {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL'
     },
-    dificultad: {
+    facilidad: {
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {

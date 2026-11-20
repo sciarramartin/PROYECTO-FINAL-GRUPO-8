@@ -8,6 +8,12 @@ import { useEffect, useRef } from 'react';
  */
 export const useFocusTrap = (isOpen, onClose) => {
     const containerRef = useRef(null);
+    const onCloseRef = useRef(onClose);
+
+    // Mantener siempre la versión más reciente de onClose sin re-ejecutar el trap
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -36,7 +42,7 @@ export const useFocusTrap = (isOpen, onClose) => {
             });
         };
 
-        // Enfocar el primer elemento interactivo disponible al abrir
+        // Enfocar el primer elemento interactivo disponible solo al abrir
         const timer = setTimeout(() => {
             const focusables = getFocusableElements();
             if (focusables.length > 0) {
@@ -52,7 +58,7 @@ export const useFocusTrap = (isOpen, onClose) => {
             if (e.key === 'Escape') {
                 e.preventDefault();
                 e.stopPropagation();
-                if (onClose) onClose();
+                if (onCloseRef.current) onCloseRef.current();
                 return;
             }
 
@@ -93,7 +99,7 @@ export const useFocusTrap = (isOpen, onClose) => {
                 previouslyFocusedElement.focus();
             }
         };
-    }, [isOpen, onClose]);
+    }, [isOpen]);
 
     return containerRef;
 };

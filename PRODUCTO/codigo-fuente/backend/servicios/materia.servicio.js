@@ -76,9 +76,9 @@ const obtenerTodas = async (id_carrera, id_plan_academico) => {
                 // Subconsulta para obtener el promedio de estrellas de la materia
                 [
                     Materia.sequelize.literal(`(
-                        SELECT ROUND(AVG((dificultad + claridad_docente + disponibilidad) / 3.0), 1)
+                        SELECT ROUND(AVG((facilidad + claridad_docente + disponibilidad) / 3.0), 1)
                         FROM encuestas_catedra AS ec
-                        WHERE ec.id_materia = Materia.id
+                        WHERE ec.id_materia = materia.id
                     )`),
                     'promedio_general'
                 ],
@@ -87,7 +87,7 @@ const obtenerTodas = async (id_carrera, id_plan_academico) => {
                     Materia.sequelize.literal(`(
                         SELECT COUNT(*)
                         FROM encuestas_catedra AS ec
-                        WHERE ec.id_materia = Materia.id
+                        WHERE ec.id_materia = materia.id
                     )`),
                     'total_resenas'
                 ]

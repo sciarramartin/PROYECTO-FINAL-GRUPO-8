@@ -476,13 +476,6 @@ INSERT INTO cursos (nombre, hora_inicio, duracion, dias, id_materia) VALUES
 ('ELEC-PLN - Tarde (Martes)', '14:00', 180, 2, 107),
 ('ELEC-VJG - Sábados', '10:00', 180, 32, 108);
 
-
-
-
-INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 1);
-INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 1);
-INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (1, 2);
-INSERT INTO inscripciones_cursos(id_usuario, id_curso) VALUES (2, 3);
 -- ===============================================================
 -- PERFILES DE USUARIOS SEED
 -- ===============================================================
@@ -518,15 +511,38 @@ VALUES
 (18, 'usuario9@gmail.com', '$2b$10$ynJBpfXVhSz9lyc./3tqPeMs5lxafAhdN1ulyYqDcL1DUEAfLkaM6', 'Usuario', '9', 'usuario9', 2024, 1, 1, 2),
 (19, 'usuario10@gmail.com', '$2b$10$ynJBpfXVhSz9lyc./3tqPeMs5lxafAhdN1ulyYqDcL1DUEAfLkaM6', 'Usuario', '10', 'usuario10', 2024, 1, 1, 2);
 
--- ==============================================
--- INSCRIPCIONES A CURSOS (Usuarios 5 a 19)
--- ==============================================
+-- ======================
+-- INSCRIPCIONES A CURSOS
+-- ======================
+INSERT INTO inscripciones_cursos (id_usuario, id_curso, fecha_inscripcion) VALUES 
+(1, 1, '2023-03-10 09:00:00'),
+(1, 1, '2024-03-10 09:00:00'), 
+(1, 4, '2024-03-10 09:00:00'), 
+(1, 4, '2025-03-10 09:00:00'), 
+(1, 7, '2026-03-10 09:00:00'),
+(2, 1, '2025-03-10 09:00:00'), 
+(2, 1, '2026-03-10 09:00:00'), 
+(2, 4, '2026-03-10 09:00:00'), 
+(2, 5, '2026-03-10 09:00:00'), 
+(2, 7, '2026-03-10 09:00:00'),
+(3, 1, '2022-03-10 09:00:00'), 
+(3, 2, '2023-03-10 09:00:00'), 
+(3, 4, '2022-03-10 09:00:00'), 
+(3, 6, '2026-03-10 09:00:00'), 
+(3, 7, '2026-03-10 09:00:00'), 
+(3, 14, '2026-03-10 09:00:00'),
+(4, 2, '2026-03-10 09:00:00'), 
+(4, 2, '2026-03-10 09:00:00'), 
+(4, 5, '2026-03-10 09:00:00'), 
+(4, 8, '2026-03-10 09:00:00'),
+(4, 13, '2026-03-10 09:00:00');
+
 INSERT INTO inscripciones_cursos (id_usuario, id_curso) VALUES 
 -- Usuarios de ingreso 2021 (Avanzados)
-(5, 14), (5, 23), (5, 33), -- Francisco Funes (SOP2, DSO3, INT5)
-(6, 22), (6, 21), (6, 35), -- Tito Montivero (anu, CDA3, CDA5)
-(7, 16), (7, 25), (7, 35), -- Franco Sosa (PRO2, ANU3, SGE5)
-(8, 17), (8, 26), (8, 36), -- Martin Sciarra (ECO3, DSI3, GGE5)
+(5, 4), (5, 14), (5, 23), (5, 33), -- Francisco Funes (SOP2, DSO3, INT5)
+(6, 5), (6, 13), (6, 22), (6, 21), (6, 35), -- Tito Montivero (anu, CDA3, CDA5)
+(7, 13), (7, 16), (7, 25), (7, 35), -- Franco Sosa (PRO2, ANU3, SGE5)
+(8, 14) ,(8, 17), (8, 26), (8, 36), -- Martin Sciarra (ECO3, DSI3, GGE5)
 
 -- Usuario ingreso 2022 (Intermedio)
 (9, 7),  (9, 11), (9, 18), -- Luciana Zahr (MAT2, ING2, BDA3)
@@ -543,6 +559,56 @@ INSERT INTO inscripciones_cursos (id_usuario, id_curso) VALUES
 (18, 3), (18, 6), (18, 13),-- Usuario 9 (MAT1, ALG1, SYS1)
 (19, 1), (19, 5), (19, 8); -- Usuario 10 (MAT1, ALG1, FIS1)
 
+INSERT INTO amistades (id_usuario_origen, id_usuario_destino, estado) VALUES 
+--(7, 13, 'pendienete'),
+(7, 13, 'aceptado'), -- Usuario 1 y Usuario 2 son amigos
+(2, 13, 'aceptado'),
+(5, 13, 'pendiente'),
+(6, 13, 'pendiente'), -- Usuario 1 y Usuario 3 son amigos
+(3, 13, 'pendiente'); -- Usuario 2 envió solicitud a Usuario 4
+
+-- ==============================================
+-- GRUPOS DE ESTUDIO
+-- ==============================================
+INSERT INTO grupos (id, nombre, descripcion, id_creador, estado) VALUES 
+(1, 'Final Análisis Matemático II', 'Grupo para resolver dudas y preparar finales de AM2.', 7, 'publico'),
+(2, 'Análisis de Sitemas - 5K1 - TPI', 'Coordinación y entregas para el TP integrador.', 13, 'privado');
+
+-- ==============================================
+-- MIEMBROS DE LOS GRUPOS
+-- ==============================================
+INSERT INTO grupo_miembros (id_grupo, id_usuario, rol, estado) VALUES 
+-- Grupo 1: 
+(1, 7, 'administrador', 'aceptado'),
+(1, 13, 'miembro', 'aceptado'),
+(1, 2, 'miembro', 'aceptado'),
+(1, 3, 'miembro', 'aceptado'),
+(1, 4, 'miembro', 'aceptado'),
+(1, 5, 'miembro', 'aceptado'),
+(1, 6, 'miembro', 'aceptado'),
+(1, 8, 'miembro', 'aceptado'),
+(1, 9, 'miembro', 'aceptado'),
+(1, 10, 'miembro', 'aceptado'),
+
+-- Grupo 2: 
+(2, 13, 'administrador', 'aceptado'),
+(2, 7, 'miembro', 'aceptado'),
+(2, 6, 'miembro', 'aceptado'),
+(2, 8, 'miembro', 'aceptado'),
+(2, 5, 'miembro', 'aceptado');
+
+-- ==============================================
+-- MENSAJES INICIALES DE GRUPO (OPCIONAL)
+-- ==============================================
+INSERT INTO grupo_mensajes (id_grupo, id_usuario, contenido) VALUES 
+--(1, 13, 'Graciass!'),
+(1, 4, 'En el repositorio estan cargados varios finales de AM2.'),
+(1, 8, 'Yo me presento en la segunda mesa de diciembre.'),
+(1, 13, 'Buenass, alguien tiene finales de años anteriores?.'),
+(1, 4, '¡Hola! Alguien se presenta en la mesa de diciembre?.'),
+(1, 7, 'Recordar mantener el respeto entre miembros del grupo!.'),
+(1, 7, 'Se debe utilizar este grupo solo para consultas y dudas sobre la materia de AM2.'),
+(1, 7, '¡Hola a todos! Bienvenidos al grupo de AM2.');
 
 -- ==============================================
 -- ESTADOS DE MATERIA (Usuarios 2, 5 a 19)
@@ -572,7 +638,12 @@ INSERT INTO estado_materia_alumno (id_usuario, id_materia, estado) VALUES
 -- Usuarios Iniciales (2024 - Cursando materias de Nivel 1)
 (11, 1, 'Cursando'), (11, 2, 'Cursando'), (11, 4, 'Cursando'),
 (12, 1, 'Cursando'), (12, 2, 'Cursando'), (12, 3, 'Cursando'),
-(13, 1, 'Cursando'), (13, 2, 'Cursando'), (13, 5, 'Cursando'),
+(13, 1, 'Aprobada'), (13, 7, 'Aprobada'), (13, 13, 'Aprobada'),
+(13, 2, 'Aprobada'), (13, 8, 'Aprobada'), (13, 14, 'Aprobada'),
+(13, 3, 'Aprobada'), (13, 9, 'Aprobada'), (13, 15, 'Aprobada'),
+(13, 4, 'Aprobada'), (13, 10, 'Aprobada'), (13, 16, 'Cursando'),
+(13, 5, 'Aprobada'), (13, 11, 'Aprobada'), (13, 17, 'Cursando'),
+(13, 6, 'Aprobada'), (13, 12, 'Aprobada'), (13, 18, 'Cursando'),
 (14, 1, 'Cursando'), (14, 2, 'Cursando'), (14, 3, 'Cursando'),
 (15, 1, 'Cursando'), (15, 2, 'Cursando'), (15, 5, 'Cursando'),
 (16, 1, 'Cursando'), (16, 2, 'Cursando'), (16, 6, 'Cursando'),
@@ -636,52 +707,52 @@ VALUES
 (2, 1, 7, 5),
 (3, 1, 8, 4),
 (4, 1, 9, 5),
-(5, 2, 5, 4),
+(5, 2, 5, 3),
 (6, 2, 6, 5),
-(7, 2, 7, 4),
+(7, 2, 7, 2),
 (8, 2, 8, 5),
 (9, 3, 5, 5),
-(10, 3, 6, 4),
+(10, 3, 6, 2),
 (11, 3, 8, 4),
 (12, 3, 9, 5),
-(13, 4, 5, 4),
+(13, 4, 5, 3),
 (14, 4, 6, 5),
 (15, 4, 7, 4),
 (16, 4, 9, 4),
 (17, 5, 5, 5),
-(18, 5, 7, 5),
+(18, 5, 7, 2),
 (19, 5, 8, 4),
 (20, 5, 9, 5),
-(21, 6, 6, 5),
+(21, 6, 6, 3),
 (22, 6, 7, 4),
 (23, 6, 8, 5),
-(24, 6, 9, 4),
-(25, 7, 5, 5),
+(24, 6, 9, 2),
+(25, 7, 5, 4),
 (26, 7, 6, 4),
 (27, 7, 8, 4),
 (28, 7, 9, 5),
-(29, 8, 5, 4),
+(29, 8, 5, 3),
 (30, 8, 6, 5),
 (31, 8, 7, 4),
-(32, 8, 8, 5),
-(33, 9, 5, 5),
+(32, 8, 8, 2),
+(33, 9, 5, 4),
 (34, 9, 6, 4),
 (35, 9, 7, 5),
-(36, 9, 9, 5),
+(36, 9, 9, 3),
 (37, 10, 5, 4),
 (38, 10, 7, 4),
 (39, 10, 8, 5),
-(40, 10, 9, 4),
+(40, 10, 9, 2),
 (41, 11, 6, 4),
 (42, 11, 7, 5),
 (43, 11, 8, 4),
 (44, 11, 9, 5),
-(45, 12, 5, 4),
+(45, 12, 5, 3),
 (46, 12, 6, 5),
 (47, 12, 8, 5),
 (48, 12, 9, 4),
 (49, 13, 5, 5),
-(50, 13, 6, 4),
+(50, 13, 6, 3),
 (51, 13, 7, 5),
 (52, 13, 9, 5),
 (53, 14, 5, 4),
@@ -690,43 +761,43 @@ VALUES
 (56, 14, 8, 5),
 (57, 15, 5, 5),
 (58, 15, 7, 5),
-(59, 15, 8, 4),
+(59, 15, 8, 2),
 (60, 15, 9, 5),
 (61, 16, 6, 5),
 (62, 16, 7, 4),
-(63, 16, 8, 5),
+(63, 16, 8, 3),
 (64, 16, 9, 4),
 (65, 17, 5, 5),
 (66, 17, 6, 4),
 (67, 17, 8, 4),
-(68, 17, 9, 5),
+(68, 17, 9, 3),
 (69, 18, 5, 4),
 (70, 18, 6, 5),
-(71, 18, 7, 4),
+(71, 18, 7, 1),
 (72, 18, 9, 4),
 (73, 19, 5, 5),
-(74, 19, 6, 4),
+(74, 19, 6, 2),
 (75, 19, 7, 5),
 (76, 19, 8, 4),
-(77, 20, 5, 4),
+(77, 20, 5, 5),
 (78, 20, 7, 4),
 (79, 20, 8, 5),
 (80, 20, 9, 4),
 (81, 21, 5, 5),
 (82, 21, 6, 4),
-(83, 21, 8, 4),
+(83, 21, 8, 3),
 (84, 21, 9, 5),
 (85, 22, 6, 5),
 (86, 22, 7, 4),
-(87, 22, 8, 5),
+(87, 22, 8, 3),
 (88, 22, 9, 4),
 (89, 23, 5, 5),
 (90, 23, 6, 4),
 (91, 23, 7, 5),
-(92, 23, 9, 5),
+(92, 23, 9, 3),
 (93, 24, 5, 4),
 (94, 24, 6, 5),
-(95, 24, 7, 4),
+(95, 24, 7, 2),
 (96, 24, 8, 5);
 
 -- 5. PUBLICACIONES DEL FORO (EXCLUSIVAS DE LOS 5 INTEGRANTES DEL EQUIPO)
@@ -1181,9 +1252,48 @@ INSERT INTO actividad (nombre, hora_inicio, duracion, dias, color, id_usuario) V
 -- ==========
 -- Reseñas -- 
 -- ==========
-INSERT INTO encuestas_catedra (id_usuario, id_materia, id_curso, dificultad, claridad_docente, disponibilidad, es_anonima, comentario, estado_academico, createdAt, updatedAt)
+INSERT INTO encuestas_catedra (id_usuario, id_materia, id_curso, facilidad, claridad_docente, disponibilidad, es_anonima, comentario, estado_academico, createdAt, updatedAt)
 VALUES 
-(1, 4, 1, 4, 5, 4, 0, 'Materia bastante exigente pero el profesor explica excelente. Súper recomendable llevar las guías de trabajos prácticos al día.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 4, 1, 3, 5, 4, 0, 'Materia bastante exigente pero el profesor explica excelente. Súper recomendable llevar las guías de trabajos prácticos al día.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (2, 4, 1, 3, 4, 5, 1, 'Las clases son muy claras y hay excelente predisposición para resolver dudas en los foros.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 2, 5, 3, 2, 0, 'Los parciales son difíciles, conviene repasar parciales y finales de años anteriores.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 5, 1, 2, 5, 5, 0, 'Clases muy dinámicas. Se aprueba haciendo los TPs a tiempo.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(3, 4, 2, 3, 3, 2, 0, 'Los parciales son difíciles, conviene repasar parciales y finales de años anteriores.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 1, 1, 4, 5, 5, 0, 'La tenes que llevar al día porque sino no aprobas fácil. La profe explica re bien.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 1, 3, 2, 3, 2, 0, 'El profe llegaba tarde a clases y mostraba diapositivas no mas, no explicaba muy bien.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 1, 3, 3, 3, 2, 0, 'Los parciales era de dificultad media, pero el profe no explicaba muy bien. También pedian asistencia.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 5, 1, 2, 5, 5, 0, 'Clases dificiles de entender. Se aprueba haciendo los TPs a tiempo.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, 2, 4, 4, 3, 5, 0, 'El profe del práctico re piola, el del teórico tambien pero tomaba asistencia. Quedé regular por las asistencias ya que trabajaba a la mañana.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 2, 5, 3, 3, 3, 0, 'Los parciales eran a desarrollar, el práctico eran ejercicios exactos de la guía.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 2, 5, 3, 3, 3, 0, 'Los parciales eran a desarrollar, el práctico eran ejercicios exactos de la guía.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 3, 7, 3, 4, 3, 0, 'Recomiendo, buena comisión y los profes re buenos.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 3, 8, 2, 4, 2, 0, 'Los profes exigentes y pedían 80% de asistencia.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(11, 3, 8, 5, 4, 5, 0, 'Los parciales eran exactamente lo que se veía en clases. Los TPs se hacían en clases y eran fáciles. Recomeindo.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(11, 6, 18, 5, 4, 5, 0, 'El intensivo se me hizo mas fácil que la cursada anual, pero si eran exigentes con las tareas en la uv y la asistencia.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(12, 6, 16, 2, 3, 5, 0, 'Recomiendo la comisión de la mañana. Los parciales fáciles.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(12, 9, 27, 5, 4, 5, 0, 'Buena comisión. Los profes son medio exigentes', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 9, 27, 2, 3, 5, 0, 'Recomiendo la comisión. Los parciales en si medio rebuscados, pero no tomaban asistencia como otras comisiones.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 12, 30, 4, 5, 5, 0, 'Recomiendo la comisión. Recomiendo que la rindan libre. De todas formas los parciales son fáciles.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(10, 10, 28, 4, 5, 5, 0, 'Los parciales son fáciles y los TPs se hacen en clases.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(8, 10, 28, 3, 4, 5, 0, 'Las clases algunas eran virtuales otras presenciales y los TPs eran igual a lo que veíamos en clases.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(8, 14, 32, 3, 4, 5, 0, 'Recomiendo la comisión de la tarde y los parciales eran iguales a los trabajos prácticos.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 14, 32, 2, 4, 3, 0, 'No me gustó la forma de enseñar de los profes.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(10, 15, 33, 5, 4, 3, 0, 'Muy buena comisión.Recomeindoo.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 18, 36, 5, 4, 3, 0, 'Recomeindo esta comisión y los profes contestaban todas las dudas por mail.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(8, 19, 37, 3, 4, 3, 0, 'Profes copados pero tenía que ver clases grabadas porque algunas veces explicaban filminas que no se entendían.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 20, 38, 5, 4, 3, 0, 'Muy buena comisión.Recomeindoo.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 21, 39, 3, 3, 4, 0, 'Pedian asistencia para los trabajos prácticos, y los parciales eran multiplechoice.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 26, 45, 4, 5, 4, 0, 'Las clases teóricas eran virtuales y las practicas presenciales, y los parciales eran multiplechoice.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 26, 45, 5, 3, 4, 0, 'Los profes explicaban bien pero si eran exigentes con las entregas de las tareas en la uv.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 24, 43, 5, 5, 4, 0, 'Los parciales eran multiplechoice y solo 1 TP. Recomiendo.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 25, 44, 3, 3, 4, 0, 'Los parciales eran medio rebuscados y entrega de TP integador que tambien eran exigentes.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(10, 25, 44, 2, 3, 2, 0, 'No me gustó esta comisión. Los parciales eran a desarrollar y las correcciones eran muy subjetivas.', 'Regular', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(10, 27, 46, 5, 5, 4, 0, 'Super recomendable. Los parciales eran iguales a los TPs.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(11, 27, 46, 4, 5, 4, 0, 'No pedían asistencia y las clases super dinámicas.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(11, 31, 50, 3, 3, 4, 0, 'Las clases teóricas mal explicadas pero los parciales eran iguales a los simulacros.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(12, 32, 51, 3, 3, 2, 0, 'No me gustó esta comisión. Los profes muy exigentes con las entregas de TPs.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(12, 33, 52, 5, 5, 4, 0, 'Super recomendable. Los parciales eran iguales a los TPs.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 32, 51, 2, 3, 4, 0, 'No pedían asistencia y pero las clases poco dinámicas.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 33, 52, 3, 3, 4, 0, 'Las clases teóricas mal explicadas pero los parciales eran iguales a los simulacros.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 34, 53, 3, 3, 4, 0, 'Las clases teóricas bien explicadas pero eran como 3 entregas para un TP integrador y 2 parciales.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 36, 55, 4, 3, 4, 0, 'Los profes copados, por los menos el profe tutor de nuestro proyecto. No era necesario asistir a clases.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 34, 53, 2, 3, 3, 0, 'Las entrgas eran demasiado para una materia cuatrimestral. Importaba la asistencia.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 36, 55, 5, 5, 4, 0, 'Recomiendo. Los encuentros con el profe eran virtuales. Era un solo parcial que te dejaban utilizar IA para resolverlo pero te daban poco tiempo.', 'Aprobada', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

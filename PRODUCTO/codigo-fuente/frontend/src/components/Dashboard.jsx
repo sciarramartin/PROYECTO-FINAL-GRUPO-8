@@ -123,16 +123,6 @@ const Dashboard = () => {
                 Métricas de Reputación y Aportes Académicos
               </h2>
             </div>
-
-            {/* Acceso directo a la sección de Apuntes y Colaboración */}
-            <Link
-              to="/apuntes"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 px-3 py-1.5 rounded-lg transition-colors border border-amber-200/60 dark:border-amber-800/50 shadow-xs"
-            >
-              <FiFileText className="w-3.5 h-3.5" />
-              <span>Mis Aportes y Apuntes</span>
-              <FiArrowRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
 
           {/* Métrica de Reputación del Estudiante y Colaboración */}

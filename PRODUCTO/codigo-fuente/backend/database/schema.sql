@@ -424,7 +424,7 @@ CREATE TABLE IF NOT EXISTS encuestas_catedra (
     id_usuario INTEGER NOT NULL,
     id_materia INTEGER NOT NULL,
     id_curso INTEGER DEFAULT NULL,
-    dificultad INTEGER NOT NULL CHECK (dificultad BETWEEN 1 AND 5),
+    facilidad INTEGER NOT NULL CHECK (facilidad BETWEEN 1 AND 5),
     claridad_docente INTEGER NOT NULL CHECK (claridad_docente BETWEEN 1 AND 5),
     disponibilidad INTEGER NOT NULL CHECK (disponibilidad BETWEEN 1 AND 5),
     es_anonima BOOLEAN NOT NULL DEFAULT 0,

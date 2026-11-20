@@ -34,7 +34,7 @@ const TooltipInfo = () => {
 };
 
 const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCancelar }) => {
-  const [dificultad, setDificultad] = useState(0);
+  const [facilidad, setFacilidad] = useState(0);
   const [claridadDocente, setClaridadDocente] = useState(0);
   const [disponibilidad, setDisponibilidad] = useState(0);
   const [esAnonima, setEsAnonima] = useState(true);
@@ -51,8 +51,8 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
     e.preventDefault();
     setError('');
 
-    if (dificultad === 0 || claridadDocente === 0 || disponibilidad === 0) {
-      setError('Por favor califica todos los aspectos requeridos (Dificultad, Claridad docente y Disponibilidad) antes de continuar.');
+    if (facilidad === 0 || claridadDocente === 0 || disponibilidad === 0) {
+      setError('Por favor califica todos los aspectos requeridos (Facilidad, Claridad docente y Disponibilidad) antes de continuar.');
       return;
     }
 
@@ -60,7 +60,7 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
 
     const payload = {
       id_materia: materia.id,
-      dificultad,
+      facilidad,
       claridad_docente: claridadDocente,
       disponibilidad,
       es_anonima: esAnonima,
@@ -137,7 +137,7 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
     );
   };
 
-  const todoCompletado = dificultad > 0 && claridadDocente > 0 && disponibilidad > 0;
+  const todoCompletado = facilidad > 0 && claridadDocente > 0 && disponibilidad > 0;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in font-sans">
@@ -194,10 +194,10 @@ const EncuestaCatedraObligatoria = ({ materia, nuevoEstado, onCompletada, onCanc
 
         <form onSubmit={handleEnviar} className="space-y-3 sm:space-y-3.5">
           {renderEstrellas(
-            dificultad,
-            setDificultad,
-            '1. Nivel de Dificultad y Exigencia',
-            '1 = Muy accesible, 5 = Muy exigente y demandante'
+            facilidad,
+            setFacilidad,
+            '1. Nivel de Facilidad',
+            '1 = Muy difícil y demandante, 5 = Muy accesible'
           )}
 
           {renderEstrellas(

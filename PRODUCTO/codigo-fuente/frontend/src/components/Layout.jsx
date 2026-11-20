@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import VideoAyuda from "./common/VideoAyuda";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -641,6 +642,10 @@ const Layout = ({ children }) => {
           </div>
         </main>
       </div>
+
+      {/* BOTÓN DE AYUDA CON VIDEO FLOTANTE */}
+      <VideoAyuda />
+
     </div>
   );
 };
