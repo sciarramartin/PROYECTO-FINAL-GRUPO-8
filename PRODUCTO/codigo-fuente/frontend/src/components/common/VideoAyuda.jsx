@@ -238,9 +238,6 @@ const VideoAyuda = () => {
                 aria-label="Manual de usuario escrito"
                 className="lg:col-span-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4"
               >
-                <h4 className="text-xs font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 mb-3">
-                  Manual rápido
-                </h4>
                 <ol className="space-y-2.5">
                   {pasos.map((paso, i) => (
                     <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-200 leading-snug">
