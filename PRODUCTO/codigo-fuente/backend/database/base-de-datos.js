@@ -33,8 +33,13 @@ const inicializarDB = async () => {
         db.exec(schema, (err) => {
             if (err) return reject(err);
 
-            db.exec(seed, (err) => {
-                if (err) return reject(err);
+                db.exec(seed, (err) => {
+                    if (err) {
+                        console.error('Error SQL:', err.message);
+                        return;
+                    }
+
+
 
                 db.close();
                 resolve();
