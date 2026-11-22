@@ -203,7 +203,7 @@ const MetricasGlobalesPlataforma = () => {
   const gridColor = esOscuro ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.8)';
   const textColor = esOscuro ? '#94a3b8' : '#64748b';
 
-  // Gráfico 1: Evolución del Almacenamiento (MB y GB) y Descargas
+  // Gráfico 1: Evolución del Almacenamiento (MB y GB)
   const chartDataAlmacenamiento = useMemo(() => {
     if (!metricas?.evolucionMensual) return null;
     const labels = metricas.evolucionMensual.map(m => m.mesLabel);
@@ -234,20 +234,6 @@ const MetricasGlobalesPlataforma = () => {
           borderRadius: 6,
           barThickness: 22,
           yAxisID: 'y'
-        },
-        {
-          type: 'line',
-          label: 'Descargas de la Comunidad',
-          data: metricas.evolucionMensual.map(m => m.descargasMes),
-          borderColor: '#10b981', // Emerald
-          backgroundColor: '#10b981',
-          borderWidth: 3,
-          tension: 0.35,
-          pointBackgroundColor: '#10b981',
-          pointBorderColor: esOscuro ? '#0f172a' : '#ffffff',
-          pointBorderWidth: 2,
-          pointRadius: 5,
-          yAxisID: 'y1'
         }
       ]
     };
@@ -263,10 +249,10 @@ const MetricasGlobalesPlataforma = () => {
       datasets: [
         {
           type: 'line',
-          label: 'Consultas Asistente IA',
-          data: metricas.evolucionMensual.map(m => m.consultasIA),
-          borderColor: '#a855f7', // Purple
-          backgroundColor: '#a855f7',
+          label: 'Descargas de la Comunidad',
+          data: metricas.evolucionMensual.map(m => m.descargasMes),
+          borderColor: '#10b981',
+          backgroundColor: '#10b981',
           borderWidth: 3,
           tension: 0.35,
           pointRadius: 5,
@@ -285,14 +271,14 @@ const MetricasGlobalesPlataforma = () => {
         },
         {
           type: 'line',
-          label: 'Descargas de la Comunidad',
-          data: metricas.evolucionMensual.map(m => m.descargasMes),
-          borderColor: '#10b981',
-          backgroundColor: '#10b981',
+          label: 'Consultas Asistente IA',
+          data: metricas.evolucionMensual.map(m => m.consultasIA),
+          borderColor: '#a855f7', // Purple
+          backgroundColor: '#a855f7',
           borderWidth: 3,
           tension: 0.35,
           pointRadius: 5,
-          yAxisID: 'y1'
+          yAxisID: 'y'
         }
       ]
     };
@@ -350,7 +336,8 @@ const MetricasGlobalesPlataforma = () => {
         padding: 12,
         borderRadius: 10,
         borderColor: esOscuro ? '#334155' : '#475569',
-        borderWidth: 1
+        borderWidth: 1,
+        itemSort: (a, b) => b.raw - a.raw
       }
     },
     scales: {
@@ -364,7 +351,7 @@ const MetricasGlobalesPlataforma = () => {
         ticks: { color: textColor },
         title: {
           display: true,
-          text: 'Volumen',
+          text: 'Volumen / Cantidad',
           color: textColor,
           font: { size: 11, weight: 'bold' }
         }
@@ -665,7 +652,7 @@ const MetricasGlobalesPlataforma = () => {
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              Almacenamiento y Tráfico
+              Almacenamiento (MB)
             </button>
             <button
               onClick={() => setVistaActiva('social_ia')}
@@ -702,14 +689,14 @@ const MetricasGlobalesPlataforma = () => {
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
                     <span>
-                      Curva acumulada de espacio en disco (MB) y demanda de descargas comunitarias sumadas mes a mes.
+                      Curva acumulada de espacio en disco (MB) sumado mes a mes por nuevos apuntes y documentos.
                     </span>
                     <span className="font-bold text-slate-700 dark:text-slate-300">
-                      Capacidad actual: <strong>{metricas?.resumen?.almacenamientoTotalMB} MB</strong> (~{metricas?.resumen?.almacenamientoTotalGB} GB) • Descargas Totales: <strong>{(metricas?.resumen?.totalDescargas ?? 0).toLocaleString()}</strong>
+                      Capacidad actual: <strong>{metricas?.resumen?.almacenamientoTotalMB} MB</strong> (~{metricas?.resumen?.almacenamientoTotalGB} GB)
                     </span>
                   </div>
                   <div className="h-[360px]">
-                    <Line data={chartDataAlmacenamiento} options={chartOptionsDualAxis} />
+                    <Line data={chartDataAlmacenamiento} options={chartOptionsCommon} />
                   </div>
                 </div>
               )}
@@ -725,7 +712,7 @@ const MetricasGlobalesPlataforma = () => {
                     </span>
                   </div>
                   <div className="h-[360px]">
-                    <Line data={chartDataSocialIA} options={chartOptionsDualAxis} />
+                    <Line data={chartDataSocialIA} options={chartOptionsCommon} />
                   </div>
                 </div>
               )}

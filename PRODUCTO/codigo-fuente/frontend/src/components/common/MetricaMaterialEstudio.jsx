@@ -105,12 +105,24 @@ const MetricaMaterialEstudio = () => {
         labels,
         datasets: [
             {
-                label: 'Archivos',
+                label: 'Descargas',
                 data: metricas.evolucionMensual.map(
-                    m => m.archivos
+                    m => m.descargas
                 ),
-                borderColor: '#0ea5e9',
-                backgroundColor: '#0ea5e9',
+                borderColor: '#10b981',
+                backgroundColor: '#10b981',
+                borderWidth: 3,
+                tension: 0.35,
+                yAxisID: 'y'
+            },
+
+            {
+                label: 'Likes',
+                data: metricas.evolucionMensual.map(
+                    m => m.likes
+                ),
+                borderColor: '#d946ef',
+                backgroundColor: '#d946ef',
                 borderWidth: 3,
                 tension: 0.35,
                 yAxisID: 'y'
@@ -129,27 +141,15 @@ const MetricaMaterialEstudio = () => {
             },
 
             {
-                label: 'Descargas',
+                label: 'Archivos',
                 data: metricas.evolucionMensual.map(
-                    m => m.descargas
+                    m => m.archivos
                 ),
-                borderColor: '#10b981',
-                backgroundColor: '#10b981',
+                borderColor: '#0ea5e9',
+                backgroundColor: '#0ea5e9',
                 borderWidth: 3,
                 tension: 0.35,
-                yAxisID: 'y1'
-            },
-
-            {
-                label: 'Likes',
-                data: metricas.evolucionMensual.map(
-                    m => m.likes
-                ),
-                borderColor: '#d946ef',
-                backgroundColor: '#d946ef',
-                borderWidth: 3,
-                tension: 0.35,
-                yAxisID: 'y1'
+                yAxisID: 'y'
             }
         ]
     };
@@ -173,6 +173,9 @@ const MetricaMaterialEstudio = () => {
                         weight: 'bold'
                     }
                 }
+            },
+            tooltip: {
+                itemSort: (a, b) => b.raw - a.raw
             }
         },
 
@@ -182,19 +185,7 @@ const MetricaMaterialEstudio = () => {
                 position: 'left',
                 title: {
                     display: true,
-                    text: 'Archivos / Publicaciones'
-                }
-            },
-
-            y1: {
-                beginAtZero: true,
-                position: 'right',
-                grid: {
-                    drawOnChartArea: false
-                },
-                title: {
-                    display: true,
-                    text: 'Descargas / Likes'
+                    text: 'Volumen / Cantidad'
                 }
             }
         }
