@@ -203,7 +203,7 @@ const MetricasGlobalesPlataforma = () => {
   const gridColor = esOscuro ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.8)';
   const textColor = esOscuro ? '#94a3b8' : '#64748b';
 
-  // Gráfico 1: Evolución del Almacenamiento (MB y GB)
+  // Gráfico 1: Evolución del Almacenamiento (MB y GB) y Descargas
   const chartDataAlmacenamiento = useMemo(() => {
     if (!metricas?.evolucionMensual) return null;
     const labels = metricas.evolucionMensual.map(m => m.mesLabel);
@@ -234,6 +234,20 @@ const MetricasGlobalesPlataforma = () => {
           borderRadius: 6,
           barThickness: 22,
           yAxisID: 'y'
+        },
+        {
+          type: 'line',
+          label: 'Descargas de la Comunidad',
+          data: metricas.evolucionMensual.map(m => m.descargasMes),
+          borderColor: '#10b981', // Emerald
+          backgroundColor: '#10b981',
+          borderWidth: 3,
+          tension: 0.35,
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: esOscuro ? '#0f172a' : '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          yAxisID: 'y1'
         }
       ]
     };
@@ -270,12 +284,14 @@ const MetricasGlobalesPlataforma = () => {
           yAxisID: 'y'
         },
         {
-          type: 'bar',
+          type: 'line',
           label: 'Descargas de la Comunidad',
           data: metricas.evolucionMensual.map(m => m.descargasMes),
-          backgroundColor: esOscuro ? 'rgba(16, 185, 129, 0.6)' : 'rgba(16, 185, 129, 0.75)',
-          borderRadius: 6,
-          barThickness: 18,
+          borderColor: '#10b981',
+          backgroundColor: '#10b981',
+          borderWidth: 3,
+          tension: 0.35,
+          pointRadius: 5,
           yAxisID: 'y1'
         }
       ]
@@ -649,7 +665,7 @@ const MetricasGlobalesPlataforma = () => {
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              Almacenamiento (MB)
+              Almacenamiento y Tráfico
             </button>
             <button
               onClick={() => setVistaActiva('social_ia')}
@@ -686,14 +702,14 @@ const MetricasGlobalesPlataforma = () => {
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
                     <span>
-                      Curva acumulada de espacio en disco (MB) sumado mes a mes por nuevos apuntes y documentos.
+                      Curva acumulada de espacio en disco (MB) y demanda de descargas comunitarias sumadas mes a mes.
                     </span>
                     <span className="font-bold text-slate-700 dark:text-slate-300">
-                      Capacidad actual: <strong>{metricas?.resumen?.almacenamientoTotalMB} MB</strong> (~{metricas?.resumen?.almacenamientoTotalGB} GB)
+                      Capacidad actual: <strong>{metricas?.resumen?.almacenamientoTotalMB} MB</strong> (~{metricas?.resumen?.almacenamientoTotalGB} GB) • Descargas Totales: <strong>{(metricas?.resumen?.totalDescargas ?? 0).toLocaleString()}</strong>
                     </span>
                   </div>
                   <div className="h-[360px]">
-                    <Line data={chartDataAlmacenamiento} options={chartOptionsCommon} />
+                    <Line data={chartDataAlmacenamiento} options={chartOptionsDualAxis} />
                   </div>
                 </div>
               )}
