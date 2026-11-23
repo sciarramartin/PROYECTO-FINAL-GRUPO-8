@@ -517,9 +517,56 @@ class RagService {
   }
 
   /**
+   * Enrutador inteligente con IA (Agentic Semantic Router):
+   * Analiza la pregunta del estudiante y extrae la materia oficial, el tema académico y la categoría
+   * sin depender de coincidencia exacta por expresiones regulares.
+   */
+  async enrutarConsultaConIA(prompt) {
+    const apiKey = this._getApiKey();
+    if (!apiKey) return null;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-8b-instant',
+          messages: [
+            {
+              role: 'system',
+              content: 'Sos el clasificador semántico para el campus de Ingeniería en Sistemas de Información (UTN FRC). Analizá la consulta del estudiante y respondé ÚNICAMENTE un JSON con formato: {"materia": string|null, "tema": string, "categoria": "catedra"|"tramite"|"calendario"|"general"|"fuera_de_ambito"}. Normalizá cualquier apodo, sigla o variación (ej: "f1", "ami", "zafo en fisica 1", "ppr", "aga") a su nombre oficial exacto ("Física I", "Análisis Matemático I", "Paradigmas de Programación"). Si no se refiere a una materia, materia es null.'
+            },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0,
+          response_format: { type: 'json_object' }
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');
+        return parsed;
+      }
+    } catch (_) {
+      // Si falla o excede el timeout, continúa fluidamente con el fallback local
+    }
+    return null;
+  }
+
+  /**
    * Búsqueda semántica vectorial basada en Similitud Coseno con boosting de metadatos
    */
-  recuperarContexto(query, topK = 6) {
+  recuperarContexto(query, topK = 6, enrutamiento = null) {
     if (this.chunks.length === 0) return [];
 
     const queryTokens = this.extraerTokens(query);
@@ -532,7 +579,28 @@ class RagService {
 
     // 1. Detectar si la consulta apunta a un tema institucional o a una materia
     const temaInstitucional = TOPICOS_INSTITUCIONALES_DISAMBIGUATION.find(t => t.patterns.some(p => p.test(query)));
-    const materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(query)));
+    
+    // Priorizar materia clasificada semánticamente por la IA
+    let materiaDetectada = null;
+    if (enrutamiento?.materia) {
+      const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
+      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
+        const mTokens = this.extraerTokens(m.nombre).join(' ');
+        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens) || m.patterns.some(p => p.test(enrutamiento.materia));
+      });
+      if (!materiaDetectada) {
+        materiaDetectada = {
+          nombre: enrutamiento.materia,
+          patterns: [new RegExp(enrutamiento.materia.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')],
+          targetDocs: [],
+          sinDocumento: true
+        };
+      }
+    }
+    
+    if (!materiaDetectada) {
+      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(query)));
+    }
 
     // 2. Vectorizar la consulta
     const queryTf = new Map();
@@ -656,8 +724,11 @@ class RagService {
           similitudCoseno = (similitudCoseno * 5.0) + 2.5;
         } else {
           const esOrdenanza = docLower.includes('1878') || docLower.includes('1877');
-          if (esOrdenanza) {
-            const mencionaMateria = materiaDetectada.patterns.some(p => p.test(chunkTextLower));
+          // Solo vincular con Ordenanzas institucionales si la consulta trata sobre correlatividades, diseño curricular, carga horaria o año de cursado
+          const esConsultaPertinenteAOrdenanza = esConsultaCorrelativas || /a[nñ]o|nivel|dise[nñ]o|plan|carga\s*horaria|horas/i.test(query) || (enrutamiento?.categoria === 'correlatividades');
+          if (esOrdenanza && esConsultaPertinenteAOrdenanza) {
+            const mencionaMateria = (materiaDetectada.patterns && materiaDetectada.patterns.some(p => p.test(chunkTextLower))) ||
+              chunkTextLower.includes(materiaDetectada.nombre.toLowerCase());
             if (mencionaMateria) {
               similitudCoseno = (similitudCoseno * 2.5) + 1.5;
             } else {
@@ -825,8 +896,21 @@ class RagService {
       queryParaBusqueda = this.normalizarConsultaParaBusqueda(queryParaBusqueda);
     }
 
-    const materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(queryParaBusqueda) || p.test(prompt)));
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6);
+    // 1. Enrutamiento semántico inteligente con IA (extrae materia, tema y categoría sin depender de regex)
+    const enrutamiento = await this.enrutarConsultaConIA(prompt);
+    let materiaDetectada = null;
+    if (enrutamiento?.materia) {
+      const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
+      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
+        const mTokens = this.extraerTokens(m.nombre).join(' ');
+        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens) || m.patterns.some(p => p.test(enrutamiento.materia));
+      }) || { nombre: enrutamiento.materia, targetDocs: [], sinDocumento: true, patterns: [] };
+    }
+    if (!materiaDetectada) {
+      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(queryParaBusqueda) || p.test(prompt)));
+    }
+
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6, enrutamiento);
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       if (materiaDetectada) {
@@ -1038,8 +1122,21 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
       queryParaBusqueda = this.normalizarConsultaParaBusqueda(queryParaBusqueda);
     }
 
-    const materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(queryParaBusqueda) || p.test(prompt)));
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6);
+    // 1. Enrutamiento semántico inteligente con IA (extrae materia, tema y categoría sin depender de regex)
+    const enrutamiento = await this.enrutarConsultaConIA(prompt);
+    let materiaDetectada = null;
+    if (enrutamiento?.materia) {
+      const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
+      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
+        const mTokens = this.extraerTokens(m.nombre).join(' ');
+        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens) || m.patterns.some(p => p.test(enrutamiento.materia));
+      }) || { nombre: enrutamiento.materia, targetDocs: [], sinDocumento: true, patterns: [] };
+    }
+    if (!materiaDetectada) {
+      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(queryParaBusqueda) || p.test(prompt)));
+    }
+
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6, enrutamiento);
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       let respRechazo = this.rejectionMessage;
