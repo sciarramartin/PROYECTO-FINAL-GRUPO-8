@@ -5,6 +5,63 @@ import {
   FiArrowLeft, FiMessageSquare, FiShield, FiUser, FiInfo 
 } from 'react-icons/fi';
 
+// Subcomponente para renderizar avatar del autor de la reseña con soporte robusto de emojis y fotos
+const AvatarAutorResena = ({ resena }) => {
+  const [imgError, setImgError] = useState(false);
+
+  if (resena.es_anonima) {
+    return (
+      <div 
+        className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0"
+        title="Estudiante Anónimo"
+      >
+        <FiShield className="w-4 h-4" />
+      </div>
+    );
+  }
+
+  const foto = resena.autor?.foto_perfil;
+  const nombre = resena.autor?.nombre || 'Alumno';
+  const iniciales = nombre
+    .split(' ')
+    .filter(Boolean)
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'AL';
+
+  if (!foto || imgError) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
+        {iniciales}
+      </div>
+    );
+  }
+
+  // Si es un emoji o icono (ej. 🎓, 💻, 🚀, 👨‍💻, 🛡️, ✨)
+  // Cualquier avatar de texto/emoji que no comience con data: ni http ni / y tenga longitud razonable (< 50)
+  const esEmoji = !foto.startsWith('data:') && !foto.startsWith('http') && !foto.startsWith('/') && foto.length < 50;
+
+  if (esEmoji) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-base shrink-0 select-none">
+        {foto}
+      </div>
+    );
+  }
+
+  // Si es una imagen en base64 o URL
+  const src = foto.startsWith('data:') || foto.startsWith('http') || foto.startsWith('/') ? foto : `data:image/jpeg;base64,${foto}`;
+  return (
+    <img
+      src={src}
+      alt={nombre}
+      className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+      onError={() => setImgError(true)}
+    />
+  );
+};
+
 const SeccionResenas = () => {
   const [cargando, setCargando] = useState(false);
   const [materias, setMaterias] = useState([]);
@@ -78,52 +135,6 @@ const SeccionResenas = () => {
   const encuestasFiltradas = cursoSeleccionado 
     ? datosEncuesta.encuestas.filter(e => e.curso === cursoSeleccionado.nombre)
     : datosEncuesta.encuestas;
-
-  // Renderizar avatar del autor respetando foto (Base64/URL), avatar emoji o iniciales
-  const renderAvatarAutor = (resena) => {
-    if (resena.es_anonima) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
-          <FiShield className="w-4 h-4" />
-        </div>
-      );
-    }
-
-    const foto = resena.autor?.foto_perfil;
-    const nombre = resena.autor?.nombre || 'Alumno';
-    const iniciales = nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'AL';
-
-    if (!foto) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0">
-          {iniciales}
-        </div>
-      );
-    }
-
-    // Si es un emoji (ej. 🎓, 💻, 🚀)
-    if (foto.length <= 4) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-base shrink-0 select-none">
-          {foto}
-        </div>
-      );
-    }
-
-    // Si es una imagen en base64 o URL
-    const src = foto.startsWith('data:') || foto.startsWith('http') ? foto : `data:image/jpeg;base64,${foto}`;
-    return (
-      <img
-        src={src}
-        alt={nombre}
-        className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.style.display = 'none';
-        }}
-      />
-    );
-  };
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 font-sans">
@@ -372,7 +383,7 @@ const SeccionResenas = () => {
                       {/* Cabecera de la opinión */}
                       <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-2.5">
                         <div className="flex items-center gap-2.5">
-                          {renderAvatarAutor(resena)}
+                          <AvatarAutorResena resena={resena} />
                           <div>
                             <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 block leading-tight">
                               {resena.autor?.nombre}

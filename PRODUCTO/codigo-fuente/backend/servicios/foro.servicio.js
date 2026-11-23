@@ -652,26 +652,41 @@ class ForoService {
     }
 
     /**
-     * Obtener etiquetas populares
+     * Obtener etiquetas populares (globales o filtradas por materia)
      */
-    static async obtenerEtiquetasPopulares(limit = 5) {
+    static async obtenerEtiquetasPopulares(limit = 5, materiaId = null) {
+        const include = [];
+        if (materiaId) {
+            include.push({
+                model: ForoPublicacion,
+                where: { id_materia: materiaId },
+                attributes: []
+            });
+        }
+
         const popularTags = await ForoEtiqueta.findAll({
+            include,
             attributes: [
                 'nombre',
-                [Sequelize.fn('COUNT', Sequelize.col('nombre')), 'cantidad']
+                [Sequelize.fn('COUNT', Sequelize.col('ForoEtiqueta.nombre')), 'cantidad']
             ],
-            group: ['nombre'],
+            group: ['ForoEtiqueta.nombre'],
             order: [[Sequelize.literal('cantidad'), 'DESC']],
             limit: 15
         });
 
-        if (popularTags.length === 0) {
-            return [];
+        let tagNames = popularTags.map(t => {
+            const raw = t.nombre ? t.nombre.trim() : '';
+            if (!raw) return null;
+            return raw.startsWith('#') ? raw : `#${raw}`;
+        }).filter(Boolean);
+
+        // Fallback enriquecido de etiquetas académicas si aún no hay suficientes registradas
+        if (tagNames.length === 0) {
+            tagNames = ['#Parciales', '#Finales', '#Dudas', '#Resumenes', '#Ejercicios', '#Teoria', '#Practica', '#ModelosExamen'];
         }
 
-        const tagNames = popularTags.map(t => t.nombre);
-        const shuffled = tagNames.sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, limit);
+        return tagNames.slice(0, limit);
     }
 
     /**
