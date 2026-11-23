@@ -1,7 +1,22 @@
 // backend/controladores/ia.controlador.js
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 const ragService = require('../servicios/rag.servicio');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta';
+
+const extraerUsuarioOpcional = (req) => {
+  if (req.usuario) return req.usuario;
+  try {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      return jwt.verify(token, JWT_SECRET);
+    }
+  } catch (_) {}
+  return null;
+};
 
 let ConsultaIA;
 try {
@@ -31,8 +46,9 @@ router.post('/consulta-modalidad', async (req, res) => {
     });
 
     if (ConsultaIA && typeof ConsultaIA.create === 'function') {
+      const usuario = extraerUsuarioOpcional(req);
       ConsultaIA.create({
-        id_usuario: req.usuario?.id || null,
+        id_usuario: usuario?.id || null,
         prompt: prompt.trim(),
         respuesta: resultado?.respuesta ? resultado.respuesta.substring(0, 1000) : null,
         total_fuentes: (resultado?.fuentes || []).length,
@@ -89,8 +105,9 @@ router.post('/consulta-modalidad-stream', async (req, res) => {
     });
 
     if (ConsultaIA && typeof ConsultaIA.create === 'function') {
+      const usuario = extraerUsuarioOpcional(req);
       ConsultaIA.create({
-        id_usuario: req.usuario?.id || null,
+        id_usuario: usuario?.id || null,
         prompt: prompt.trim(),
         respuesta: resultadoStream?.respuesta ? resultadoStream.respuesta.substring(0, 1000) : null,
         total_fuentes: (resultadoStream?.fuentes || []).length,

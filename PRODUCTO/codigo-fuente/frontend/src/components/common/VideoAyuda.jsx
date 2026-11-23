@@ -2,20 +2,11 @@
 import { FiHelpCircle, FiX } from "react-icons/fi";
 import { useLocation } from "react-router-dom";
 
-// ──────────────────────────────────────────────────────────────
-// CONFIGURACIÓN DE VIDEOS POR SECCIÓN
-// Para agregar el video de cada sección:
-//   1. Subí el video a YouTube (puede ser "No listado" para privacidad)
-//   2. Copiá el ID del video (lo que va después de "v=" en la URL)
-//   3. Pegalo en el campo "youtubeId" de la sección correspondiente
-//   4. Podés personalizar el "titulo" y "descripcion" de cada sección
-// ──────────────────────────────────────────────────────────────
 const VIDEOS_POR_RUTA = {
   "/dashboard": {
     titulo: "¿Cómo usar el Dashboard?",
     descripcion: "Conocé tu panel de control: progreso académico, métricas y accesos rápidos.",
     youtubeId: "nW_GIVOGV9Q",
-    // youtubeId: "seL3KDHMr6Y",
   },
   "/asistente-ia": {
     titulo: "¿Cómo usar el Asistente de IA?",
@@ -71,7 +62,7 @@ const VIDEOS_POR_RUTA = {
 
 // ──────────────────────────────────────────────────────────────
 // MANUAL ESCRITO POR SECCIÓN (versión resumida del video)
-// Mantenelo breve: 3 a 4 pasos cortos por sección.
+// Pasos cortos por sección.
 // ──────────────────────────────────────────────────────────────
 const MANUAL_POR_RUTA = {
   "/dashboard": [

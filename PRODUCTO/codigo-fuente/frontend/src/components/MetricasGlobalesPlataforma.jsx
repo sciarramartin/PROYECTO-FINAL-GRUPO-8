@@ -249,10 +249,10 @@ const MetricasGlobalesPlataforma = () => {
       datasets: [
         {
           type: 'line',
-          label: 'Consultas Asistente IA',
-          data: metricas.evolucionMensual.map(m => m.consultasIA),
-          borderColor: '#a855f7', // Purple
-          backgroundColor: '#a855f7',
+          label: 'Descargas de la Comunidad',
+          data: metricas.evolucionMensual.map(m => m.descargasMes),
+          borderColor: '#10b981',
+          backgroundColor: '#10b981',
           borderWidth: 3,
           tension: 0.35,
           pointRadius: 5,
@@ -270,13 +270,15 @@ const MetricasGlobalesPlataforma = () => {
           yAxisID: 'y'
         },
         {
-          type: 'bar',
-          label: 'Descargas de la Comunidad',
-          data: metricas.evolucionMensual.map(m => m.descargasMes),
-          backgroundColor: esOscuro ? 'rgba(16, 185, 129, 0.6)' : 'rgba(16, 185, 129, 0.75)',
-          borderRadius: 6,
-          barThickness: 18,
-          yAxisID: 'y1'
+          type: 'line',
+          label: 'Consultas Asistente IA',
+          data: metricas.evolucionMensual.map(m => m.consultasIA),
+          borderColor: '#a855f7', // Purple
+          backgroundColor: '#a855f7',
+          borderWidth: 3,
+          tension: 0.35,
+          pointRadius: 5,
+          yAxisID: 'y'
         }
       ]
     };
@@ -334,7 +336,8 @@ const MetricasGlobalesPlataforma = () => {
         padding: 12,
         borderRadius: 10,
         borderColor: esOscuro ? '#334155' : '#475569',
-        borderWidth: 1
+        borderWidth: 1,
+        itemSort: (a, b) => b.raw - a.raw
       }
     },
     scales: {
@@ -348,7 +351,7 @@ const MetricasGlobalesPlataforma = () => {
         ticks: { color: textColor },
         title: {
           display: true,
-          text: 'Volumen',
+          text: 'Volumen / Cantidad',
           color: textColor,
           font: { size: 11, weight: 'bold' }
         }
@@ -709,7 +712,7 @@ const MetricasGlobalesPlataforma = () => {
                     </span>
                   </div>
                   <div className="h-[360px]">
-                    <Line data={chartDataSocialIA} options={chartOptionsDualAxis} />
+                    <Line data={chartDataSocialIA} options={chartOptionsCommon} />
                   </div>
                 </div>
               )}

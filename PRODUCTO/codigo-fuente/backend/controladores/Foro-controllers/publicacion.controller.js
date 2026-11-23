@@ -222,11 +222,13 @@ router.post('/:id/guardar', verificarToken, async (req, res) => {
 });
 
 // @route   GET /api/publicaciones/etiquetas/populares
-// @desc    Obtener 5 etiquetas aleatorias de las 15 más usadas
+// @desc    Obtener etiquetas populares (globales o filtradas por materiaId)
 // @access  Privado
 router.get('/etiquetas/populares', verificarToken, async (req, res) => {
     try {
-        const selectedTags = await ForoService.obtenerEtiquetasPopulares(5);
+        const { materiaId, limit } = req.query;
+        const parsedLimit = limit ? parseInt(limit, 10) : 8;
+        const selectedTags = await ForoService.obtenerEtiquetasPopulares(parsedLimit, materiaId ? parseInt(materiaId, 10) : null);
         return res.json(selectedTags);
     } catch (error) {
         console.error("Error al obtener etiquetas populares:", error);

@@ -846,11 +846,11 @@ const DetallePublicacion = () => {
                 <span>{publicacion.esGuardada ? "Publicación guardada" : "Guardar publicación"}</span>
               </button>
               <button 
-                onClick={copiarEnlaceAlPortapapeles}
+                onClick={() => setCompartirAbierto(true)}
                 className="w-full py-2.5 px-3 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl text-xs font-bold border border-zinc-250 dark:border-zinc-800 cursor-pointer transition flex items-center justify-start gap-2.5"
               >
                 <FiShare2 className="w-4 h-4 text-zinc-400" />
-                <span>Compartir enlace</span>
+                <span>Compartir publicación</span>
               </button>
               <button 
                 onClick={abrirModalReportar}
@@ -942,13 +942,12 @@ const DetallePublicacion = () => {
         </div>
       )}
 
-      {/* Modal de Compratir */}
+      {/* Modal de Compartir */}
       <CompartirPublicacion
         isOpen={compartirAbierto} 
         onClose={() => setCompartirAbierto(false)} 
         publicacion={publicacion} 
-        //nombreMateriaForo={publicacion?.materia?.nombre}
-        nombreMateriaForo={publicacion.Materia?.nombre || publicacion.materium?.nombre || publicacion.materia?.nombre}
+        nombreMateriaForo={publicacion?.Materia?.nombre || publicacion?.materium?.nombre || publicacion?.materia?.nombre}
       />
       
     </div>

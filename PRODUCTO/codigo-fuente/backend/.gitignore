@@ -1,6 +1,8 @@
 # .gitignore
 node_modules/
 .sqlite
+.embeddings_cache*
+
 
 # Ignorar todo dentro de 2026
 repositorio/materiales/2026/*

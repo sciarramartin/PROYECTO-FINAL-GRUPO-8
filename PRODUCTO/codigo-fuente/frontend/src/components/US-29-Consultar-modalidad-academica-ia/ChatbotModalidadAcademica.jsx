@@ -181,10 +181,16 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
         contenido: m.contenido
       }));
 
+      const token = localStorage.getItem('token');
+      const requestHeaders = { 'Content-Type': 'application/json' };
+      if (token) {
+        requestHeaders['Authorization'] = `Bearer ${token}`;
+      }
+
       // Intentar streaming en tiempo real vía Server-Sent Events (SSE)
       const response = await fetch(`${API_BASE}/ia/consulta-modalidad-stream`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: requestHeaders,
         body: JSON.stringify({ prompt: promptFinal, historial })
       });
 
@@ -206,6 +212,7 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
         let buffer = '';
         let contenidoAcumulado = '';
         let fuentesAcumuladas = [];
+        let currentEvent = '';
 
         while (true) {
           const { done, value } = await reader.read();
@@ -214,8 +221,6 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
           buffer = lines.pop() || '';
-
-          let currentEvent = '';
 
           for (const line of lines) {
             const trimmed = line.trim();
@@ -247,6 +252,8 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
               } catch (parseErr) {
                 // Buffer chunk incompleto
               }
+            } else if (trimmed === '') {
+              currentEvent = '';
             }
           }
         }
@@ -257,10 +264,11 @@ Estoy alimentado exclusivamente con la **documentación oficial de la UTN FRC (C
         }
       } else {
         // Fallback REST tradicional
-        const res = await axios.post(`${API_BASE}/ia/consulta-modalidad`, {
-          prompt: promptFinal,
-          historial
-        });
+        const res = await axios.post(
+          `${API_BASE}/ia/consulta-modalidad`,
+          { prompt: promptFinal, historial },
+          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+        );
 
         if (res.data && res.data.success) {
           setMensajes((prev) => [
