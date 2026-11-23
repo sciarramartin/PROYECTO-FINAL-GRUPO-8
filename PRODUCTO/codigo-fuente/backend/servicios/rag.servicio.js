@@ -579,40 +579,44 @@ class RagService {
     const apiKey = this._getApiKey();
     if (!apiKey) return null;
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const routerModels = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
 
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-8b-instant',
-          messages: [
-            {
-              role: 'system',
-              content: 'Sos el clasificador semántico para el campus de Ingeniería en Sistemas de Información (UTN FRC). Analizá la consulta del estudiante y respondé ÚNICAMENTE un JSON con formato: {"materia": string|null, "tema": string, "categoria": "catedra"|"tramite"|"calendario"|"general"|"fuera_de_ambito"}. Normalizá cualquier apodo, sigla o variación (ej: "f1", "ami", "zafo en fisica 1", "ppr", "aga") a su nombre oficial exacto ("Física I", "Análisis Matemático I", "Paradigmas de Programación"). Si no se refiere a una materia, materia es null.'
-            },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0,
-          response_format: { type: 'json_object' }
-        }),
-        signal: controller.signal
-      });
+    for (const modelName of routerModels) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-      clearTimeout(timeoutId);
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: modelName,
+            messages: [
+              {
+                role: 'system',
+                content: 'Sos el clasificador semántico para el campus de Ingeniería en Sistemas de Información (UTN FRC). Analizá la consulta del estudiante y respondé ÚNICAMENTE un JSON con formato: {"materia": string|null, "tema": string, "categoria": "catedra"|"tramite"|"calendario"|"general"|"fuera_de_ambito"}. Normalizá cualquier apodo, sigla o variación (ej: "f1", "ami", "zafo en fisica 1", "ppr", "aga") a su nombre oficial exacto ("Física I", "Análisis Matemático I", "Paradigmas de Programación"). Si no se refiere a una materia, materia es null.'
+              },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0,
+            response_format: { type: 'json_object' }
+          }),
+          signal: controller.signal
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');
-        return parsed;
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');
+          return parsed;
+        }
+      } catch (_) {
+        // Continuar con el siguiente modelo si este falla
       }
-    } catch (_) {
-      // Si falla o excede el timeout, continúa fluidamente con el fallback local
     }
     return null;
   }
@@ -1095,10 +1099,10 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
 
     const modelosDisponibles = [
       process.env.GROQ_MODEL,
-      'llama-3.3-70b-versatile',
-      'llama-3.1-8b-instant',
       'openai/gpt-oss-120b',
-      'openai/gpt-oss-20b'
+      'openai/gpt-oss-20b',
+      'qwen/qwen3.8-27b',
+      'allam-2-7b'
     ].filter(Boolean);
 
     for (const modelName of modelosDisponibles) {
@@ -1326,10 +1330,10 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
 
     const modelosDisponibles = [
       process.env.GROQ_MODEL,
-      'llama-3.3-70b-versatile',
-      'llama-3.1-8b-instant',
       'openai/gpt-oss-120b',
-      'openai/gpt-oss-20b'
+      'openai/gpt-oss-20b',
+      'qwen/qwen3.8-27b',
+      'allam-2-7b'
     ].filter(Boolean);
 
     for (const modelName of modelosDisponibles) {
