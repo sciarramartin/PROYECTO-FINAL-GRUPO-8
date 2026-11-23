@@ -49,6 +49,7 @@ const MuroForo = () => {
 
   // Estados para filtro por etiquetas
   const [etiquetasForum, setEtiquetasForum] = useState([]);
+  const [etiquetasPopulares, setEtiquetasPopulares] = useState([]);
   const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState(null);
   const [buscadorTags, setBuscadorTags] = useState("");
   const [dropdownTagsAbierto, setDropdownTagsAbierto] = useState(false);
@@ -116,6 +117,24 @@ const MuroForo = () => {
     }
   };
 
+  const fetchEtiquetasPopulares = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.get(`${apiUrl}/publicaciones/etiquetas/populares?materiaId=${materiaId}&limit=8`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        setEtiquetasPopulares(response.data);
+      } else {
+        setEtiquetasPopulares(["#Parciales", "#Finales", "#Dudas", "#Resumenes", "#Ejercicios", "#Teoria"]);
+      }
+    } catch (error) {
+      console.error("Error al obtener etiquetas populares:", error);
+      setEtiquetasPopulares(["#Parciales", "#Finales", "#Dudas", "#Resumenes", "#Ejercicios", "#Teoria"]);
+    }
+  };
+
   useEffect(() => {
     if (subTabActiva === "mis-publicaciones") {
       fetchMisAportes();
@@ -140,6 +159,7 @@ const MuroForo = () => {
 
     fetchForo();
     fetchEtiquetas();
+    fetchEtiquetasPopulares();
 
     if (location.state && location.state.tagFiltrado) {
       setEtiquetaSeleccionada(location.state.tagFiltrado);
@@ -367,6 +387,7 @@ const MuroForo = () => {
       });
       setDatosForo(response.data);
       fetchEtiquetas();
+      fetchEtiquetasPopulares();
       if (subTabActiva === "mis-publicaciones") {
         fetchMisAportes();
       }
@@ -409,8 +430,13 @@ const MuroForo = () => {
   );
 
   const filtrarPublicacion = (pub) => {
+    const listaEtiquetas = pub.Etiquetas || pub.etiquetas || [];
     const cumpleEtiqueta = !etiquetaSeleccionada || (
-      pub.Etiquetas && pub.Etiquetas.some(tag => tag.nombre.toLowerCase() === etiquetaSeleccionada.toLowerCase())
+      listaEtiquetas.some(tag => {
+        const nomTag = (tag.nombre || '').toLowerCase().replace(/^#/, '');
+        const nomFiltro = etiquetaSeleccionada.toLowerCase().replace(/^#/, '');
+        return nomTag === nomFiltro;
+      })
     );
     const cumpleCategoria = !categoriaSeleccionada || (
       pub.categoria && pub.categoria.toLowerCase() === categoriaSeleccionada.toLowerCase()
@@ -1223,19 +1249,49 @@ const MuroForo = () => {
 
           {/* Tarjeta de Etiquetas Populares */}
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4.5 shadow-sm">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3.5">
-              Etiquetas populares
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {["Teoremas", "Integrales", "Series", "Límites", "Ejercicios", "Parciales"].map(tag => (
+            <div className="flex items-center justify-between mb-3.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                Etiquetas populares
+              </h3>
+              {etiquetaSeleccionada && (
                 <button
-                  key={tag}
-                  onClick={() => mostrarMensajeTeammate("El filtrado por tags corresponde a la US de ordenamiento y filtrado de publicaciones.")}
-                  className="px-2.5 py-1 bg-zinc-50 hover:bg-indigo-50 dark:bg-zinc-850 dark:hover:bg-indigo-950/20 text-zinc-600 dark:text-zinc-400 hover:text-indigo-650 dark:hover:text-indigo-400 rounded-lg text-[10px] font-bold border border-zinc-200 dark:border-zinc-800 cursor-pointer transition"
+                  type="button"
+                  onClick={() => setEtiquetaSeleccionada(null)}
+                  className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold cursor-pointer"
                 >
-                  {tag}
+                  Quitar filtro
                 </button>
-              ))}
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(etiquetasPopulares.length > 0 ? etiquetasPopulares : ["#Parciales", "#Finales", "#Dudas", "#Resumenes", "#Ejercicios", "#Teoria"]).map(tag => {
+                const tagNormalizado = tag.startsWith('#') ? tag : `#${tag}`;
+                const esActiva = Boolean(
+                  etiquetaSeleccionada &&
+                  etiquetaSeleccionada.toLowerCase().replace(/^#/, '') === tag.toLowerCase().replace(/^#/, '')
+                );
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => {
+                      if (esActiva) {
+                        setEtiquetaSeleccionada(null);
+                      } else {
+                        setEtiquetaSeleccionada(tagNormalizado);
+                      }
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border cursor-pointer transition ${
+                      esActiva
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                        : 'bg-zinc-50 hover:bg-indigo-50 dark:bg-zinc-850 dark:hover:bg-indigo-950/20 text-zinc-600 dark:text-zinc-400 hover:text-indigo-650 dark:hover:text-indigo-400 border-zinc-200 dark:border-zinc-800'
+                    }`}
+                  >
+                    {tagNormalizado}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
