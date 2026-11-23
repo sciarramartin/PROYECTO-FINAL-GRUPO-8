@@ -51,138 +51,86 @@ CATÁLOGO OFICIAL DE DOCUMENTOS INDEXADOS EN EL RAG (UTN FRC - SISTEMAS):
 
 const MATERIAS_DISAMBIGUATION = [
   // 1° Año
-  { nombre: 'Algoritmos y Estructuras de Datos', patterns: [/algoritmos?\s+y\s+estructuras?/i, /\baed\b/i], targetDocs: ['algoritmos_y_estructura_de_datos', 'aed'] },
-  { nombre: 'Arquitectura de Computadoras', patterns: [/arquitectura\s+de\s+computadoras?/i, /\baco\b/i], targetDocs: ['arquitectura_de_computadoras', 'aco'] },
-  { nombre: 'Lógica y Estructuras Discretas', patterns: [/l[oó]gica\s+y\s+estructuras?/i, /matem[aá]tica\s+discreta/i, /\bled\b/i], targetDocs: ['logica', 'discreta', 'led'] },
-  { nombre: 'Sistemas y Procesos de Negocios', patterns: [/sistemas?\s+y\s+procesos/i, /\bspn\b/i], targetDocs: ['sistemas_y_procesos', 'spn'] },
-  { nombre: 'Análisis Matemático I', patterns: [/an[aá]lisis\s+matem[aá]tico\s*(1|i\b|uno)/i, /\b(am1|ami)\b/i, /an[aá]lisis\s*(1|i\b|uno)/i], targetDocs: [], sinDocumento: true },
-  { nombre: 'Álgebra y Geometría Analítica', patterns: [/([aá]lgebra\s+y\s+geometr[ií]a|[aá]lgebra)/i, /\b(aga|alg)\b/i], targetDocs: [], sinDocumento: true },
-  { nombre: 'Física I', patterns: [/f[ií]sica\s*(1|i\b|uno)/i, /\b(f1|fi)\b/i], targetDocs: [], sinDocumento: true },
-  { nombre: 'Inglés I', patterns: [/ingl[eé]s\s*(1|i\b|uno)/i], targetDocs: [], sinDocumento: true },
-  { nombre: 'Ingeniería y Sociedad', patterns: [/ingenier[ií]a\s+y\s+sociedad/i, /\biys\b/i], targetDocs: [], sinDocumento: true },
-  { nombre: 'Química General', patterns: [/qu[ií]mica/i, /\bqg\b/i], targetDocs: [], sinDocumento: true },
+  { nombre: 'Algoritmos y Estructuras de Datos', targetDocs: ['algoritmos_y_estructura_de_datos', 'aed'] },
+  { nombre: 'Arquitectura de Computadoras', targetDocs: ['arquitectura_de_computadoras', 'aco'] },
+  { nombre: 'Lógica y Estructuras Discretas', targetDocs: ['logica', 'discreta', 'led'] },
+  { nombre: 'Sistemas y Procesos de Negocios', targetDocs: ['sistemas_y_procesos', 'spn'] },
+  { nombre: 'Análisis Matemático I', targetDocs: [], sinDocumento: true },
+  { nombre: 'Álgebra y Geometría Analítica', targetDocs: [], sinDocumento: true },
+  { nombre: 'Física I', targetDocs: [], sinDocumento: true },
+  { nombre: 'Inglés I', targetDocs: [], sinDocumento: true },
+  { nombre: 'Ingeniería y Sociedad', targetDocs: [], sinDocumento: true },
+  { nombre: 'Química General', targetDocs: [], sinDocumento: true },
 
   // 2° Año
-  { nombre: 'Análisis de Sistemas de Información', patterns: [/an[aá]lisis\s+de\s+sistemas/i, /\basi\b/i], targetDocs: ['analisis_de_sistemas', 'asi'] },
-  { nombre: 'Paradigmas de Programación', patterns: [/paradigmas?/i, /\bppr\b/i, /\bpdp\b/i], targetDocs: ['paradigmas_de_programacion', 'paradigmas', 'ppr'] },
-  { nombre: 'Probabilidad y Estadística', patterns: [/probabilidad(es)?\s+y\s+estad[ií]stica/i, /estad[ií]stica/i, /\bpye\b/i], targetDocs: ['probabilidades', 'estadistica', 'pye'] },
-  { nombre: 'Sintaxis y Semántica de los Lenguajes', patterns: [/sintaxis/i, /\bssl\b/i], targetDocs: ['sintaxis', 'ssl'] },
-  { nombre: 'Sistemas Operativos', patterns: [/sistemas?\s+operativos?/i, /\bsop?\b/i], targetDocs: ['sistemas_operativos', 'sop'] },
-  { nombre: 'Análisis Matemático II', patterns: [/an[aá]lisis\s+matem[aá]tico\s*(2|ii\b|dos)/i, /\b(am2|amii)\b/i, /an[aá]lisis\s*(2|ii\b|dos)/i], targetDocs: [], sinDocumento: true },
-  { nombre: 'Física II', patterns: [/f[ií]sica\s*(2|ii\b|dos)/i, /\b(f2|fii)\b/i], targetDocs: [], sinDocumento: true },
+  { nombre: 'Análisis de Sistemas de Información', targetDocs: ['analisis_de_sistemas', 'asi'] },
+  { nombre: 'Paradigmas de Programación', targetDocs: ['paradigmas_de_programacion', 'paradigmas', 'ppr'] },
+  { nombre: 'Probabilidad y Estadística', targetDocs: ['probabilidades', 'estadistica', 'pye'] },
+  { nombre: 'Sintaxis y Semántica de los Lenguajes', targetDocs: ['sintaxis', 'ssl'] },
+  { nombre: 'Sistemas Operativos', targetDocs: ['sistemas_operativos', 'sop'] },
+  { nombre: 'Análisis Matemático II', targetDocs: [], sinDocumento: true },
+  { nombre: 'Física II', targetDocs: [], sinDocumento: true },
 
   // 3° Año
-  { nombre: 'Bases de Datos', patterns: [/bases?\s+de\s+datos/i, /\bbda?\b/i], targetDocs: ['base_de_datos', 'bases_de_datos', 'bd-'] },
-  { nombre: 'Redes de Datos', patterns: [/redes?\s+de\s+datos/i, /\bredes?\b/i], targetDocs: ['redes_de_datos', 'red-'] },
-  { nombre: 'Comunicación de Datos', patterns: [/comunicaci[oó]n\s+de\s+datos/i, /comunicaci[oó]n\s+datos/i], targetDocs: ['comunicacion_de_datos', 'comunicaci', 'com_'] },
-  { nombre: 'Diseño de Sistemas de Información', patterns: [/dise[nñ]o\s+de\s+sistemas/i, /\bdsi\b/i], targetDocs: ['diseno_de_sistemas', 'dise', 'dsi'] },
-  { nombre: 'Desarrollo de Software', patterns: [/desarrollo\s+de\s+software/i, /\bdds\b/i], targetDocs: ['desarrollo_de_software', 'ds_'] },
-  { nombre: 'Backend de Aplicaciones', patterns: [/backend/i], targetDocs: ['backend', 'bda'] },
-  { nombre: 'Análisis Numérico', patterns: [/an[aá]lisis\s+num[eé]rico/i, /\bnum[eé]rico\b/i], targetDocs: ['analisis_numerico', 'an_'] },
-  { nombre: 'Seminario Integrador', patterns: [/seminario(\s+integrador)?/i, /\bsem\b/i], targetDocs: ['seminario', 'sem_'] },
-  { nombre: 'Inglés II', patterns: [/ingl[eé]s\s*(2|ii\b|dos)/i], targetDocs: [], sinDocumento: true },
+  { nombre: 'Bases de Datos', targetDocs: ['base_de_datos', 'bases_de_datos', 'bd-'] },
+  { nombre: 'Redes de Datos', targetDocs: ['redes_de_datos', 'red-'] },
+  { nombre: 'Comunicación de Datos', targetDocs: ['comunicacion_de_datos', 'comunicaci', 'com_'] },
+  { nombre: 'Diseño de Sistemas de Información', targetDocs: ['diseno_de_sistemas', 'dise', 'dsi'] },
+  { nombre: 'Desarrollo de Software', targetDocs: ['desarrollo_de_software', 'ds_'] },
+  { nombre: 'Backend de Aplicaciones', targetDocs: ['backend', 'bda'] },
+  { nombre: 'Análisis Numérico', targetDocs: ['analisis_numerico', 'an_'] },
+  { nombre: 'Seminario Integrador', targetDocs: ['seminario', 'sem_'] },
+  { nombre: 'Inglés II', targetDocs: [], sinDocumento: true },
 
   // 4° Año
-  { nombre: 'Investigación Operativa', patterns: [/investigaci[oó]n\s+operativa/i, /\biop?\b/i], targetDocs: ['investigacion_operativa', 'iop'] },
-  { nombre: 'Administración de Sistemas de Información', patterns: [/administraci[oó]n\s+de\s+(si|sistemas)/i, /\badsi\b/i, /\badr\b/i], targetDocs: ['administracion_de_si', 'adsi'] },
-  { nombre: 'Comunicación Multimedial', patterns: [/comunicaci[oó]n\s+multimedial/i], targetDocs: ['comunicacion_multimedial', 'consultoria_comunicacion'] },
-  { nombre: 'Desarrollo de Aplicaciones con Objetos', patterns: [/aplicaciones\s+con\s+objetos/i, /\bdao\b/i], targetDocs: ['aplicaciones_con_objetos', 'dao'] },
-  { nombre: 'Ingeniería y Calidad de Software', patterns: [/calidad\s+de\s+software/i, /\bics\b/i], targetDocs: ['calidad_de_software', 'ics'] },
-  { nombre: 'Gestión de la Mejora de los Procesos', patterns: [/gesti[oó]n\s+de\s+(la\s+mejora\s+de\s+los\s+)?procesos/i, /\b(gpn|gmp)\b/i], targetDocs: ['mejora_de_procesos', 'mejora_de_los_procesos', 'gmp'] },
-  { nombre: 'Seguridad en el Desarrollo de Software', patterns: [/seguridad\s+en\s+el\s+desarrollo/i, /\bsds\b/i], targetDocs: ['seguridad_en_el_desarrollo', 'sds'] },
-  { nombre: 'Green Software', patterns: [/green\s+software/i, /\bgrs\b/i], targetDocs: ['green_software', 'grs'] },
-  { nombre: 'DevOps', patterns: [/devops/i], targetDocs: ['devops'] },
-  { nombre: 'Legislación', patterns: [/legislaci[oó]n/i, /\bleg\b/i], targetDocs: [], sinDocumento: true },
-  { nombre: 'Gestión Industrial de la Producción', patterns: [/gesti[oó]n\s+industrial/i, /\bgi\b/i, /\bgip\b/i], targetDocs: ['gestion_industrial', 'gip'] },
-  { nombre: 'Experiencia e Interfaces UX/UI', patterns: [/experiencia\s+e\s+interfaces/i, /\bux\b/i, /\bui\b/i], targetDocs: ['experiencia_e_interfaces', 'ux'] },
-  { nombre: 'Simulación', patterns: [/simulaci[oó]n/i, /automatizaci[oó]n/i, /\btpa\b/i], targetDocs: ['simulacion', 'automatizacion', 'tpa'] },
+  { nombre: 'Investigación Operativa', targetDocs: ['investigacion_operativa', 'iop'] },
+  { nombre: 'Administración de Sistemas de Información', targetDocs: ['administracion_de_si', 'adsi'] },
+  { nombre: 'Comunicación Multimedial', targetDocs: ['comunicacion_multimedial', 'consultoria_comunicacion'] },
+  { nombre: 'Desarrollo de Aplicaciones con Objetos', targetDocs: ['aplicaciones_con_objetos', 'dao'] },
+  { nombre: 'Ingeniería y Calidad de Software', targetDocs: ['calidad_de_software', 'ics'] },
+  { nombre: 'Gestión de la Mejora de los Procesos', targetDocs: ['mejora_de_procesos', 'mejora_de_los_procesos', 'gmp'] },
+  { nombre: 'Seguridad en el Desarrollo de Software', targetDocs: ['seguridad_en_el_desarrollo', 'sds'] },
+  { nombre: 'Green Software', targetDocs: ['green_software', 'grs'] },
+  { nombre: 'DevOps', targetDocs: ['devops'] },
+  { nombre: 'Legislación', targetDocs: [], sinDocumento: true },
+  { nombre: 'Gestión Industrial de la Producción', targetDocs: ['gestion_industrial', 'gip'] },
+  { nombre: 'Experiencia e Interfaces UX/UI', targetDocs: ['experiencia_e_interfaces', 'ux'] },
+  { nombre: 'Simulación', targetDocs: ['simulacion', 'automatizacion', 'tpa'] },
 
   // 5° Año
-  { nombre: 'Inteligencia Artificial', patterns: [/inteligencia\s+artificial/i, /\bia\b/i, /\biar\b/i], targetDocs: ['inteligencia_artificial', 'iar'] },
-  { nombre: 'Ciencia de Datos', patterns: [/ciencia\s+de\s+datos/i, /\bcd\b/i], targetDocs: ['ciencia_de_datos', 'cd_'] },
-  { nombre: 'Proyecto Final', patterns: [/proyecto\s+final/i, /\bpf\b/i, /\bproy\b/i], targetDocs: ['proyecto_final', 'proy'] },
-  { nombre: 'Seguridad en los Sistemas de Información', patterns: [/seguridad\s+en\s+los\s+sistemas/i, /\bssi\b/i], targetDocs: ['seguridad_en_los_sistemas', 'ssi'] },
-  { nombre: 'Testing de Software', patterns: [/testing/i, /\btst\b/i, /\btso\b/i], targetDocs: ['testing', 'tso'] },
-  { nombre: 'Blockchain', patterns: [/blockchain/i, /\bdtb\b/i], targetDocs: ['blockchain', 'dtb'] },
-  { nombre: 'Economía', patterns: [/econom[ií]a/i, /\beco\b/i], targetDocs: [], sinDocumento: true },
-  { nombre: 'Habilidades Blandas', patterns: [/habilidades\s+blandas/i, /\bhb\b/i], targetDocs: ['habilidades_blandas', 'hb_'] },
-  { nombre: 'Emprendimientos Tecnológicos', patterns: [/emprendimientos?\s+tecnol[oó]gicos?/i, /\bet\b/i], targetDocs: ['emprendimientos', 'et_'] },
-  { nombre: 'Consultoría en Negocios Digitales', patterns: [/negocios\s+digitales/i, /\bcnd\b/i], targetDocs: ['consultoria_en_negocios', 'cnd'] },
-  { nombre: 'Creatividad y Desarrollos en Entornos Virtuales', patterns: [/entornos\s+virtuales/i, /videojuegos/i, /\bcdev\b/i], targetDocs: ['entornos_virtuales', 'cdev'] },
-  { nombre: 'Decisiones en Escenarios Complejos', patterns: [/escenarios\s+complejos/i, /decisiones/i, /\bdec\b/i], targetDocs: ['escenarios_complejos', 'dec'] },
-  { nombre: 'Gerenciamiento Estratégico', patterns: [/gerenciamiento\s+estrat[eé]gico/i, /\bge\b/i], targetDocs: ['gerenciamiento_estrategico', 'ge_'] },
-  { nombre: 'Gestión Gerencial', patterns: [/gesti[oó]n\s+gerencial/i, /\bgg\b/i], targetDocs: ['gestion_gerencial', 'gestion_de_gestion_gerencial', 'gg_'] },
-  { nombre: 'Ingeniería de Software de Fuentes Abiertas/Libres', patterns: [/fuentes\s+abiertas/i, /software\s+libre/i, /\bisfa\b/i], targetDocs: ['fuentes_abiertas', 'isfa'] },
-  { nombre: 'Integración de Aplicaciones en Entorno Web', patterns: [/entorno\s+web/i, /\biaew\b/i], targetDocs: ['entorno_web', 'iaew'] },
-  { nombre: 'Sistemas de Gestión', patterns: [/sistemas?\s+de\s+gesti[oó]n/i, /\bsg\b/i], targetDocs: ['sistema_de_gestion', 'sistemas_de_gestion', 'sg_'] }
+  { nombre: 'Inteligencia Artificial', targetDocs: ['inteligencia_artificial', 'iar'] },
+  { nombre: 'Ciencia de Datos', targetDocs: ['ciencia_de_datos', 'cd_'] },
+  { nombre: 'Proyecto Final', targetDocs: ['proyecto_final', 'proy'] },
+  { nombre: 'Seguridad en los Sistemas de Información', targetDocs: ['seguridad_en_los_sistemas', 'ssi'] },
+  { nombre: 'Testing de Software', targetDocs: ['testing', 'tso'] },
+  { nombre: 'Blockchain', targetDocs: ['blockchain', 'dtb'] },
+  { nombre: 'Economía', targetDocs: [], sinDocumento: true },
+  { nombre: 'Habilidades Blandas', targetDocs: ['habilidades_blandas', 'hb_'] },
+  { nombre: 'Emprendimientos Tecnológicos', targetDocs: ['emprendimientos', 'et_'] },
+  { nombre: 'Consultoría en Negocios Digitales', targetDocs: ['consultoria_en_negocios', 'cnd'] },
+  { nombre: 'Creatividad y Desarrollos en Entornos Virtuales', targetDocs: ['entornos_virtuales', 'cdev'] },
+  { nombre: 'Decisiones en Escenarios Complejos', targetDocs: ['escenarios_complejos', 'dec'] },
+  { nombre: 'Gerenciamiento Estratégico', targetDocs: ['gerenciamiento_estrategico', 'ge_'] },
+  { nombre: 'Gestión Gerencial', targetDocs: ['gestion_gerencial', 'gestion_de_gestion_gerencial', 'gg_'] },
+  { nombre: 'Ingeniería de Software de Fuentes Abiertas/Libres', targetDocs: ['fuentes_abiertas', 'isfa'] },
+  { nombre: 'Integración de Aplicaciones en Entorno Web', targetDocs: ['entorno_web', 'iaew'] },
+  { nombre: 'Sistemas de Gestión', targetDocs: ['sistema_de_gestion', 'sistemas_de_gestion', 'sg_'] }
 ];
 
 const TOPICOS_INSTITUCIONALES_DISAMBIGUATION = [
-  {
-    tema: 'Boleto Educativo Gratuito (BEG)',
-    patterns: [/\b(beg|boleto|cidi|ciudadano\s+digital|transporte)\b/i],
-    targetDocs: ['boleto_educativo', 'beg']
-  },
-  {
-    tema: 'Becas Universitarias y Estratégicas',
-    patterns: [/\b(becas?|manuel\s+belgrano|progresar|binid|evc-cin|smvm|l[ií]mites?\s+de\s+ingresos?|ingresos?\s+familiares|rendimiento\s+acad[eé]mico|ayuda\s+econ[oó]mica|beca\s+de\s+servicio)\b/i],
-    targetDocs: ['becas_universitarias', 'manuel_belgrano']
-  },
-  {
-    tema: 'Pasantías Laborales Educativas',
-    patterns: [/\b(pasant[ií]as?|pasant[ií]a|ley\s*26\.?427|seu|20\s+horas|pr[oó]rroga|contrato\s+de\s+pasant)\b/i],
-    targetDocs: ['pasantias_laborales', 'pasantias', 'ley_26427']
-  },
-  {
-    tema: 'Comedor, Deportes y Salud SAE',
-    patterns: [/\b(comedor|men[uú]\s+subsidiado|viandas?|deport(es?|iv[ao]s?)|f[uú]tbol|v[oó]ley|b[aá]squet|gimnasio|seguro\s+escolar|ficha\s+m[eé]dica)\b/i],
-    targetDocs: ['comedor_universitario', 'deportes_y_salud']
-  },
-  {
-    tema: 'Trámites de Bedelía, Certificados y Readmisión',
-    patterns: [/\b(certificado|c[oó]digo\s+qr|autogesti[oó]n|tr[aá]mite\s+de\s+pase|pases?(\s+entre)?|readmisi[oó]n|p[eé]rdida\s+de\s+regularidad|anal[ií]tico\s+parcial|inscribirme(\s+para)?\s+rendir|plazo\s+de\s+inscripci[oó]n|48\s+horas\s+h[aá]biles|horarios?\s+de\s+cursado)\b/i],
-    targetDocs: ['tramites_autogestion_pases', 'bedelia']
-  },
-  {
-    tema: 'Cambio de Comisión y Horario por Trabajo',
-    patterns: [/\b(cambio\s+de\s+(curso|comisi[oó]n|horario|turno)|f0035|alu02)\b/i],
-    targetDocs: ['cambio_de_curso', 'f0035']
-  },
-  {
-    tema: 'Práctica Profesional Supervisada (PPS)',
-    patterns: [/\b(pps|pr[aá]ctica\s+profesional\s+supervisada|alu01|f0007|f0009|f0010|f0013|f0014)\b/i],
-    targetDocs: ['alu01-02', 'practica_profesional_supervisada', 'pps']
-  },
-  {
-    tema: 'Calendario Académico, Turnos de Exámenes y Recesos',
-    patterns: [/calendario/i, /turnos?.*ex[aá]m/i, /fechas?.*ex[aá]m/i, /receso/i, /inician?\s+las\s+clases/i, /inicio\s+de\s+clases/i, /segundo\s+cuatrimestre/i, /circular\s*04/i, /asuetos?/i, /feriados?/i, /turnos?\s+especiales?/i],
-    targetDocs: ['calendario_academico', 'calendario-2026', 'feriados', 'circular-04']
-  },
-  {
-    tema: 'Diseño Curricular y Materias por Año (Plan 2023)',
-    patterns: [/ordenanza\s*1877/i, /dise[nñ]o\s+curricular\s+plan\s*2023/i, /materias?.*(1|1[oº°]|primer)\s*a[nñ]o/i, /materias?.*(2|2[oº°]|segundo)\s*a[nñ]o/i, /materias?.*(3|3[oº°]|tercer)\s*a[nñ]o/i, /materias?.*(4|4[oº°]|cuarto)\s*a[nñ]o/i, /materias?.*(5|5[oº°]|quinto)\s*a[nñ]o/i, /materias?\s+electivas/i],
-    targetDocs: ['ordenanza_1877', 'diseno_curricular_plan_2023']
-  },
-  {
-    tema: 'Régimen de Correlatividades Plan 2023',
-    patterns: [/ordenanza\s*1878/i, /r[eé]gimen\s+de\s+correlatividades/i],
-    targetDocs: ['ordenanza_1878', 'regimen_de_correlatividades']
-  },
-  {
-    tema: 'Analista Desarrollador Universitario (Título Intermedio)',
-    patterns: [/analista\s+desarrollador/i, /t[ií]tulo\s+intermedio/i, /ordenanza\s*1910/i, /ordenanza\s*1911/i],
-    targetDocs: ['ordenanza_1910', 'ordenanza_1911', 'analista_desarrollador']
-  },
-  {
-    tema: 'Laboratorios Labsis y Normas de Seguridad',
-    patterns: [/labsis/i, /manual\s+de\s+seguridad/i, /seguridad\s+com[uú]n\s+laboratorios/i, /f0002/i, /f0003/i],
-    targetDocs: ['labsis', 'manual_de_seguridad']
-  },
-  {
-    tema: 'Modelo de Poder para Retiro de Títulos',
-    patterns: [/modelo\s+de\s+poder/i, /retirar\s+(mi\s+)?t[ií]tulo/i, /colaci[oó]n/i],
-    targetDocs: ['poder_para_retirar_titulos', 'modelo_de_poder']
-  }
+  { tema: 'Boleto Educativo Gratuito (BEG)', targetDocs: ['boleto_educativo', 'beg'] },
+  { tema: 'Becas Universitarias y Estratégicas', targetDocs: ['becas_universitarias', 'manuel_belgrano'] },
+  { tema: 'Pasantías Laborales Educativas', targetDocs: ['pasantias_laborales', 'pasantias', 'ley_26427'] },
+  { tema: 'Comedor, Deportes y Salud SAE', targetDocs: ['comedor_universitario', 'deportes_y_salud'] },
+  { tema: 'Trámites de Bedelía, Certificados y Readmisión', targetDocs: ['tramites_autogestion_pases', 'bedelia'] },
+  { tema: 'Cambio de Comisión y Horario por Trabajo', targetDocs: ['cambio_de_curso', 'f0035'] },
+  { tema: 'Práctica Profesional Supervisada (PPS)', targetDocs: ['alu01-02', 'practica_profesional_supervisada', 'pps'] },
+  { tema: 'Calendario Académico, Turnos de Exámenes y Recesos', targetDocs: ['calendario_academico', 'calendario-2026', 'feriados', 'circular-04'] },
+  { tema: 'Diseño Curricular y Materias por Año (Plan 2023)', targetDocs: ['ordenanza_1877', 'diseno_curricular_plan_2023'] },
+  { tema: 'Régimen de Correlatividades Plan 2023', targetDocs: ['ordenanza_1878', 'regimen_de_correlatividades'] },
+  { tema: 'Analista Desarrollador Universitario (Título Intermedio)', targetDocs: ['ordenanza_1910', 'ordenanza_1911', 'analista_desarrollador'] },
+  { tema: 'Laboratorios Labsis y Normas de Seguridad', targetDocs: ['labsis', 'manual_de_seguridad'] },
+  { tema: 'Modelo de Poder para Retiro de Títulos', targetDocs: ['poder_para_retirar_titulos', 'modelo_de_poder'] }
 ];
 
 
@@ -684,28 +632,30 @@ class RagService {
     }
 
     // 1. Detectar si la consulta apunta a un tema institucional o a una materia
-    const temaInstitucional = TOPICOS_INSTITUCIONALES_DISAMBIGUATION.find(t => t.patterns.some(p => p.test(query)));
-    
+    let temaInstitucional = null;
+    if (enrutamiento?.categoria === 'tramite' || enrutamiento?.categoria === 'calendario') {
+      const temaNorm = this.extraerTokens(enrutamiento.tema || '').join(' ');
+      temaInstitucional = TOPICOS_INSTITUCIONALES_DISAMBIGUATION.find(t => {
+        const tTokens = this.extraerTokens(t.tema).join(' ');
+        return tTokens.includes(temaNorm) || temaNorm.includes(tTokens);
+      });
+    }
+
     // Priorizar materia clasificada semánticamente por la IA
     let materiaDetectada = null;
     if (enrutamiento?.materia) {
       const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
       materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
         const mTokens = this.extraerTokens(m.nombre).join(' ');
-        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens) || m.patterns.some(p => p.test(enrutamiento.materia));
+        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens);
       });
       if (!materiaDetectada) {
         materiaDetectada = {
           nombre: enrutamiento.materia,
-          patterns: [new RegExp(enrutamiento.materia.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')],
           targetDocs: [],
           sinDocumento: true
         };
       }
-    }
-    
-    if (!materiaDetectada) {
-      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(query)));
     }
 
     // 2. Vectorizar la consulta
@@ -846,8 +796,7 @@ class RagService {
           // Solo vincular con Ordenanzas institucionales si la consulta trata sobre correlatividades, diseño curricular, carga horaria o año de cursado
           const esConsultaPertinenteAOrdenanza = esConsultaCorrelativas || /a[nñ]o|nivel|dise[nñ]o|plan|carga\s*horaria|horas/i.test(query) || (enrutamiento?.categoria === 'correlatividades');
           if (esOrdenanza && esConsultaPertinenteAOrdenanza) {
-            const mencionaMateria = (materiaDetectada.patterns && materiaDetectada.patterns.some(p => p.test(chunkTextLower))) ||
-              chunkTextLower.includes(materiaDetectada.nombre.toLowerCase());
+            const mencionaMateria = chunkTextLower.includes(materiaDetectada.nombre.toLowerCase());
             if (mencionaMateria) {
               similitudCoseno = (similitudCoseno * 2.5) + 1.5;
             } else {
@@ -898,7 +847,7 @@ class RagService {
         (materiaDetectada.targetDocs && materiaDetectada.targetDocs.length > 0 &&
           materiaDetectada.targetDocs.some(td => (c.documento || '').toLowerCase().includes(td.toLowerCase()))) ||
         (((c.documento || '').toLowerCase().includes('1878') || (c.documento || '').toLowerCase().includes('1877')) &&
-          materiaDetectada.patterns.some(p => p.test((c.texto || '').toLowerCase())))
+          (c.texto || '').toLowerCase().includes(materiaDetectada.nombre.toLowerCase()))
       ));
       if (deLaMateria.length > 0) {
         return deLaMateria.slice(0, Math.min(topK, 4));
@@ -1017,22 +966,28 @@ class RagService {
 
     // 1. Enrutamiento semántico inteligente con IA (extrae materia, tema y categoría sin depender de regex)
     const enrutamiento = await this.enrutarConsultaConIA(prompt);
+
     let materiaDetectada = null;
     if (enrutamiento?.materia) {
       const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
       materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
         const mTokens = this.extraerTokens(m.nombre).join(' ');
-        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens) || m.patterns.some(p => p.test(enrutamiento.materia));
-      }) || { nombre: enrutamiento.materia, targetDocs: [], sinDocumento: true, patterns: [] };
-    }
-    if (!materiaDetectada) {
-      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(queryParaBusqueda) || p.test(prompt)));
+        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens);
+      }) || { nombre: enrutamiento.materia, targetDocs: [], sinDocumento: true };
     }
 
     // 2. Extraer embedding denso neuronal de la consulta
     const queryEmbedding = await this.obtenerEmbeddingConsulta(queryParaBusqueda);
 
     const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6, enrutamiento, queryEmbedding);
+
+    // Si no hay API key o la IA no pudo enrutar la consulta, retornar mensaje de error explícito (sin intentar adivinar por regex ni respuestas locales)
+    if (!apiKey || (!enrutamiento && !esMeta)) {
+      const errorMsg = 'El servicio de asistencia académica con IA no se encuentra disponible momentáneamente. Por favor, intentá nuevamente en unos instantes.';
+      if (typeof onContext === 'function') onContext({ fuentes: [] });
+      if (typeof onChunk === 'function') onChunk(errorMsg);
+      return { respuesta: errorMsg, fuentes: [], error: true };
+    }
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       if (materiaDetectada) {
@@ -1132,10 +1087,9 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
 
     if (!apiKey) {
       return {
-        respuesta: fragmentosRelevantes.length > 0 
-          ? `**Respuesta Asistida (Modo Local):**\n\n${fragmentosRelevantes[0].texto}\n\n*Fuente: ${fragmentosRelevantes[0].documento}*`
-          : '¡Hola! Soy tu asistente de Campus UTN. Podés consultarme sobre modalidades de materias y reglamentos de la carrera.',
-        fuentes: fuentesFinales
+        respuesta: 'El servicio de asistencia académica con IA no se encuentra disponible momentáneamente. Por favor, intentá nuevamente en unos instantes.',
+        fuentes: [],
+        error: true
       };
     }
 
@@ -1184,10 +1138,9 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
     }
 
     return {
-      respuesta: fragmentosRelevantes.length > 0 
-        ? `**Respuesta Asistida:**\n\n${fragmentosRelevantes.map(f => `* ${f.texto}`).join('\n\n')}\n\n*Fuente: ${fragmentosRelevantes[0]?.documento || 'Documentación oficial'}*`
-        : this.rejectionMessage,
-      fuentes: fuentesFinales
+      respuesta: 'El servicio de asistencia académica con IA no se encuentra disponible momentáneamente. Por favor, intentá nuevamente en unos instantes.',
+      fuentes: [],
+      error: true
     };
   }
 
@@ -1246,22 +1199,28 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
 
     // 1. Enrutamiento semántico inteligente con IA (extrae materia, tema y categoría sin depender de regex)
     const enrutamiento = await this.enrutarConsultaConIA(prompt);
+
     let materiaDetectada = null;
     if (enrutamiento?.materia) {
       const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
       materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
         const mTokens = this.extraerTokens(m.nombre).join(' ');
-        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens) || m.patterns.some(p => p.test(enrutamiento.materia));
-      }) || { nombre: enrutamiento.materia, targetDocs: [], sinDocumento: true, patterns: [] };
-    }
-    if (!materiaDetectada) {
-      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(queryParaBusqueda) || p.test(prompt)));
+        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens);
+      }) || { nombre: enrutamiento.materia, targetDocs: [], sinDocumento: true };
     }
 
     // 2. Extraer embedding denso neuronal de la consulta
     const queryEmbedding = await this.obtenerEmbeddingConsulta(queryParaBusqueda);
 
     const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6, enrutamiento, queryEmbedding);
+
+    // Si no hay API key o la IA no pudo enrutar la consulta, retornar mensaje de error explícito (sin intentar adivinar por regex ni respuestas locales)
+    if (!apiKey || (!enrutamiento && !esMeta)) {
+      const errorMsg = 'El servicio de asistencia académica con IA no se encuentra disponible momentáneamente. Por favor, intentá nuevamente en unos instantes.';
+      if (typeof onContext === 'function') onContext({ fuentes: [] });
+      if (typeof onChunk === 'function') onChunk(errorMsg);
+      return { respuesta: errorMsg, fuentes: [], error: true };
+    }
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       let respRechazo = this.rejectionMessage;
@@ -1359,11 +1318,10 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
     mensajes.push({ role: 'user', content: prompt });
 
     if (!apiKey) {
-      const fallbackResp = fragmentosRelevantes.length > 0 
-        ? `**Respuesta Asistida (Modo Local):**\n\n${fragmentosRelevantes[0].texto}\n\n*Fuente: ${fragmentosRelevantes[0].documento}*`
-        : '¡Hola! Soy tu asistente de Campus UTN. Podés consultarme sobre modalidades de materias y reglamentos de la carrera.';
-      if (onChunk) onChunk(fallbackResp);
-      return { respuesta: fallbackResp, fuentes: fuentesFormateadas };
+      const errorMsg = 'El servicio de asistencia académica con IA no se encuentra disponible momentáneamente. Por favor, intentá nuevamente en unos instantes.';
+      if (onContext) onContext({ fuentes: [] });
+      if (onChunk) onChunk(errorMsg);
+      return { respuesta: errorMsg, fuentes: [], error: true };
     }
 
     const modelosDisponibles = [
@@ -1439,11 +1397,9 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
       }
     }
 
-    const fallbackFinal = fragmentosRelevantes.length > 0 
-      ? `**Respuesta Asistida:**\n\n${fragmentosRelevantes.map(f => `* ${f.texto}`).join('\n\n')}\n\n*Fuente: ${fragmentosRelevantes[0]?.documento || 'Documentación oficial'}*`
-      : this.rejectionMessage;
-    if (onChunk) onChunk(fallbackFinal);
-    return { respuesta: fallbackFinal, fuentes: fuentesFormateadas };
+    const errorFallback = 'El servicio de asistencia académica con IA no se encuentra disponible momentáneamente. Por favor, intentá nuevamente en unos instantes.';
+    if (onChunk) onChunk(errorFallback);
+    return { respuesta: errorFallback, fuentes: [], error: true };
   }
 
   /**
