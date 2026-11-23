@@ -196,6 +196,11 @@ class RagService {
     this.cache = new Map(); // Caché en memoria normalizado con TTL
     this.CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas de vigencia para ahorro de tokens
     this.estaInicializado = false;
+    this.extractorDenso = null;
+    this.denseDims = 384;
+    this.denseModelName = 'Xenova/all-MiniLM-L6-v2';
+    this.denseCacheBinPath = path.join(this.docsDir, '.embeddings_cache.bin');
+    this.denseCacheMetaPath = path.join(this.docsDir, '.embeddings_cache_meta.json');
     this.rejectionMessage = 'Esta consulta no se encuentra contemplada dentro de los reglamentos, normativas y planificaciones académicas oficiales de la carrera. Por favor, realizá una consulta sobre condiciones de cursado, regularidad, aprobación directa, correlatividades, fechas de examen o trámites de Ingeniería en Sistemas de Información.';
   }
 
@@ -334,8 +339,11 @@ class RagService {
       // Precalcular espacio vectorial TF-IDF y normas de similitud coseno
       this.construirIndiceVectorial();
 
+      // Cargar o construir índice denso de embeddings neuronales
+      await this.inicializarIndiceDenso();
+
       this.estaInicializado = true;
-      console.log(`✅ [RAG Service] Indexación completada: ${this.chunks.length} bloques semánticos vectorizados con similitud coseno (${this.duplicatesRemoved} duplicados eliminados).`);
+      console.log(`✅ [RAG Service] Indexación completada: ${this.chunks.length} bloques semánticos vectorizados (${this.duplicatesRemoved} duplicados eliminados).`);
     } catch (error) {
       console.error('❌ [RAG Service] Error al inicializar corpus:', error.message);
     }
@@ -517,6 +525,104 @@ class RagService {
   }
 
   /**
+   * Obtiene o carga de forma perezosa el extractor de embeddings densos (ONNX Transformers)
+   */
+  async obtenerExtractorDenso() {
+    if (this.extractorDenso) return this.extractorDenso;
+    try {
+      const { pipeline } = await import('@xenova/transformers');
+      this.extractorDenso = await pipeline('feature-extraction', this.denseModelName);
+      return this.extractorDenso;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /**
+   * Genera el embedding denso (Float32Array de 384 dimensiones) para un texto
+   */
+  async obtenerEmbeddingConsulta(texto) {
+    if (!texto) return null;
+    try {
+      const extractor = await this.obtenerExtractorDenso();
+      if (!extractor) return null;
+      const res = await extractor(texto, { pooling: 'mean', normalize: true });
+      return res.data;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /**
+   * Carga desde caché persistida o genera en lote los embeddings neuronales densos de todos los chunks
+   */
+  async inicializarIndiceDenso() {
+    if (this.chunks.length === 0) return;
+    try {
+      const extractor = await this.obtenerExtractorDenso();
+      if (!extractor) return;
+
+      // 1. Intentar cargar desde caché binaria local
+      if (fs.existsSync(this.denseCacheBinPath) && fs.existsSync(this.denseCacheMetaPath)) {
+        try {
+          const meta = JSON.parse(fs.readFileSync(this.denseCacheMetaPath, 'utf8'));
+          if (meta.model === this.denseModelName && meta.chunks && meta.chunks.length === this.chunks.length) {
+            if (meta.chunks[0]?.id === this.chunks[0]?.id && meta.chunks[meta.chunks.length - 1]?.id === this.chunks[this.chunks.length - 1]?.id) {
+              const buffer = fs.readFileSync(this.denseCacheBinPath);
+              const floatArray = new Float32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / 4);
+              if (floatArray.length === this.chunks.length * this.denseDims) {
+                for (let i = 0; i < this.chunks.length; i++) {
+                  this.chunks[i].denseVector = floatArray.subarray(i * this.denseDims, (i + 1) * this.denseDims);
+                }
+                console.log(`⚡ [RAG Service] ${this.chunks.length} embeddings neuronales densos cargados desde caché binaria.`);
+                return;
+              }
+            }
+          }
+        } catch (readErr) {
+          console.warn('⚠️ [RAG Service] Error al leer caché binaria de embeddings:', readErr.message);
+        }
+      }
+
+      // 2. Si no hay caché o los chunks cambiaron, calcular embeddings en lotes
+      console.log(`🧠 [RAG Service] Generando embeddings neuronales densos (384-d) para ${this.chunks.length} fragmentos...`);
+      const totalFloats = this.chunks.length * this.denseDims;
+      const masterBuffer = new Float32Array(totalFloats);
+      const BATCH_SIZE = 64;
+
+      for (let i = 0; i < this.chunks.length; i += BATCH_SIZE) {
+        const batch = this.chunks.slice(i, Math.min(i + BATCH_SIZE, this.chunks.length));
+        const texts = batch.map(c => (c.texto || '').substring(0, 350));
+        const output = await extractor(texts, { pooling: 'mean', normalize: true });
+
+        for (let b = 0; b < batch.length; b++) {
+          const chunkIdx = i + b;
+          const slice = output.data.subarray(b * this.denseDims, (b + 1) * this.denseDims);
+          masterBuffer.set(slice, chunkIdx * this.denseDims);
+          this.chunks[chunkIdx].denseVector = masterBuffer.subarray(chunkIdx * this.denseDims, (chunkIdx + 1) * this.denseDims);
+        }
+      }
+
+      // 3. Persistir en caché binaria en disco para inicios instantáneos
+      try {
+        fs.writeFileSync(this.denseCacheBinPath, Buffer.from(masterBuffer.buffer));
+        const meta = {
+          version: 1,
+          model: this.denseModelName,
+          dims: this.denseDims,
+          chunks: this.chunks.map(c => ({ id: c.id }))
+        };
+        fs.writeFileSync(this.denseCacheMetaPath, JSON.stringify(meta), 'utf8');
+        console.log(`💾 [RAG Service] Embeddings neuronales densos persistidos exitosamente.`);
+      } catch (saveErr) {
+        console.warn('⚠️ [RAG Service] No se pudo guardar caché binaria de embeddings:', saveErr.message);
+      }
+    } catch (err) {
+      console.warn('⚠️ [RAG Service] No se pudieron inicializar embeddings densos (usando TF-IDF):', err.message);
+    }
+  }
+
+  /**
    * Enrutador inteligente con IA (Agentic Semantic Router):
    * Analiza la pregunta del estudiante y extrae la materia oficial, el tema académico y la categoría
    * sin depender de coincidencia exacta por expresiones regulares.
@@ -564,9 +670,9 @@ class RagService {
   }
 
   /**
-   * Búsqueda semántica vectorial basada en Similitud Coseno con boosting de metadatos
+   * Búsqueda semántica vectorial híbrida (Embeddings neuronales densos + TF-IDF y boosting)
    */
-  recuperarContexto(query, topK = 6, enrutamiento = null) {
+  recuperarContexto(query, topK = 6, enrutamiento = null, queryEmbedding = null) {
     if (this.chunks.length === 0) return [];
 
     const queryTokens = this.extraerTokens(query);
@@ -659,6 +765,19 @@ class RagService {
       });
 
       let similitudCoseno = productoPunto / (queryNorm * chunkNorm);
+
+      // Integración Vectorial Densa: Similitud Coseno por Embeddings Neuronales (MiniLM 384-d)
+      if (queryEmbedding && chunk.denseVector) {
+        let dotDense = 0;
+        const dVec = chunk.denseVector;
+        for (let d = 0; d < 384; d++) {
+          dotDense += queryEmbedding[d] * dVec[d];
+        }
+        const similitudDensa = Math.max(0, dotDense);
+        // Fusión semántica híbrida: 70% significado profundo denso + 30% coincidencia léxica
+        similitudCoseno = (0.70 * similitudDensa) + (0.30 * Math.max(0, similitudCoseno));
+      }
+
       const chunkTextLower = (chunk.texto || '').toLowerCase();
       const docLower = (chunk.documento || '').toLowerCase();
 
@@ -910,7 +1029,10 @@ class RagService {
       materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(queryParaBusqueda) || p.test(prompt)));
     }
 
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6, enrutamiento);
+    // 2. Extraer embedding denso neuronal de la consulta
+    const queryEmbedding = await this.obtenerEmbeddingConsulta(queryParaBusqueda);
+
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6, enrutamiento, queryEmbedding);
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       if (materiaDetectada) {
@@ -1136,7 +1258,10 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
       materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => m.patterns.some(p => p.test(queryParaBusqueda) || p.test(prompt)));
     }
 
-    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6, enrutamiento);
+    // 2. Extraer embedding denso neuronal de la consulta
+    const queryEmbedding = await this.obtenerEmbeddingConsulta(queryParaBusqueda);
+
+    const fragmentosRelevantes = this.recuperarContexto(queryParaBusqueda, 6, enrutamiento, queryEmbedding);
 
     if (!esMeta && fragmentosRelevantes.length === 0) {
       let respRechazo = this.rejectionMessage;
