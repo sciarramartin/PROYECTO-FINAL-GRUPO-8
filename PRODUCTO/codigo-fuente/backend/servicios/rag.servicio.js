@@ -639,7 +639,10 @@ class RagService {
    */
   async enrutarConsultaConIA(prompt, historial = []) {
     const apiKey = this._getApiKey();
-    if (!apiKey) return null;
+    if (!apiKey) {
+      console.error('❌ [RAG Service] GROQ_API_KEY no configurada o vacía. Creá el archivo .env en backend/ con tu clave de Groq.');
+      return null;
+    }
 
     const routerModels = [
       process.env.GROQ_MODEL,
@@ -694,9 +697,14 @@ class RagService {
           const data = await res.json();
           const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');
           return parsed;
+        } else {
+          try {
+            const errData = await res.json();
+            console.warn(`⚠️ [RAG Router] Modelo ${modelName} retornó HTTP ${res.status}:`, errData?.error?.message || errData);
+          } catch (_) {}
         }
-      } catch (_) {
-        // Continuar con el siguiente modelo si este falla
+      } catch (err) {
+        console.warn(`⚠️ [RAG Router] Modelo ${modelName} error:`, err.message);
       }
     }
     return null;
@@ -940,7 +948,35 @@ class RagService {
   }
 
   _getApiKey() {
-    return process.env.GROQ_API_KEY || null;
+    if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'tu_api_key_de_groq_aqui') {
+      return process.env.GROQ_API_KEY.trim();
+    }
+    // Si no está en process.env, buscar dinámicamente en los posibles archivos .env del proyecto
+    const posiblesRutasEnv = [
+      path.resolve(__dirname, '..', '.env'),
+      path.resolve(__dirname, '../../.env'),
+      path.resolve(process.cwd(), '.env'),
+      path.resolve(process.cwd(), 'PRODUCTO', 'codigo-fuente', 'backend', '.env'),
+      path.resolve(process.cwd(), 'backend', '.env')
+    ];
+    for (const ruta of posiblesRutasEnv) {
+      if (fs.existsSync(ruta)) {
+        try {
+          const content = fs.readFileSync(ruta, 'utf8');
+          for (const line of content.split('\n')) {
+            const match = line.match(/^\s*GROQ_API_KEY\s*=\s*(.*)?\s*$/);
+            if (match) {
+              const val = (match[1] || '').replace(/^['"]|['"]$/g, '').trim();
+              if (val && val !== 'tu_api_key_de_groq_aqui') {
+                process.env.GROQ_API_KEY = val;
+                return val;
+              }
+            }
+          }
+        } catch (_) {}
+      }
+    }
+    return null;
   }
 
   /**
@@ -1203,6 +1239,11 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
           }
 
           return resultado;
+        } else {
+          try {
+            const errData = await response.json();
+            console.warn(`⚠️ [Groq Fallback] Modelo ${modelName} falló con HTTP ${response.status}:`, errData?.error?.message || errData);
+          } catch (_) {}
         }
       } catch (err) {
         console.warn(`⚠️ [Groq Fallback] Error con modelo ${modelName}:`, err.message);
@@ -1461,6 +1502,11 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
             }
             return resultadoFinal;
           }
+        } else {
+          try {
+            const errData = await response.json();
+            console.warn(`⚠️ [Groq Stream Fallback] Modelo ${modelName} falló con HTTP ${response.status}:`, errData?.error?.message || errData);
+          } catch (_) {}
         }
       } catch (err) {
         console.warn(`⚠️ [Groq Stream Fallback] Error con modelo ${modelName}:`, err.message);
