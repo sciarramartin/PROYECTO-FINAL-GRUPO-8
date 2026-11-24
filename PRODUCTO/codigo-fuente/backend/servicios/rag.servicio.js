@@ -374,29 +374,91 @@ class RagService {
   }
 
   /**
-   * Tokenización y normalización de texto
+   * Tokenización y normalización de texto conservando números y numeración romana canónica
    */
   extraerTokens(texto) {
-    return texto
+    return (texto || '')
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9áéíóúüñ\s]/gi, ' ')
+      .replace(/[^a-z0-9\s]/gi, ' ')
       .split(/\s+/)
-      .filter(t => t.length > 2);
+      .map(t => {
+        if (t === '1') return 'i';
+        if (t === '2') return 'ii';
+        if (t === '3') return 'iii';
+        if (t === '4') return 'iv';
+        if (t === '5') return 'v';
+        return t;
+      })
+      .filter(t => t.length > 2 || /^[0-9]+$/.test(t) || /^(i|ii|iii|iv|v)$/.test(t));
+  }
+
+  /**
+   * Resuelve la entidad de materia oficial evitando colisiones entre materias correlativas (ej: AM I vs AM II)
+   */
+  desambiguarMateria(nombreMateria) {
+    if (!nombreMateria || typeof nombreMateria !== 'string') return null;
+    const buscada = nombreMateria.trim();
+    const buscadaClean = buscada.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const tokensBuscada = this.extraerTokens(buscada).join(' ');
+
+    // 1. Coincidencia exacta estricta por nombre oficial
+    let match = MATERIAS_DISAMBIGUATION.find(m => 
+      m.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === buscadaClean
+    );
+    if (match) return match;
+
+    // 2. Coincidencia exacta por secuencia de tokens
+    match = MATERIAS_DISAMBIGUATION.find(m => {
+      const mTokens = this.extraerTokens(m.nombre).join(' ');
+      return mTokens === tokensBuscada;
+    });
+    if (match) return match;
+
+    // 3. Coincidencia parcial por inclusión de tokens
+    match = MATERIAS_DISAMBIGUATION.find(m => {
+      const mTokens = this.extraerTokens(m.nombre).join(' ');
+      return mTokens.includes(tokensBuscada) || tokensBuscada.includes(mTokens);
+    });
+    if (match) return match;
+
+    return {
+      nombre: buscada,
+      targetDocs: [],
+      sinDocumento: true
+    };
   }
 
   /**
    * Detecta si una consulta es un saludo o introducción conversacional
    */
   esSaludoOCharlaInicial(texto) {
+    if (!texto || typeof texto !== 'string') return false;
     const t = texto.toLowerCase().trim();
+
+    // Si contiene términos académicos claros o referencias a materias/planes, NO es saludo
+    if (/\b(correlat|aprob|materia|curs|final|parcial|nota|promoc|regular|horario|mesa|profesor|docente|inscripc|tramite|condic|plan|ordenanza|credito|tpi|analisis|fisica|algebra|sistemas|paradigmas|redes|datos)\b/i.test(t)) {
+      return false;
+    }
+
+    // Preguntas de seguimiento con números o números romanos (ej: 'y 2?', 'te digo el 2', 'y la 3?')
+    if (/(\b(y|el|la)\s+)?\b([0-9]+|i{1,3}|iv|v)\b/i.test(t) && (/[?¿]/.test(t) || /\b(te digo|el|la|y)\b/i.test(t))) {
+      return false;
+    }
+
     const patronesSaludo = [
-      /^hola\b/i, /^buenas\b/i, /^buen dia\b/i, /^buenos dias\b/i, /^buenas tardes\b/i, /^buenas noches\b/i,
-      /^como andas\b/i, /^como estas\b/i, /^que tal\b/i, /^quien sos\b/i, /^que podes hacer\b/i,
-      /^gracias\b/i, /^muchas gracias\b/i, /^chau\b/i, /^adios\b/i, /^hasta luego\b/i
+      /^(hola|buenas|buen d[ií]a|buenos d[ií]as|buenas tardes|buenas noches)\b/i,
+      /^(como andas|como estas|que tal|como va|quien sos|que podes hacer)\b/i,
+      /^(gracias|muchas gracias|joya|genial|de diez|mil gracias)\b/i,
+      /^(chau|adios|hasta luego|nos vemos)\b/i,
+      /^(holi|hey|hi|hello)\b/i
     ];
-    return patronesSaludo.some(p => p.test(t)) || t.length < 5;
+
+    if (patronesSaludo.some(p => p.test(t))) return true;
+
+    const saludosCortos = new Set(['hola', 'holi', 'hey', 'hi', 'chau', 'ola']);
+    return saludosCortos.has(t);
   }
 
   /**
@@ -572,14 +634,39 @@ class RagService {
 
   /**
    * Enrutador inteligente con IA (Agentic Semantic Router):
-   * Analiza la pregunta del estudiante y extrae la materia oficial, el tema académico y la categoría
+   * Analiza la pregunta del estudiante y el historial reciente para extraer la materia oficial, el tema académico y la categoría
    * sin depender de coincidencia exacta por expresiones regulares.
    */
-  async enrutarConsultaConIA(prompt) {
+  async enrutarConsultaConIA(prompt, historial = []) {
     const apiKey = this._getApiKey();
     if (!apiKey) return null;
 
-    const routerModels = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+    const routerModels = [
+      process.env.GROQ_MODEL,
+      'llama-3.3-70b-versatile',
+      'llama-3.1-8b-instant',
+      'openai/gpt-oss-120b',
+      'openai/gpt-oss-20b',
+      'qwen/qwen3.8-27b'
+    ].filter(Boolean);
+
+    const messages = [
+      {
+        role: 'system',
+        content: 'Sos el clasificador semántico para el campus de Ingeniería en Sistemas de Información (UTN FRC). Analizá la consulta del estudiante y el historial reciente (si existe) y respondé ÚNICAMENTE un JSON con formato: {"materia": string|null, "tema": string, "categoria": "catedra"|"tramite"|"calendario"|"general"|"fuera_de_ambito"}. Normalizá cualquier apodo, sigla o variación (ej: "f1", "f2", "ami", "am2", "amii", "zafo en fisica 1", "ppr", "aga", "y 2?", "el 2") a su nombre oficial exacto ("Física I", "Física II", "Análisis Matemático I", "Análisis Matemático II", "Paradigmas de Programación"). Si no se refiere a una materia, materia es null.'
+      }
+    ];
+
+    if (Array.isArray(historial) && historial.length > 0) {
+      const ultimos = historial.slice(-4);
+      for (const h of ultimos) {
+        const rol = (h.rol === 'usuario' || h.role === 'user') ? 'user' : 'assistant';
+        const txt = (h.contenido || h.content || '').substring(0, 250);
+        if (txt) messages.push({ role: rol, content: txt });
+      }
+    }
+
+    messages.push({ role: 'user', content: prompt });
 
     for (const modelName of routerModels) {
       try {
@@ -594,13 +681,7 @@ class RagService {
           },
           body: JSON.stringify({
             model: modelName,
-            messages: [
-              {
-                role: 'system',
-                content: 'Sos el clasificador semántico para el campus de Ingeniería en Sistemas de Información (UTN FRC). Analizá la consulta del estudiante y respondé ÚNICAMENTE un JSON con formato: {"materia": string|null, "tema": string, "categoria": "catedra"|"tramite"|"calendario"|"general"|"fuera_de_ambito"}. Normalizá cualquier apodo, sigla o variación (ej: "f1", "ami", "zafo en fisica 1", "ppr", "aga") a su nombre oficial exacto ("Física I", "Análisis Matemático I", "Paradigmas de Programación"). Si no se refiere a una materia, materia es null.'
-              },
-              { role: 'user', content: prompt }
-            ],
+            messages,
             temperature: 0,
             response_format: { type: 'json_object' }
           }),
@@ -645,21 +726,10 @@ class RagService {
       });
     }
 
-    // Priorizar materia clasificada semánticamente por la IA
+    // Priorizar materia clasificada semánticamente por la IA con desambiguación estricta
     let materiaDetectada = null;
     if (enrutamiento?.materia) {
-      const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
-      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
-        const mTokens = this.extraerTokens(m.nombre).join(' ');
-        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens);
-      });
-      if (!materiaDetectada) {
-        materiaDetectada = {
-          nombre: enrutamiento.materia,
-          targetDocs: [],
-          sinDocumento: true
-        };
-      }
+      materiaDetectada = this.desambiguarMateria(enrutamiento.materia);
     }
 
     // 2. Vectorizar la consulta
@@ -969,15 +1039,11 @@ class RagService {
     }
 
     // 1. Enrutamiento semántico inteligente con IA (extrae materia, tema y categoría sin depender de regex)
-    const enrutamiento = await this.enrutarConsultaConIA(prompt);
+    const enrutamiento = await this.enrutarConsultaConIA(prompt, historial);
 
     let materiaDetectada = null;
     if (enrutamiento?.materia) {
-      const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
-      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
-        const mTokens = this.extraerTokens(m.nombre).join(' ');
-        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens);
-      }) || { nombre: enrutamiento.materia, targetDocs: [], sinDocumento: true };
+      materiaDetectada = this.desambiguarMateria(enrutamiento.materia);
     }
 
     // 2. Extraer embedding denso neuronal de la consulta
@@ -1099,6 +1165,8 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
 
     const modelosDisponibles = [
       process.env.GROQ_MODEL,
+      'llama-3.3-70b-versatile',
+      'llama-3.1-8b-instant',
       'openai/gpt-oss-120b',
       'openai/gpt-oss-20b',
       'qwen/qwen3.8-27b',
@@ -1202,15 +1270,11 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
     }
 
     // 1. Enrutamiento semántico inteligente con IA (extrae materia, tema y categoría sin depender de regex)
-    const enrutamiento = await this.enrutarConsultaConIA(prompt);
+    const enrutamiento = await this.enrutarConsultaConIA(prompt, historial);
 
     let materiaDetectada = null;
     if (enrutamiento?.materia) {
-      const nombreNorm = this.extraerTokens(enrutamiento.materia).join(' ');
-      materiaDetectada = MATERIAS_DISAMBIGUATION.find(m => {
-        const mTokens = this.extraerTokens(m.nombre).join(' ');
-        return mTokens.includes(nombreNorm) || nombreNorm.includes(mTokens);
-      }) || { nombre: enrutamiento.materia, targetDocs: [], sinDocumento: true };
+      materiaDetectada = this.desambiguarMateria(enrutamiento.materia);
     }
 
     // 2. Extraer embedding denso neuronal de la consulta
@@ -1330,6 +1394,8 @@ ${esMeta ? 'Consulta global de catálogo: responder obligatoriamente según el C
 
     const modelosDisponibles = [
       process.env.GROQ_MODEL,
+      'llama-3.3-70b-versatile',
+      'llama-3.1-8b-instant',
       'openai/gpt-oss-120b',
       'openai/gpt-oss-20b',
       'qwen/qwen3.8-27b',
