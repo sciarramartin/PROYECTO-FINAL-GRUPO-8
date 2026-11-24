@@ -8,8 +8,9 @@ import MetricaGraduados from './common/MetricaGraduados';
 import InsigniaGraduado from './common/InsigniaGraduado';
 import MetricaHorario from './common/MetricaHorario';
 import MetricaReputacion from './common/MetricaReputacion';
+import TasaPenetracionInstitucional from './common/TasaPenetracionInstitucional';
 import MetricaMaterialEstudio from './common/MetricaMaterialEstudio';
-import { FiGrid, FiAward, FiBarChart2, FiUser, FiInfo, FiLayers, FiArrowRight, FiFileText } from 'react-icons/fi';
+import { FiGrid, FiAward, FiBarChart2, FiUser, FiInfo, FiLayers, FiArrowRight, FiFileText, FiActivity } from 'react-icons/fi';
 
 const Dashboard = () => {
   const [estadoGraduacion, setEstadoGraduacion] = useState(null);
@@ -122,16 +123,6 @@ const Dashboard = () => {
                 Métricas de Reputación y Aportes Académicos
               </h2>
             </div>
-
-            {/* Acceso directo a la sección de Apuntes y Colaboración */}
-            <Link
-              to="/apuntes"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 px-3 py-1.5 rounded-lg transition-colors border border-amber-200/60 dark:border-amber-800/50 shadow-xs"
-            >
-              <FiFileText className="w-3.5 h-3.5" />
-              <span>Mis Aportes y Apuntes</span>
-              <FiArrowRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
 
           {/* Métrica de Reputación del Estudiante y Colaboración */}
@@ -142,16 +133,23 @@ const Dashboard = () => {
         {/* 🏛️ SECCIÓN 3: ANALÍTICAS INSTITUCIONALES (US-MET-11)                       */}
         {/* ========================================================================= */}
         <div className="space-y-4 pt-6 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
               <h2 className="text-sm font-extrabold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider">
                 Panel Institucional de Analíticas (Administración & Autoridades)
               </h2>
             </div>
-            <span className="text-[11px] text-zinc-400">
-              Datos globales consolidados
-            </span>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/metricas-globales"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 px-3 py-1.5 rounded-lg transition-colors border border-indigo-200/60 dark:border-indigo-800/60 shadow-xs"
+              >
+                <FiActivity className="w-3.5 h-3.5" />
+                <span>Auditar Volumen Global & IA</span>
+                <FiArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
 
           {/* US-MET-11: Métricas de Graduados, Tasa de Egreso y Duración de Carrera */}
@@ -159,6 +157,8 @@ const Dashboard = () => {
 
           {/* US-MET-89: Métricas de Material de Estudio */}
           <MetricaMaterialEstudio />
+
+          <TasaPenetracionInstitucional />
         </div>
 
       </div>

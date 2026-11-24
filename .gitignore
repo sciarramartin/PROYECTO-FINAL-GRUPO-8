@@ -25,3 +25,8 @@ skills-lock.json
 brain-obsidian/
 .obsidian/
 
+# Cache de embeddings RAG
+.embeddings_cache.bin
+.embeddings_cache_meta.json
+
+

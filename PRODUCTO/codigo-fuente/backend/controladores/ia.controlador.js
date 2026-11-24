@@ -1,7 +1,29 @@
 // backend/controladores/ia.controlador.js
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 const ragService = require('../servicios/rag.servicio');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta';
+
+const extraerUsuarioOpcional = (req) => {
+  if (req.usuario) return req.usuario;
+  try {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      return jwt.verify(token, JWT_SECRET);
+    }
+  } catch (_) {}
+  return null;
+};
+
+let ConsultaIA;
+try {
+  ConsultaIA = require('../modelos/ConsultaIA').ConsultaIA;
+} catch (e) {
+  // Ignorar en entornos de test si no está instanciado
+}
 
 /**
  * POST /api/ia/consulta-modalidad
@@ -22,6 +44,17 @@ router.post('/consulta-modalidad', async (req, res) => {
       prompt: prompt.trim(),
       historial: Array.isArray(historial) ? historial : []
     });
+
+    if (ConsultaIA && typeof ConsultaIA.create === 'function') {
+      const usuario = extraerUsuarioOpcional(req);
+      ConsultaIA.create({
+        id_usuario: usuario?.id || null,
+        prompt: prompt.trim(),
+        respuesta: resultado?.respuesta ? resultado.respuesta.substring(0, 1000) : null,
+        total_fuentes: (resultado?.fuentes || []).length,
+        satisfactoria: true
+      }).catch(err => console.warn('⚠️ No se pudo registrar consulta IA en auditoría:', err.message));
+    }
 
     return res.status(200).json({
       success: true,
@@ -60,7 +93,7 @@ router.post('/consulta-modalidad-stream', async (req, res) => {
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders?.();
 
-    await ragService.consultarChatbotStream({
+    const resultadoStream = await ragService.consultarChatbotStream({
       prompt: prompt.trim(),
       historial: Array.isArray(historial) ? historial : [],
       onContext: ({ fuentes }) => {
@@ -70,6 +103,17 @@ router.post('/consulta-modalidad-stream', async (req, res) => {
         res.write(`event: chunk\ndata: ${JSON.stringify({ content: chunk })}\n\n`);
       }
     });
+
+    if (ConsultaIA && typeof ConsultaIA.create === 'function') {
+      const usuario = extraerUsuarioOpcional(req);
+      ConsultaIA.create({
+        id_usuario: usuario?.id || null,
+        prompt: prompt.trim(),
+        respuesta: resultadoStream?.respuesta ? resultadoStream.respuesta.substring(0, 1000) : null,
+        total_fuentes: (resultadoStream?.fuentes || []).length,
+        satisfactoria: true
+      }).catch(err => console.warn('⚠️ No se pudo registrar consulta IA en auditoría:', err.message));
+    }
 
     res.write(`event: done\ndata: ${JSON.stringify({ final: true })}\n\n`);
     res.end();

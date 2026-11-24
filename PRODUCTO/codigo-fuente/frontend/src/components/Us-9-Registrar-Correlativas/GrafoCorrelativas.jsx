@@ -5,10 +5,20 @@ import { DataSet } from 'vis-data';
 const GrafoCorrelativas = ({ materias }) => {
   const containerRef = useRef(null);
   const networkRef = useRef(null);
+  const [esOscuro, setEsOscuro] = React.useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setEsOscuro(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current || !materias || materias.length === 0) return;
 
+    const isDark = esOscuro;
     const nodes = new DataSet();
     const edges = new DataSet();
 
@@ -20,11 +30,24 @@ const GrafoCorrelativas = ({ materias }) => {
         label: `${materia.codigo}\n${materia.nombre}${oculta ? '\n(Oculta)' : ''}`,
         level: parseInt(materia.nivel_anio) || 1, // Nivel explícito convertido a entero
         color: {
-          background: oculta ? '#f8fafc' : '#ffffff',
-          border: oculta ? '#94a3b8' : '#cbd5e1',
-          highlight: { background: oculta ? '#e2e8f0' : '#f8fafc', border: '#64748b' }
+          background: oculta 
+            ? (isDark ? '#1e293b' : '#f8fafc') 
+            : (isDark ? '#0f172a' : '#ffffff'),
+          border: oculta 
+            ? (isDark ? '#475569' : '#94a3b8') 
+            : (isDark ? '#334155' : '#cbd5e1'),
+          highlight: { 
+            background: isDark ? '#1e293b' : '#f8fafc', 
+            border: '#6366f1' 
+          }
         },
-        font: { face: 'Inter, sans-serif', size: 14, color: oculta ? '#64748b' : '#1e293b' },
+        font: { 
+          face: 'Inter, sans-serif', 
+          size: 14, 
+          color: oculta 
+            ? (isDark ? '#94a3b8' : '#64748b') 
+            : (isDark ? '#f1f5f9' : '#1e293b') 
+        },
         shape: 'box',
         widthConstraint: { maximum: 200 }, // Evita que se recorten los textos o se hagan minúsculos
         borderWidth: 2,
@@ -43,7 +66,7 @@ const GrafoCorrelativas = ({ materias }) => {
             from: req.id,
             to: materia.id,
             arrows: 'to',
-            color: { color: tipo === 'aprobada' ? 'rgba(79, 70, 229, 0.6)' : 'rgba(203, 213, 225, 0.8)' },
+            color: { color: tipo === 'aprobada' ? (isDark ? 'rgba(129, 140, 248, 0.7)' : 'rgba(79, 70, 229, 0.6)') : (isDark ? 'rgba(100, 116, 139, 0.6)' : 'rgba(203, 213, 225, 0.8)') },
             width: tipo === 'aprobada' ? 2 : 1.5,
             dashes: tipo === 'regular' ? [5, 5] : false, // Punteada si es solo para cursar
             smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.6 } // Más ondulada
@@ -77,7 +100,9 @@ const GrafoCorrelativas = ({ materias }) => {
 
     // Dibujar columnas de fondo por año
     networkRef.current.on("beforeDrawing", function (ctx) {
-      const colors = ['#f0f9ff', '#faf5ff', '#f0fdf4', '#fff7ed', '#fdf2f8']; // Colores muy suaves
+      const colors = isDark
+        ? ['#090d16', '#0f172a', '#0b1120', '#090d16', '#0f172a']
+        : ['#f0f9ff', '#faf5ff', '#f0fdf4', '#fff7ed', '#fdf2f8'];
       
       const positions = networkRef.current.getPositions();
       const levelX = {};
@@ -168,7 +193,7 @@ const GrafoCorrelativas = ({ materias }) => {
             id: node.id, 
             opacity: 1, 
             borderWidth: 2,
-            color: { border: '#cbd5e1' }
+            color: { border: isDark ? '#334155' : '#cbd5e1' }
           });
         });
         
@@ -176,7 +201,7 @@ const GrafoCorrelativas = ({ materias }) => {
         edges.forEach(edge => {
           edges.update({
             id: edge.id,
-            color: { color: 'rgba(203, 213, 225, 0.4)' },
+            color: { color: isDark ? 'rgba(100, 116, 139, 0.4)' : 'rgba(203, 213, 225, 0.4)' },
             width: 1
           });
         });
@@ -188,32 +213,32 @@ const GrafoCorrelativas = ({ materias }) => {
         networkRef.current.destroy();
       }
     };
-  }, [materias]);
+  }, [materias, esOscuro]);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[600px] flex flex-col">
-      <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10 relative shadow-sm">
+    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden h-[600px] flex flex-col transition-colors duration-200">
+      <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 z-10 relative shadow-sm transition-colors duration-200">
         <div>
-          <h3 className="text-lg font-semibold text-slate-800">Vista previa del grafo</h3>
-          <p className="text-sm text-slate-500">Materias organizadas por año académico con sus dependencias</p>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Vista previa del grafo</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Materias organizadas por año académico con sus dependencias</p>
         </div>
       </div>
-      <div ref={containerRef} className="flex-1 w-full bg-white relative z-0" />
+      <div ref={containerRef} className="flex-1 w-full bg-white dark:bg-slate-950 relative z-0 transition-colors duration-200" />
       
       {/* Leyenda */}
-      <div className="p-4 border-t border-slate-100 bg-white z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <h4 className="text-sm font-semibold text-slate-700 mb-2">Leyenda</h4>
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-200">
+        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Leyenda</h4>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex flex-wrap gap-4 text-xs text-slate-600">
-            <span className="font-medium text-slate-500 mr-2">Años:</span>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f0f9ff] border border-[#bae6fd]"></div> 1° Año</div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#faf5ff] border border-[#e9d5ff]"></div> 2° Año</div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f0fdf4] border border-[#bbf7d0]"></div> 3° Año</div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fff7ed] border border-[#fed7aa]"></div> 4° Año</div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fdf2f8] border border-[#fbcfe8]"></div> 5° Año</div>
+          <div className="flex flex-wrap gap-4 text-xs text-slate-600 dark:text-slate-300">
+            <span className="font-medium text-slate-500 dark:text-slate-400 mr-2">Años:</span>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f0f9ff] dark:bg-sky-950/40 border border-[#bae6fd] dark:border-sky-800"></div> 1° Año</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#faf5ff] dark:bg-purple-950/40 border border-[#e9d5ff] dark:border-purple-800"></div> 2° Año</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#f0fdf4] dark:bg-emerald-950/40 border border-[#bbf7d0] dark:border-emerald-800"></div> 3° Año</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fff7ed] dark:bg-amber-950/40 border border-[#fed7aa] dark:border-amber-800"></div> 4° Año</div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#fdf2f8] dark:bg-pink-950/40 border border-[#fbcfe8] dark:border-pink-800"></div> 5° Año</div>
           </div>
-          <div className="flex flex-wrap gap-4 text-xs text-slate-600">
-            <span className="font-medium text-slate-500 mr-2">Requisitos:</span>
+          <div className="flex flex-wrap gap-4 text-xs text-slate-600 dark:text-slate-300">
+            <span className="font-medium text-slate-500 dark:text-slate-400 mr-2">Requisitos:</span>
             <div className="flex items-center gap-2">
               <div className="w-6 border-b-2 border-dashed border-slate-400"></div> Regular (Cursar)
             </div>

@@ -31,6 +31,7 @@ const DetallePublicacion = lazy(() => import('./components/us-foro/DetallePublic
 const MisGuardados = lazy(() => import('./components/us-foro/MisGuardados'));
 const Reportes = lazy(() => import('./components/us-foro/Reportes'));
 const ChatbotModalidadAcademica = lazy(() => import('./components/US-29-Consultar-modalidad-academica-ia/ChatbotModalidadAcademica'));
+const MetricasGlobalesPlataforma = lazy(() => import('./components/MetricasGlobalesPlataforma'));
 
 const RutaPrivada = ({ children }) => {
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -159,6 +160,15 @@ const App = () => {
             <RutaPrivada>
               <Layout>
                 <Reportes />
+              </Layout>
+            </RutaPrivada>
+          } />
+
+          {/* Ruta de Métricas Globales de Plataforma (Admin) */}
+          <Route path="/metricas-globales" element={
+            <RutaPrivada>
+              <Layout>
+                <MetricasGlobalesPlataforma />
               </Layout>
             </RutaPrivada>
           } />

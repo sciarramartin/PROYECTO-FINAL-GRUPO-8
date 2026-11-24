@@ -60,7 +60,7 @@ router.get('/:amigoId', verificarToken, async (req, res) => {
                     { id_remitente: amigoId, id_destinatario: miUsuarioId }
                 ]
             },
-            order: [['createdAt', 'ASC']],
+            order: [['createdAt', 'ASC'], ['id', 'ASC']],
             include: [
                 {
                     model: Usuario,

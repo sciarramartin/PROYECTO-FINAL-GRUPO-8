@@ -231,12 +231,6 @@ const { EncuestaCatedra } = require('./EncuestaCatedra');
 Curso.belongsTo(Materia, { foreignKey: 'id_materia' });
 Materia.hasMany(Curso, { foreignKey: 'id_materia' });
 
-inscripcionesCursos.belongsTo(Curso, { foreignKey: 'id_curso' });
-Curso.hasMany(inscripcionesCursos, { foreignKey: 'id_curso' });
-
-inscripcionesCursos.belongsTo(Usuario, { foreignKey: 'id_usuario' });
-Usuario.hasMany(inscripcionesCursos, { foreignKey: 'id_usuario' });
-
 // Relaciones de Encuestas de Cátedra
 EncuestaCatedra.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'Estudiante' });
 Usuario.hasMany(EncuestaCatedra, { foreignKey: 'id_usuario' });

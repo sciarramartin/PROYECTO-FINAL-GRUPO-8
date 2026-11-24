@@ -7,18 +7,18 @@ const { EncuestaCatedra, Materia, Curso, Usuario, Perfil } = require('../modelos
 router.post('/', verificarToken, async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
-        const { id_materia, id_curso, dificultad, claridad_docente, disponibilidad, es_anonima, comentario, estado_academico } = req.body;
+        const { id_materia, id_curso, facilidad, claridad_docente, disponibilidad, es_anonima, comentario, estado_academico } = req.body;
 
-        if (!id_materia || !dificultad || !claridad_docente || !disponibilidad) {
+        if (!id_materia || !facilidad || !claridad_docente || !disponibilidad) {
             return res.status(400).json({ error: 'Faltan campos obligatorios para la encuesta (materia y calificaciones de 1 a 5).' });
         }
 
         // Validar rango de 1 a 5
-        const difNum = Number(dificultad);
+        const facNum = Number(facilidad);
         const claNum = Number(claridad_docente);
         const dispNum = Number(disponibilidad);
 
-        if ([difNum, claNum, dispNum].some(val => isNaN(val) || val < 1 || val > 5)) {
+        if ([facNum, claNum, dispNum].some(val => isNaN(val) || val < 1 || val > 5)) {
             return res.status(400).json({ error: 'Las valoraciones deben ser números enteros entre 1 y 5.' });
         }
 
@@ -29,7 +29,7 @@ router.post('/', verificarToken, async (req, res) => {
 
         if (encuesta) {
             encuesta.id_curso = id_curso || encuesta.id_curso;
-            encuesta.dificultad = difNum;
+            encuesta.facilidad = facNum;
             encuesta.claridad_docente = claNum;
             encuesta.disponibilidad = dispNum;
             encuesta.es_anonima = !!es_anonima;
@@ -41,7 +41,7 @@ router.post('/', verificarToken, async (req, res) => {
                 id_usuario,
                 id_materia,
                 id_curso: id_curso || null,
-                dificultad: difNum,
+                facilidad: facNum,
                 claridad_docente: claNum,
                 disponibilidad: dispNum,
                 es_anonima: !!es_anonima,
@@ -93,7 +93,7 @@ router.get('/materia/:materiaId', verificarToken, async (req, res) => {
             return res.json({
                 total: 0,
                 promedios: {
-                    dificultad: 0,
+                    facilidad: 0,
                     claridad_docente: 0,
                     disponibilidad: 0,
                     general: 0
@@ -102,27 +102,27 @@ router.get('/materia/:materiaId', verificarToken, async (req, res) => {
             });
         }
 
-        let sumDif = 0;
+        let sumFac = 0;
         let sumCla = 0;
         let sumDisp = 0;
         let sumaPromediosIndividuales = 0;
 
         encuestas.forEach(enc => {
             const data = enc.get ? enc.get({ plain: true }) : enc;
-            const dif = Number(data.dificultad) || 0;
+            const fac = Number(data.facilidad) || 0;
             const cla = Number(data.claridad_docente) || 0;
             const disp = Number(data.disponibilidad) || 0;
 
-            sumDif += dif;
+            sumFac += fac;
             sumCla += cla;
             sumDisp += disp;
 
             // Promedio exacto de esta reseña en particular
-            sumaPromediosIndividuales += (dif + cla + disp) / 3;
+            sumaPromediosIndividuales += (fac + cla + disp) / 3;
         });
 
         const promedios = {
-            dificultad: Number((sumDif / total).toFixed(1)),
+            facilidad: Number((sumFac / total).toFixed(1)),
             claridad_docente: Number((sumCla / total).toFixed(1)),
             disponibilidad: Number((sumDisp / total).toFixed(1)),
             // 🟢 Promedio general real en escala de 1 a 5 estrellas
@@ -138,7 +138,7 @@ router.get('/materia/:materiaId', verificarToken, async (req, res) => {
 
             return {
                 id: data.id,
-                dificultad: data.dificultad,
+                facilidad: data.facilidad,
                 claridad_docente: data.claridad_docente,
                 disponibilidad: data.disponibilidad,
                 comentario: data.comentario,
@@ -175,7 +175,7 @@ router.get('/mis-encuestas', verificarToken, async (req, res) => {
         const id_usuario = req.usuario.id;
         const encuestas = await EncuestaCatedra.findAll({
             where: { id_usuario },
-            attributes: ['id', 'id_materia', 'id_curso', 'dificultad', 'claridad_docente', 'disponibilidad', 'createdAt']
+            attributes: ['id', 'id_materia', 'id_curso', 'facilidad', 'claridad_docente', 'disponibilidad', 'createdAt']
         });
         res.json(encuestas);
     } catch (error) {

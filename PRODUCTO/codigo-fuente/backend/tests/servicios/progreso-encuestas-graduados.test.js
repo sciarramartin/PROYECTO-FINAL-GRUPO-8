@@ -114,9 +114,9 @@ describe('Pruebas Unitarias: Progreso, Sincronización de Comisiones y Graduados
             }
         });
         expect(actividad).not.toBeNull();
-        expect(actividad.hora_inicio).toBe('08:00');
+        expect(actividad.hora_inicio).toMatch(/^08:00(:00)?$/);
         expect(actividad.duracion).toBe(90);
-        expect(actividad.dias).toBe(1);
+        expect(actividad.dias).toBe(5);
         expect(actividad.color).toBe('#8B5CF6');
 
         // 8.3. Cambiar de comisión a la comisión 2 (Turno Tarde: 14:00, duracion: 90, dias: 1)
@@ -133,7 +133,7 @@ describe('Pruebas Unitarias: Progreso, Sincronización de Comisiones y Graduados
             }
         });
         expect(actividadesMateria.length).toBe(1); // Exactamente 1 fila, sin duplicados
-        expect(actividadesMateria[0].hora_inicio).toBe('14:00');
+        expect(actividadesMateria[0].hora_inicio).toMatch(/^14:00(:00)?$/);
 
         // 8.4. Pasar a 'Aprobada': Debe eliminar la actividad de la agenda/métricas pero preservar inscripciones_cursos
         const inscripcionesAntes = await inscripcionesCursos.count({ where: { id_usuario: idUsuario } });

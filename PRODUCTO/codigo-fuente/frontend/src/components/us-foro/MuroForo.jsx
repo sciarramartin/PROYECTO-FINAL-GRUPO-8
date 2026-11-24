@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import CrearPublicacion from "./CrearPublicacion";
 import CompartirPublicacion from "./CompartirPublicacion";
@@ -16,8 +16,13 @@ import {
   FiInfo,
   FiMessageCircle,
   FiAlertCircle,
-  FiFlag
+  FiFlag,
+  FiLink,
+  FiEdit,
+  FiEdit3
 } from "react-icons/fi";
+import EmptyState from "../common/EmptyState";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const MuroForo = () => {
   const { materiaId } = useParams();
@@ -26,6 +31,7 @@ const MuroForo = () => {
   const [datosForo, setDatosForo] = useState({ materia: {}, publicaciones: [] });
   const [cargando, setCargando] = useState(true);
   const [vistaActual, setVistaActual] = useState('muro'); //sino crear
+  const [votoAnimandoId, setVotoAnimandoId] = useState(null);
 
   // Para mostrar alertas de funcionalidad deshabilitada correspondiente a otras US
   const [alertaTeammate, setAlertaTeammate] = useState(null);
@@ -43,6 +49,7 @@ const MuroForo = () => {
 
   // Estados para filtro por etiquetas
   const [etiquetasForum, setEtiquetasForum] = useState([]);
+  const [etiquetasPopulares, setEtiquetasPopulares] = useState([]);
   const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState(null);
   const [buscadorTags, setBuscadorTags] = useState("");
   const [dropdownTagsAbierto, setDropdownTagsAbierto] = useState(false);
@@ -56,6 +63,30 @@ const MuroForo = () => {
     isOpen: false,
     publicacionData: null
   });
+
+  // Estado y ref para menú desplegable de más opciones por publicación (SCRUM-128)
+  const [menuMasOpcionesId, setMenuMasOpcionesId] = useState(null);
+  const menuOpcionesMuroRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickAfuera = (event) => {
+      if (menuOpcionesMuroRef.current && !menuOpcionesMuroRef.current.contains(event.target)) {
+        setMenuMasOpcionesId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickAfuera);
+    return () => document.removeEventListener("mousedown", handleClickAfuera);
+  }, []);
+
+  let usuarioActual = {};
+  try {
+    const usuarioStr = localStorage.getItem("usuario") || sessionStorage.getItem("usuario");
+    if (usuarioStr && usuarioStr !== "undefined") {
+      usuarioActual = JSON.parse(usuarioStr);
+    }
+  } catch (e) {
+    console.error("Error parseando usuario actual en Muro:", e);
+  }
 
   const fetchMisAportes = async () => {
     setCargandoMisAportes(true);
@@ -86,6 +117,24 @@ const MuroForo = () => {
     }
   };
 
+  const fetchEtiquetasPopulares = async () => {
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const response = await axios.get(`${apiUrl}/publicaciones/etiquetas/populares?materiaId=${materiaId}&limit=8`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        setEtiquetasPopulares(response.data);
+      } else {
+        setEtiquetasPopulares(["#Parciales", "#Finales", "#Dudas", "#Resumenes", "#Ejercicios", "#Teoria"]);
+      }
+    } catch (error) {
+      console.error("Error al obtener etiquetas populares:", error);
+      setEtiquetasPopulares(["#Parciales", "#Finales", "#Dudas", "#Resumenes", "#Ejercicios", "#Teoria"]);
+    }
+  };
+
   useEffect(() => {
     if (subTabActiva === "mis-publicaciones") {
       fetchMisAportes();
@@ -110,6 +159,7 @@ const MuroForo = () => {
 
     fetchForo();
     fetchEtiquetas();
+    fetchEtiquetasPopulares();
 
     if (location.state && location.state.tagFiltrado) {
       setEtiquetaSeleccionada(location.state.tagFiltrado);
@@ -160,6 +210,36 @@ const MuroForo = () => {
   };
 
   const handleReaccionarMuro = async (pubId, tipo) => {
+    // 🚀 Feedback reactivo y microanimación de escala
+    setVotoAnimandoId(pubId);
+    setTimeout(() => setVotoAnimandoId(null), 250);
+
+    const pubActual = datosForo.publicaciones.find(p => p.id === pubId);
+    const votosPrevios = pubActual ? (pubActual.votos || 0) : 0;
+    const reaccionPrevia = pubActual?.miReaccion || null;
+
+    let delta = 0;
+    let nuevaReaccion = null;
+
+    if (reaccionPrevia === tipo) {
+      delta = tipo === 'positivo' ? -1 : 1;
+      nuevaReaccion = null;
+    } else if (reaccionPrevia) {
+      delta = tipo === 'positivo' ? 2 : -2;
+      nuevaReaccion = tipo;
+    } else {
+      delta = tipo === 'positivo' ? 1 : -1;
+      nuevaReaccion = tipo;
+    }
+
+    // Actualización optimista inmediata (0ms de espera visual)
+    setDatosForo(prev => ({
+      ...prev,
+      publicaciones: prev.publicaciones.map(p =>
+        p.id === pubId ? { ...p, votos: votosPrevios + delta, miReaccion: nuevaReaccion } : p
+      )
+    }));
+
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -170,11 +250,18 @@ const MuroForo = () => {
       setDatosForo(prev => ({
         ...prev,
         publicaciones: prev.publicaciones.map(p =>
-          p.id === pubId ? { ...p, votos: res.data.votos } : p
+          p.id === pubId ? { ...p, votos: res.data.votos, miReaccion: res.data.reaccion?.tipo || null } : p
         )
       }));
     } catch (error) {
       console.error("Error al reaccionar en muro:", error);
+      // Rollback en caso de error
+      setDatosForo(prev => ({
+        ...prev,
+        publicaciones: prev.publicaciones.map(p =>
+          p.id === pubId ? { ...p, votos: votosPrevios, miReaccion: reaccionPrevia } : p
+        )
+      }));
       mostrarMensajeTeammate(error.response?.data?.error || "Error al registrar voto.");
     }
   };
@@ -214,6 +301,8 @@ const MuroForo = () => {
     setDescripcionReporte("");
     setErrorReporte("");
   };
+
+  const focusTrapReportarRef = useFocusTrap(modalReportarAbierto, cerrarModalReportar);
 
   const enviarReporte = async () => {
     if (!descripcionReporte.trim()) {
@@ -298,6 +387,7 @@ const MuroForo = () => {
       });
       setDatosForo(response.data);
       fetchEtiquetas();
+      fetchEtiquetasPopulares();
       if (subTabActiva === "mis-publicaciones") {
         fetchMisAportes();
       }
@@ -340,8 +430,13 @@ const MuroForo = () => {
   );
 
   const filtrarPublicacion = (pub) => {
+    const listaEtiquetas = pub.Etiquetas || pub.etiquetas || [];
     const cumpleEtiqueta = !etiquetaSeleccionada || (
-      pub.Etiquetas && pub.Etiquetas.some(tag => tag.nombre.toLowerCase() === etiquetaSeleccionada.toLowerCase())
+      listaEtiquetas.some(tag => {
+        const nomTag = (tag.nombre || '').toLowerCase().replace(/^#/, '');
+        const nomFiltro = etiquetaSeleccionada.toLowerCase().replace(/^#/, '');
+        return nomTag === nomFiltro;
+      })
     );
     const cumpleCategoria = !categoriaSeleccionada || (
       pub.categoria && pub.categoria.toLowerCase() === categoriaSeleccionada.toLowerCase()
@@ -641,43 +736,29 @@ const MuroForo = () => {
                 <p className="text-sm text-zinc-500 dark:text-zinc-450">Cargando publicaciones...</p>
               </div>
             ) : publicaciones.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3">
-                  <FiMessageCircle className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200 text-center">No existen publicaciones</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
-                  Aún no hay dudas ni aportes publicados en esta materia. ¡Sé el primero en crear una discusión académica!
-                </p>
-              </div>
+              <EmptyState
+                variant="debate"
+                titulo="Aún no hay debates en este foro"
+                mensaje="Esta materia aún no tiene aportes ni dudas publicadas. Sé el primero en iniciar una discusión académica, compartir apuntes o formular una pregunta."
+                accionTexto="Sé el primero en iniciar un debate"
+                iconoAccion={<FiEdit3 className="w-4 h-4" />}
+                alHacerClic={() => navigate(`/foros/${materiaId}/crear-publicacion`)}
+                className="my-3 py-12"
+              />
             ) : publicacionesFiltradas.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3">
-                  <FiMessageCircle className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200 text-center">Sin resultados</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
-                  No encontramos aportes
-                  {etiquetaSeleccionada && <> con la etiqueta <span className="font-bold text-indigo-600 dark:text-indigo-400">{etiquetaSeleccionada}</span></>}
-                  {etiquetaSeleccionada && categoriaSeleccionada && <> y</>}
-                  {categoriaSeleccionada && <> de tipo/categoría <span className="font-bold text-indigo-600 dark:text-indigo-400">{categoriaSeleccionada}</span></>}
-                  .
-                </p>
-                <div className="flex items-center gap-2 mt-3">
-                  {(etiquetaSeleccionada || categoriaSeleccionada) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEtiquetaSeleccionada(null);
-                        setCategoriaSeleccionada(null);
-                      }}
-                      className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-650 text-xs font-bold rounded-xl transition cursor-pointer"
-                    >
-                      Quitar todos los filtros
-                    </button>
-                  )}
-                </div>
-              </div>
+              <EmptyState
+                variant="search"
+                titulo="Sin resultados para los filtros seleccionados"
+                mensaje={`No encontramos aportes${etiquetaSeleccionada ? ` con la etiqueta "${etiquetaSeleccionada}"` : ''}${categoriaSeleccionada ? ` en la categoría "${categoriaSeleccionada}"` : ''}.`}
+                accionTexto="Quitar todos los filtros"
+                alHacerClic={() => {
+                  setEtiquetaSeleccionada(null);
+                  setCategoriaSeleccionada(null);
+                }}
+                botonSecundarioTexto="Crear una publicación"
+                alHacerClicSecundario={() => navigate(`/foros/${materiaId}/crear-publicacion`)}
+                className="my-3 py-10"
+              />
             ) : (
               <div className="space-y-3">
                 {publicacionesFiltradas.map((pub) => {
@@ -690,18 +771,28 @@ const MuroForo = () => {
                       key={pub.id}
                       className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 flex gap-4 transition shadow-sm hover:shadow-md hover:border-indigo-500/20"
                     >
-                      {/* Flechas de Votos (UI Shell para Reaccionar) */}
+                      {/* Flechas de Votos (UI Shell para Reaccionar con feedback optimista y microanimación) */}
                       <div className="flex flex-col items-center justify-start gap-1 text-zinc-450 shrink-0">
                         <button
                           onClick={() => handleReaccionarMuro(pub.id, 'positivo')}
                           className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-amber-500 transition"
+                          title="Votar positivo"
                         >
                           <FiArrowUp className="w-4 h-4" />
                         </button>
-                        <span className="text-xs font-bold">{pub.votos || 0}</span>
+                        <span
+                          className={`text-xs min-w-[14px] text-center inline-block transition-transform duration-200 ease-out transform select-none ${
+                            votoAnimandoId === pub.id
+                              ? 'scale-110 text-amber-600 dark:text-amber-400 font-black'
+                              : 'scale-100 font-bold'
+                          }`}
+                        >
+                          {pub.votos || 0}
+                        </span>
                         <button
                           onClick={() => handleReaccionarMuro(pub.id, 'negativo')}
                           className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-indigo-500 transition"
+                          title="Votar negativo"
                         >
                           <FiArrowDown className="w-4 h-4" />
                         </button>
@@ -805,12 +896,84 @@ const MuroForo = () => {
                               <FiShare2 className="w-3.5 h-3.5" />
                               <span className="hidden sm:inline">Compartir</span>
                             </button>
-                            <button
-                              onClick={() => mostrarMensajeTeammate("Las opciones adicionales corresponden a otras historias de usuario.")}
-                              className="p-1 hover:text-indigo-650 dark:hover:text-indigo-400 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/50 border-none bg-transparent cursor-pointer transition"
-                            >
-                              <FiMoreHorizontal className="w-4 h-4" />
-                            </button>
+                            <div className="relative" ref={menuMasOpcionesId === pub.id ? menuOpcionesMuroRef : null}>
+                              <button
+                                onClick={() => setMenuMasOpcionesId(menuMasOpcionesId === pub.id ? null : pub.id)}
+                                className="p-1 hover:text-indigo-650 dark:hover:text-indigo-400 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/50 border-none bg-transparent cursor-pointer transition"
+                                title="Más opciones"
+                              >
+                                <FiMoreHorizontal className="w-4 h-4" />
+                              </button>
+
+                              {menuMasOpcionesId === pub.id && (
+                                <div className="absolute right-0 bottom-full mb-2 w-48 bg-white dark:bg-zinc-850 rounded-xl shadow-xl border border-zinc-200 dark:border-zinc-750 py-1.5 z-30 animate-in fade-in zoom-in-95">
+                                  <button
+                                    onClick={() => {
+                                      setMenuMasOpcionesId(null);
+                                      navigate(`/foros/${materiaId}/publicacion/${pub.id}`);
+                                    }}
+                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                  >
+                                    <FiBookOpen className="w-3.5 h-3.5 text-zinc-400" />
+                                    <span>Ver publicación</span>
+                                  </button>
+
+                                  {(usuarioActual?.id === pub.Autor?.id || usuarioActual?.id === pub.id_usuario) ? (
+                                    <>
+                                      <button
+                                        onClick={() => {
+                                          setMenuMasOpcionesId(null);
+                                          navigate(`/foros/${materiaId}/publicacion/${pub.id}`);
+                                        }}
+                                        className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                      >
+                                        <FiEdit className="w-3.5 h-3.5 text-zinc-400" />
+                                        <span>Editar en detalle</span>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        onClick={() => {
+                                          setMenuMasOpcionesId(null);
+                                          setModalReportarAbierto(true);
+                                          setPubIdAReportar(pub.id);
+                                        }}
+                                        className="w-full text-left px-3.5 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                      >
+                                        <FiFlag className="w-3.5 h-3.5 text-red-500" />
+                                        <span>Reportar publicación</span>
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setMenuMasOpcionesId(null);
+                                          handleGuardarPublicacion(pub.id);
+                                        }}
+                                        className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                      >
+                                        <FiBookmark className="w-3.5 h-3.5 text-zinc-400" />
+                                        <span>{pub.esGuardada ? "Quitar de guardados" : "Guardar publicación"}</span>
+                                      </button>
+                                    </>
+                                  )}
+
+                                  <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
+                                  <button
+                                    onClick={() => {
+                                      setMenuMasOpcionesId(null);
+                                      const url = `${window.location.origin}/foros/${materiaId}/publicacion/${pub.id}`;
+                                      navigator.clipboard.writeText(url)
+                                        .then(() => mostrarMensajeTeammate("¡Enlace copiado al portapapeles con éxito!"))
+                                        .catch(() => mostrarMensajeTeammate("No se pudo copiar el enlace automáticamente."));
+                                    }}
+                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2 transition cursor-pointer border-none bg-transparent"
+                                  >
+                                    <FiLink className="w-3.5 h-3.5 text-zinc-400" />
+                                    <span>Copiar enlace</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
 
@@ -827,39 +990,29 @@ const MuroForo = () => {
                 <p className="text-sm text-zinc-500 dark:text-zinc-450">Cargando tus aportes...</p>
               </div>
             ) : (misAportes.publicaciones.length === 0 && misAportes.comentarios.length === 0) ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3 animate-bounce">
-                  <FiFlag className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-855 dark:text-zinc-200 text-center">Sin publicaciones ni comentarios</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
-                  Aún no has creado publicaciones ni comentarios en este foro. ¡Anímate a participar!
-                </p>
-              </div>
+              <EmptyState
+                variant="debate"
+                titulo="Aún no tienes aportes en este foro"
+                mensaje="Aquí podrás consultar y gestionar rápidamente tus publicaciones y respuestas académicas en esta materia."
+                accionTexto="Sé el primero en iniciar un debate"
+                iconoAccion={<FiEdit3 className="w-4 h-4" />}
+                alHacerClic={() => navigate(`/foros/${materiaId}/crear-publicacion`)}
+                className="my-3 py-12"
+              />
             ) : ((etiquetaSeleccionada || categoriaSeleccionada) && misPublicacionesFiltradas.length === 0) ? (
-              <div className="flex flex-col items-center justify-center text-center py-12 px-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 mb-3">
-                  <FiMessageCircle className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200 text-center">Sin resultados</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-450 max-w-sm mt-1 text-center">
-                  Ninguna de tus publicaciones coincide con los filtros aplicados:
-                  {etiquetaSeleccionada && <> etiqueta <span className="font-bold text-indigo-600 dark:text-indigo-400">{etiquetaSeleccionada}</span></>}
-                  {etiquetaSeleccionada && categoriaSeleccionada && <> y</>}
-                  {categoriaSeleccionada && <> tipo/categoría <span className="font-bold text-indigo-600 dark:text-indigo-400">{categoriaSeleccionada}</span></>}
-                  .
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEtiquetaSeleccionada(null);
-                    setCategoriaSeleccionada(null);
-                  }}
-                  className="mt-3 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-650 text-xs font-bold rounded-xl transition cursor-pointer"
-                >
-                  Quitar todos los filtros
-                </button>
-              </div>
+              <EmptyState
+                variant="search"
+                titulo="Sin aportes propios para estos filtros"
+                mensaje={`Ninguna de tus publicaciones coincide con ${etiquetaSeleccionada ? `la etiqueta "${etiquetaSeleccionada}"` : ''}${categoriaSeleccionada ? ` o la categoría "${categoriaSeleccionada}"` : ''}.`}
+                accionTexto="Quitar todos los filtros"
+                alHacerClic={() => {
+                  setEtiquetaSeleccionada(null);
+                  setCategoriaSeleccionada(null);
+                }}
+                botonSecundarioTexto="Crear una publicación"
+                alHacerClicSecundario={() => navigate(`/foros/${materiaId}/crear-publicacion`)}
+                className="my-3 py-10"
+              />
             ) : (
               <div className="space-y-6">
                 {/* Publicaciones creadas por mí */}
@@ -885,13 +1038,23 @@ const MuroForo = () => {
                               <button
                                 onClick={() => handleReaccionarMuro(pub.id, 'positivo')}
                                 className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-amber-500 transition"
+                                title="Votar positivo"
                               >
                                 <FiArrowUp className="w-4 h-4" />
                               </button>
-                              <span className="text-xs font-bold">{pub.votos || 0}</span>
+                              <span
+                                className={`text-xs min-w-[14px] text-center inline-block transition-transform duration-200 ease-out transform select-none ${
+                                  votoAnimandoId === pub.id
+                                    ? 'scale-110 text-amber-600 dark:text-amber-400 font-black'
+                                    : 'scale-100 font-bold'
+                                }`}
+                              >
+                                {pub.votos || 0}
+                              </span>
                               <button
                                 onClick={() => handleReaccionarMuro(pub.id, 'negativo')}
                                 className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer border-none bg-transparent text-zinc-400 hover:text-indigo-500 transition"
+                                title="Votar negativo"
                               >
                                 <FiArrowDown className="w-4 h-4" />
                               </button>
@@ -1086,19 +1249,49 @@ const MuroForo = () => {
 
           {/* Tarjeta de Etiquetas Populares */}
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4.5 shadow-sm">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3.5">
-              Etiquetas populares
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {["Teoremas", "Integrales", "Series", "Límites", "Ejercicios", "Parciales"].map(tag => (
+            <div className="flex items-center justify-between mb-3.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                Etiquetas populares
+              </h3>
+              {etiquetaSeleccionada && (
                 <button
-                  key={tag}
-                  onClick={() => mostrarMensajeTeammate("El filtrado por tags corresponde a la US de ordenamiento y filtrado de publicaciones.")}
-                  className="px-2.5 py-1 bg-zinc-50 hover:bg-indigo-50 dark:bg-zinc-850 dark:hover:bg-indigo-950/20 text-zinc-600 dark:text-zinc-400 hover:text-indigo-650 dark:hover:text-indigo-400 rounded-lg text-[10px] font-bold border border-zinc-200 dark:border-zinc-800 cursor-pointer transition"
+                  type="button"
+                  onClick={() => setEtiquetaSeleccionada(null)}
+                  className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold cursor-pointer"
                 >
-                  {tag}
+                  Quitar filtro
                 </button>
-              ))}
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(etiquetasPopulares.length > 0 ? etiquetasPopulares : ["#Parciales", "#Finales", "#Dudas", "#Resumenes", "#Ejercicios", "#Teoria"]).map(tag => {
+                const tagNormalizado = tag.startsWith('#') ? tag : `#${tag}`;
+                const esActiva = Boolean(
+                  etiquetaSeleccionada &&
+                  etiquetaSeleccionada.toLowerCase().replace(/^#/, '') === tag.toLowerCase().replace(/^#/, '')
+                );
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => {
+                      if (esActiva) {
+                        setEtiquetaSeleccionada(null);
+                      } else {
+                        setEtiquetaSeleccionada(tagNormalizado);
+                      }
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border cursor-pointer transition ${
+                      esActiva
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                        : 'bg-zinc-50 hover:bg-indigo-50 dark:bg-zinc-850 dark:hover:bg-indigo-950/20 text-zinc-600 dark:text-zinc-400 hover:text-indigo-650 dark:hover:text-indigo-400 border-zinc-200 dark:border-zinc-800'
+                    }`}
+                  >
+                    {tagNormalizado}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1108,14 +1301,21 @@ const MuroForo = () => {
 
       {/* Modal de Reportar */}
       {modalReportarAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div
+            ref={focusTrapReportarRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Reportar Publicación"
+            tabIndex={-1}
+            className="bg-white dark:bg-slate-900 border border-zinc-200 dark:border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 transition-colors duration-200 outline-none"
+          >
             <div>
-              <h3 className="text-base font-extrabold text-zinc-900 dark:text-white flex items-center gap-2">
-                <FiAlertCircle className="w-5 h-5 text-red-500" />
+              <h3 className="text-base font-extrabold text-zinc-900 dark:text-slate-100 flex items-center gap-2">
+                <FiAlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 Reportar Publicación
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-1">
                 Por favor, describe detalladamente el motivo por el cual estás reportando esta publicación. Un administrador revisará tu reporte.
               </p>
             </div>
@@ -1128,11 +1328,11 @@ const MuroForo = () => {
               }}
               placeholder="Escribe el motivo del reporte aquí (obligatorio)..."
               rows={4}
-              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100"
+              className="w-full p-3 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition text-zinc-850 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400"
             />
 
             {errorReporte && (
-              <p className="text-[11px] font-bold text-red-500 flex items-center gap-1">
+              <p className="text-[11px] font-bold text-red-700 dark:text-red-400 flex items-center gap-1">
                 <FiAlertCircle className="w-3.5 h-3.5 shrink-0" />
                 {errorReporte}
               </p>
@@ -1140,12 +1340,14 @@ const MuroForo = () => {
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
+                type="button"
                 onClick={cerrarModalReportar}
-                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-650 dark:text-zinc-300 rounded-xl text-xs font-bold border-none cursor-pointer transition"
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold border border-zinc-300 dark:border-zinc-700 cursor-pointer transition"
               >
                 Cancelar
               </button>
               <button
+                type="button"
                 onClick={enviarReporte}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer transition shadow-md shadow-red-500/10"
               >

@@ -105,7 +105,7 @@ const MetricaHorario = () => {
 
                     <div className="mt-2 flex items-end gap-2">
                         <span className="text-3xl font-black text-indigo-900 dark:text-indigo-300">
-                            {metricas.horasSemanales}
+                            {parseInt(metricas.horasSemanales)}
                         </span>
 
                         <span className="text-sm text-indigo-700 dark:text-indigo-400 mb-1">
@@ -121,7 +121,7 @@ const MetricaHorario = () => {
 
                     <div className="mt-2 flex items-end gap-2">
                         <span className="text-3xl font-black text-zinc-500 dark:text-zinc-200">
-                            {metricas.horasSemanalesPromedio}
+                            {parseInt(metricas.horasSemanalesPromedio)}
                         </span>
 
                         <span className="text-sm text-zinc-500 dark:text-zinc-200 mb-1">
@@ -152,16 +152,16 @@ const MetricaHorario = () => {
                 <Bar
                     data={{
                         labels: [
-                            `Tu carga semanal (${metricas.horasSemanales}h)`,
-                            `Promedio carrera (${metricas.horasSemanalesPromedio}h)`,
+                            `Tu carga semanal (${parseInt(metricas.horasSemanales)}h)`,
+                            `Promedio carrera (${parseInt(metricas.horasSemanalesPromedio)}h)`,
                             `Límite saludable (40h)`
                         ],
                         datasets: [
                             {
                                 label: 'Horas semanales',
                                 data: [
-                                    metricas.horasSemanales,
-                                    metricas.horasSemanalesPromedio,
+                                    parseInt(metricas.horasSemanales),
+                                    parseInt(metricas.horasSemanalesPromedio),
                                     40
                                 ],
                                 backgroundColor: [
