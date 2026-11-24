@@ -1498,6 +1498,8 @@ INSERT INTO estado_materia_alumno ("id_usuario", "id_materia", "estado") VALUES
 (23, 104, 'Aprobada'),
 (23, 105, 'Aprobada'),
 (23, 106, 'Aprobada'),
+(23, 107, 'Aprobada'),
+(23, 108, 'Aprobada'),
 (24, 1, 'Aprobada'),
 (24, 2, 'Aprobada'),
 (24, 3, 'Aprobada'),
